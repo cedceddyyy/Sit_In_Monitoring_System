@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
+   {% if user %}
+      <!-- Profile Card (Centered) -->
+      <div class="w3-card w3-padding w3-round-large w3-white" style="max-width: 400px; margin: auto;">
+         <div class="w3-container w3-flex w3-center">
+            <!-- Profile Image -->
+            <div class="w3-padding">
+               <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}" 
+               class="w3-circle w3-border" 
+               alt="Profile Image" 
+               width="150" height="150">
+               <p class="w3-opacity font-color">Profile Picture</p>
+            </div>
+         </div>
+         <!-- User Information -->
+         <div class="w3-container w3-padding font-color">
+            <p><strong>ID No:</strong> {{ user.idno }}</p>
+            <p><strong>Name:</strong> {{ user.firstname }} {{ user.middlename }} {{ user.lastname }}</p>
+            <p><strong>Course:</strong> {{ user.course }}</p>
+            <p><strong>Year Level:</strong> {{ user.year_level }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+         </div>
+      </div>
+   {% else %}
+      <p class="w3-center">No user data found.</p>
+   {% endif %}
+</div>
+{% endblock %}

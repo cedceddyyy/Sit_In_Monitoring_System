@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .color {
+        background-color: #D3BAFA;
+        }
+
+        .font-color {
+            color: #2C1038;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .button:hover {
+            color: #D3BAFA;
+        }
+        .logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .login-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .login-header hr {
+            flex-grow: 1;
+            border: none;
+            height: 2px;
+            background-color: #2C1038;
+            opacity: 0.5;
+            margin: 0 10px;
+            border-radius: 3px;
+        }
+        .login-header h1 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="w3-white">
+    <div class="w3-half w3-container" style="height: 100vh; background-image: url(static/images/login.jpg); background-size: cover;"></div>
+    <div class="w3-half w3-container w3-card w3-padding w3-white w3-center container">
+        <div>
+            <img src="static/images/logo.png" alt="Logo" class="logo">
+            <div class="login-header">
+                <hr>
+                <h2 class="w3-opacity font-color">Login</h2>
+                <hr>
+            </div>
+            <form method="POST" class="w3-padding-32 font-color">
+                <input type="text" name="username" class="w3-input w3-border w3-padding w3-round" placeholder="&#128100; USERNAME" required><br>
+                <input type="password" name="password" class="w3-input w3-border w3-padding w3-round" placeholder="&#128274; PASSWORD" required>
+                <br>
+                <button type="submit" class="w3-button w3-deep-purple w3-round">Login</button>
+            </form>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="w3-container w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} w3-round w3-display-container w3-padding-small" style="position: relative;">
+                    <span onclick="this.parentElement.style.display='none'" class="w3-button w3-round w3-display-topright" style="position: absolute; color: #fff; font-size: 16px; padding: 13px;">&times;</span>
+                    <p class="w3-left" style="font-size: 12px;">{{ message }}</p>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+            <p class="w3-opacity">Don't have an account? <a href="#" onclick="document.getElementById('registerModal').style.display='block'" class="button">Register</a></p>
+        </div>
+    </div>
+    
+    <!-- Registration Modal -->
+    <div id="registerModal" class="w3-modal">
+        <div class="w3-modal-content w3-animate-top w3-card-4" style="max-width: 500px;">
+            <div class="w3-container w3-padding w3-white w3-center font-color">
+                <span onclick="document.getElementById('registerModal').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                <h1 class="font-color">Register</h1>
+                <form method="POST" class="w3-padding font-color">
+                    <input type="hidden" name="register" value="1">
+                    <input type="text" id="idno" name="idno" class="w3-input w3-border w3-padding w3-round" placeholder="ID Number" required oninput="this.value = this.value.replace(/[^0-9]/g, '')"><br>
+                    <input type="text" name="lastname" class="w3-input w3-border w3-padding w3-round" placeholder="Last Name" required><br>
+                    <input type="text" name="firstname" class="w3-input w3-border w3-padding w3-round" placeholder="First Name" required><br>
+                    <input type="text" name="middlename" class="w3-input w3-border w3-padding w3-round" placeholder="Middle Name"><br>
+                    <div class="w3-row" style="margin-bottom: 10px;">
+                        <div class="w3-col s6" style="padding-right: 5px;">
+                            <select name="course" class="w3-input w3-border w3-padding w3-round" required>
+                                <option value="" disabled selected>Course</option>
+                                <option value="BSIT">BSIT</option>
+                                <option value="BSCS">BSCS</option>
+                                <option value="BSHM">BSHM</option>
+                                <option value="BSCRIM">BSCRIM</option>
+                            </select>
+                        </div>
+                        <div class="w3-col s6" style="padding-left: 5px;">
+                            <input type="number" name="year_level" class="w3-input w3-border w3-padding w3-round" placeholder="Year Level" required>
+                        </div>
+                    </div><br>
+                    <input type="email" name="email" class="w3-input w3-border w3-padding w3-round" placeholder="Email" required><br>
+                    <input type="text" id="username" name="username" class="w3-input w3-border w3-padding w3-round" placeholder="Username (Auto-filled)" required readonly><br>
+                    <input type="password" name="password" class="w3-input w3-border w3-padding w3-round" placeholder="Password" required><br>
+                    <button type="submit" class="w3-button w3-deep-purple w3-round">Register</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+    
+    <script>
+        document.getElementById("idno").addEventListener("input", function() {
+            document.getElementById("username").value = this.value;
+        });
+    </script>
+</body>
+</html>
