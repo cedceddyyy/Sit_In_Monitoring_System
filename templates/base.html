@@ -14,7 +14,7 @@
         }
     
         .sidebar {
-            width: 60px; /* Initial width (icon only) */
+            width: 60px; 
             height: 100vh;
             position: fixed;
             top: 0;
@@ -22,6 +22,8 @@
             overflow-x: hidden;
             transition: 0.3s;
             padding-top: 10px;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
         }
     
         .sidebar:hover {
@@ -90,7 +92,7 @@
     </style>
 </head>
 <body class="w3-white">
-    <div class="sidebar w3-deep-purple">
+    <div class="sidebar w3-deep-purple w3-card">
         <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
             <span class="material-icons">dashboard</span> 
             <span class="text">Dashboard</span>
@@ -123,7 +125,7 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-            <div class="w3-container w3-animate-top w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} 
+            <div class="w3-container w3-animate-right w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} 
                         w3-padding-small w3-round w3-display-container"
                 style="width: 40%; margin-top: 10px; margin-left: auto; margin-right: 10px; margin-bottom: 10px;">
                 <span onclick="this.parentElement.style.display='none'" 

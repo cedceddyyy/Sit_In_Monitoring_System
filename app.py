@@ -61,8 +61,10 @@ def login():
 
             if dbhelper.register_user(idno, lastname, firstname, middlename, course, year_level, email, username, password):
                 flash("Registration Successful! Please log in.", "success")
+                return redirect(url_for("login"))
             else:
                 flash("Username already exists! Try another.", "danger")
+
 
         else:  
             username = request.form["username"]
@@ -80,10 +82,17 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
     return render_template("dashboard.html", pagetitle="Dashboard", user=session["user"])
 
 @app.route("/info")
 def info():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+    
     user_info = dbhelper.get_user_info(session["user"])
     
     if user_info:
@@ -140,6 +149,7 @@ def edit():
 
 @app.route("/logout")
 def logout():
+    session.pop("user", None)
     flash("You have been logged out!", "info")
     return redirect(url_for('login'))
 
