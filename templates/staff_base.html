@@ -93,33 +93,37 @@
 </head>
 <body class="w3-white">
     <div class="sidebar w3-deep-purple w3-card">
-        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
-            <span class="material-icons">dashboard</span> 
-            <span class="text">Dashboard</span>
+        <a href="{{ url_for('home') }}" class="{% if request.endpoint == 'home' %}active{% endif %}">
+            <span class="material-icons">home</span> 
+            <span class="text">Home</span>
         </a>
-        <a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}">
-            <span class="material-icons">person</span> 
-            <span class="text">Profile</span>
+        <a href="{{ url_for('search') }}" class="{% if request.endpoint == 'search' %}active{% endif %}">
+            <span class="material-icons">search</span> 
+            <span class="text">Search</span>
         </a>
-        <a href="{{ url_for('edit') }}" class="{% if request.endpoint == 'edit' %}active{% endif %}">
-            <span class="material-icons">edit</span> 
-            <span class="text">Edit</span>
+        <a href="{{ url_for('student') }}" class="{% if request.endpoint == 'student' %}active{% endif %}">
+            <span class="material-icons">school</span> 
+            <span class="text">Student</span>
         </a>
-        <a href="{{ url_for('announcement') }}" class="{% if request.endpoint == 'announcement' %}active{% endif %}">
-            <span class="material-icons">announcement</span> 
-            <span class="text">Announcement</span>
+        <a href="{{ url_for('sit_in') }}" class="{% if request.endpoint == 'sit_in' %}active{% endif %}">
+            <span class="material-icons">event_seat</span> 
+            <span class="text">Sit-in</span>
         </a>
-        <a href="{{ url_for('rules') }}" class="{% if request.endpoint == 'rules' %}active{% endif %}">
-            <span class="material-icons">rules</span> 
-            <span class="text">Rules</span>
+        <a href="{{ url_for('view_sit_in_reservation') }}" class="{% if request.endpoint == 'view_sit_in_reservation' %}active{% endif %}">
+            <span class="material-icons">visibility</span> 
+            <span class="text">View Sit-in Reservation</span>
         </a>
-        <a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">
-            <span class="material-icons">history</span> 
-            <span class="text">Sit-in History</span>
+        <a href="{{ url_for('sit_in_reported') }}" class="{% if request.endpoint == 'sit_in_reported' %}active{% endif %}">
+            <span class="material-icons">report_problem</span> 
+            <span class="text">Sit-in Reported</span>
         </a>
-        <a href="{{ url_for('reservation') }}" class="{% if request.endpoint == 'reservation' %}active{% endif %}">
-            <span class="material-icons">event_note</span> 
-            <span class="text">Reservation</span>
+        <a href="{{ url_for('feedback_reports') }}" class="{% if request.endpoint == 'feedback_reports' %}active{% endif %}">
+            <span class="material-icons">feedback</span> 
+            <span class="text">Feedback Reports</span>
+        </a>
+        <a href="{{ url_for('reservations') }}" class="{% if request.endpoint == 'reservations' %}active{% endif %}">
+            <span class="material-icons">book</span> 
+            <span class="text">Reservations</span>
         </a>
         <a href="{{ url_for('logout') }}" class="w3-display-bottomleft {% if request.endpoint == 'logout' %}active{% endif %}">
             <span class="material-icons">logout</span> 

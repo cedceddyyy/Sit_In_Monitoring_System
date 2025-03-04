@@ -5,44 +5,103 @@
     <div class="w3-row-padding">
         <!-- Info Card -->
         <div class="w3-third">
+            <a href="{{ url_for('profile') }}" class="w3-hover-opacity" style="text-decoration: none;">
             <div class="w3-card-4 w3-round-large">
                 <header class="w3-container color w3-round-large">
-                    <h3>Info</h3>
+                    <h3>Student Information</h3>
                 </header>
-                <div class="w3-container font-color">
-                    <p>General information about the system.</p>
+                <div class="w3-container font-color w3-center">
+                    <div class="w3-padding">
+                        <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}" 
+                        class="w3-circle w3-border" 
+                        alt="Profile Image" 
+                        width="150" height="150">
+                        <p class="w3-opacity font-color">Profile Picture</p>
+                    </div>
                     <hr>
-                    <p>Details and updates related to system usage.</p>
-                </div>
+                    <div class="w3-container w3-left-align">
+                        <p><strong>ID No:</strong> {{ user.idno }}</p>
+                        <p><strong>Name:</strong> {{ user.firstname }} {{ user.middlename }} {{ user.lastname }}</p>
+                        <p><strong>Course:</strong> {{ user.course }}</p>
+                        <p><strong>Year Level:</strong> {{ user.year_level }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Session:</strong></p>
+                    </div>
+                </div>                
             </div>
+            </a>
         </div>
 
         <!-- Announcement Card -->
         <div class="w3-third">
+            <a href="{{ url_for('announcement') }}" class="w3-hover-opacity" style="text-decoration: none;">
             <div class="w3-card-4 w3-round-large">
                 <header class="w3-container color w3-round-large">
                     <h3>Announcement</h3>
                 </header>
-                <div class="w3-container font-color">
-                    <p>Latest announcements and news.</p>
-                    <hr>
-                    <p>Important updates for users.</p>
-                </div>
+                <div class="w3-margin w3-padding" style="overflow-y: auto; max-height: 500px; ">
+                <p>               <p><strong>CCS Admin | 2025-Feb-25</strong></p>
+              <div class="card-body bg-light w-100">
+                <p>UC did it again.</p>
+              </div>
+              <hr>
+                          <p><strong>CCS Admin | 2025-Feb-03</strong></p>
+              <div class="card-body bg-light w-100">
+                <p>The College of Computer Studies will open the registration of students for the Sit-in privilege starting tomorrow.
+Thank you!
+
+Lab Supervisor</p>
+              </div>
+              <hr>
+                          <p><strong>CCS Admin | 2024-May-08</strong></p>
+              <div class="card-body bg-light w-100">
+                <p>Important Announcement  We are excited to announce the launch of our new website! 🎉 Explore our latest products and services now!</p>
+              </div>
             </div>
+            </div>
+            </a>
         </div>
 
         <!-- Rules Card -->
         <div class="w3-third">
+            <a href="{{ url_for('rules') }}" class="w3-hover-opacity" style="text-decoration: none;">
             <div class="w3-card-4 w3-round-large">
                 <header class="w3-container color w3-round-large">
-                    <h3>Rules</h3>
+                    <h3>Rules and Regulations</h3>
                 </header>
-                <div class="w3-container font-color">
-                    <p>System guidelines and regulations.</p>
+                <div class="w3-container font-color w3-padding w3-margin" style="overflow-y: auto; max-height: 500px; ">
+                    <p><strong>University of Cebu COLLEGE OF INFORMATION & COMPUTER STUDIES</strong></p>
                     <hr>
-                    <p>Ensure compliance with platform policies.</p>
+                    <p><strong>LABORATORY RULES AND REGULATIONS</strong></p>
+                    <p>To avoid embarrassment and maintain camaraderie with your friends and superiors at our laboratories, please observe the following:</p>
+                    <p>1. Maintain silence, proper decorum, and discipline inside the laboratory. Mobile phones, walkmans and other personal pieces of equipment must be switched off.</p>
+                    <p>2. Games are not allowed inside the lab. This includes computer-related games, card games and other games that may disturb the operation of the lab.</p>
+                    <p>3. Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.</p>
+                    <p>4. Getting access to other websites not related to the course (especially pornographic and illicit sites) is strictly prohibited.</p>
+                    <p>5. Deleting computer files and changing the set-up of the computer is a major offense.</p>
+                    <p>6. Observe computer time usage carefully. A fifteen-minute allowance is given for each use. Otherwise, the unit will be given to those who wish to "sit-in".</p>
+                    <p>7. Observe proper decorum while inside the laboratory.</p>
+                    <ul>
+                    <li>Do not get inside the lab unless the instructor is present.</li>
+                    <li>All bags, knapsacks, and the likes must be deposited at the counter.</li>
+                    <li>Follow the seating arrangement of your instructor.</li>
+                    <li>At the end of class, all software programs must be closed.</li>
+                    <li>Return all chairs to their proper places after using.</li>
+                    </ul>
+                    <p>8. Chewing gum, eating, drinking, smoking, and other forms of vandalism are prohibited inside the lab.</p>
+                    <p>9. Anyone causing a continual disturbance will be asked to leave the lab. Acts or gestures offensive to the members of the community, including public display of physical intimacy, are not tolerated.</p>
+                    <p>10. Persons exhibiting hostile or threatening behavior such as yelling, swearing, or disregarding requests made by lab personnel will be asked to leave the lab.</p>
+                    <p>11. For serious offense, the lab personnel may call the Civil Security Office (CSU) for assistance.</p>
+                    <p>12. Any technical problem or difficulty must be addressed to the laboratory supervisor, student assistant or instructor immediately.</p>
+                    <br>
+                    <p><strong>DISCIPLINARY ACTION</strong></p>
+                    <ul>
+                    <li>First Offense - The Head or the Dean or OIC recommends to the Guidance Center for a suspension from classes for each offender.</li>
+                    <li>Second and Subsequent Offenses - A recommendation for a heavier sanction will be endorsed to the Guidance Center.</li>
+                    </ul>
                 </div>
             </div>
+            </a>
         </div>
 
     </div>

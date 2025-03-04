@@ -4,7 +4,12 @@
 <div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
    {% if user %}
       <!-- Profile Card (Centered) -->
-      <div class="w3-card w3-padding w3-round-large w3-white" style="max-width: 400px; margin: auto;">
+      <div class="w3-card w3-padding w3-round-large w3-white" style="max-width: 400px; margin: auto; position: relative;">
+         <!-- Edit Icon at the Top Right -->
+         <a href="{{ url_for('edit') }}" class=" w3-large w3-display-topright w3-opacity w3-hover-opacity-off" style="position: absolute; top: 10px; right: 10px;">
+            <span class="material-icons">edit_square</span> 
+         </a>
+         
          <div class="w3-container w3-flex w3-center">
             <!-- Profile Image -->
             <div class="w3-padding">

@@ -85,10 +85,27 @@ def dashboard():
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
-    return render_template("dashboard.html", pagetitle="Dashboard", user=session["user"])
 
-@app.route("/info")
-def info():
+    user_info = dbhelper.get_user_info(session["user"])
+
+    if user_info:
+        user_data = {
+            "idno": user_info[0],
+            "lastname": user_info[1],
+            "firstname": user_info[2],
+            "middlename": user_info[3] if user_info[3] else "",
+            "course": user_info[4],
+            "year_level": user_info[5],
+            "email": user_info[6],
+            "profile_image": user_info[7] if len(user_info) > 7 else "default.png"
+        }
+        return render_template("dashboard.html", pagetitle="Dashboard" , user=user_data)
+
+    flash("User not found!", "danger")
+    return redirect(url_for('dashboard'))
+
+@app.route("/profile")
+def profile():
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
@@ -106,10 +123,42 @@ def info():
             "email": user_info[6],
             "profile_image": user_info[7] if len(user_info) > 7 else "default.png"
         }
-        return render_template("info.html", pagetitle="Information" , user=user_data)
+        return render_template("profile.html", pagetitle="Profile" , user=user_data)
     
     flash("User not found!", "danger")
     return redirect(url_for('dashboard'))
+
+@app.route("/announcement")
+def announcement():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    return render_template("announcement.html", pagetitle="Announcement")
+
+@app.route("/rules")
+def rules():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    return render_template("rules.html", pagetitle="Rules")
+
+@app.route("/history")
+def history():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+    
+    return render_template("history.html", pagetitle="Sit-in History")
+
+@app.route("/reservation")
+def reservation():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    return render_template("reservation.html", pagetitle="Reservation")  
 
 @app.route("/edit", methods=["GET", "POST"])
 def edit():
@@ -127,7 +176,7 @@ def edit():
 
         dbhelper.update_user_info(session["user"], lastname, firstname, middlename, course, year_level, email)
         flash("Your information has been updated successfully!", "success")
-        return redirect(url_for("info"))
+        return redirect(url_for("profile"))
 
     user_info = dbhelper.get_user_info(session["user"])
 
