@@ -1,36 +1,156 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
-        <table class="w3-table w3-striped w3-bordered">
-            <thead class="w3-deep-purple">
-                <tr class="w3-text-white">
-                    <th>Date</th>
-                    <th>Time In</th>
-                    <th>Time Out</th>
-                    <th>Room</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>March 5, 2025</td>
-                    <td>9:00 AM</td>
-                    <td>10:30 AM</td>
-                    <td>Room 301</td>
-                </tr>
-                <tr>
-                    <td>March 3, 2025</td>
-                    <td>1:00 PM</td>
-                    <td>2:30 PM</td>
-                    <td>Room 204</td>
-                </tr>
-                <tr>
-                    <td>March 1, 2025</td>
-                    <td>10:00 AM</td>
-                    <td>11:30 AM</td>
-                    <td>Room 105</td>
-                </tr>
-            </tbody>
-        </table>
+<div class="w3-container w3-padding w3-margin w3-animate-bottom w3-display-container" style="height: 100vh;">
+
+    <div class="w3-bar w3-margin-bottom">
+        <label for="rowsPerPage" class="w3-text-deep-purple">Rows per page: </label>
+        <select id="rowsPerPage" class="w3-select w3-border" style="max-width: 50px;">
+            <option value="3">3</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+        </select>
+    </div>
+
+    <!-- Table -->
+    <table class="w3-table w3-striped w3-bordered">
+        <thead class="w3-deep-purple">
+            <tr class="w3-text-white">
+                <th>Date</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Room</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td>March 5, 2025</td>
+                <td>9:00 AM</td>
+                <td>10:30 AM</td>
+                <td>Room 301</td>
+            </tr>
+            <tr>
+                <td>March 3, 2025</td>
+                <td>1:00 PM</td>
+                <td>2:30 PM</td>
+                <td>Room 204</td>
+            </tr>
+            <tr>
+                <td>March 1, 2025</td>
+                <td>10:00 AM</td>
+                <td>11:30 AM</td>
+                <td>Room 105</td>
+            </tr>
+            <tr>
+                <td>February 25, 2025</td>
+                <td>8:00 AM</td>
+                <td>9:30 AM</td>
+                <td>Room 102</td>
+            </tr>
+            <tr>
+                <td>February 23, 2025</td>
+                <td>12:00 PM</td>
+                <td>1:30 PM</td>
+                <td>Room 301</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="w3-bar w3-center w3-padding w3-margin">
+        <a href="#" class="w3-button" id="prevPage">«</a>
+        <a href="#" class="w3-button w3-deep-purple" id="page1">1</a>
+        <a href="#" class="w3-button" id="page2">2</a>
+        <a href="#" class="w3-button" id="page3">3</a>
+        <a href="#" class="w3-button" id="page4">4</a>
+        <a href="#" class="w3-button" id="nextPage">»</a>
+    </div>
 </div>
+
+<!-- JavaScript to handle rows per page and pagination -->
+<script>
+    let currentPage = 1; // Default page
+    let rowsPerPage = 3; // Default rows per page
+    let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
+    let totalRows = rows.length;
+
+    // Function to handle rows per page change
+    document.getElementById('rowsPerPage').addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value); // Get the selected value
+        currentPage = 1; // Reset to the first page
+        updateTable(); // Update table display
+    });
+
+    // Function to update the table based on the current page and rows per page
+    function updateTable() {
+        let startRow = (currentPage - 1) * rowsPerPage;
+        let endRow = startRow + rowsPerPage;
+
+        // Hide all rows initially
+        rows.forEach((row, index) => {
+            if (index >= startRow && index < endRow) {
+                row.style.display = ''; // Show rows for the current page
+            } else {
+                row.style.display = 'none'; // Hide rows for other pages
+            }
+        });
+
+        updatePagination(); // Update pagination buttons
+    }
+
+    // Function to update pagination buttons
+    function updatePagination() {
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+        let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
+        
+        // Hide all page buttons and display only the relevant ones
+        pageButtons.forEach((button, index) => {
+            if (index + 1 <= totalPages) {
+                button.style.display = ''; // Show valid page buttons
+                button.textContent = index + 1; // Set page number
+            } else {
+                button.style.display = 'none'; // Hide extra page buttons
+            }
+        });
+
+        // Highlight the current page
+        pageButtons.forEach(button => button.classList.remove('w3-deep-purple'));
+        document.getElementById('page' + currentPage).classList.add('w3-deep-purple');
+
+        // Enable/disable next/prev buttons
+        document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
+        document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
+    }
+
+    // Event listeners for pagination buttons
+    document.getElementById('prevPage').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            updateTable();
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function(e) {
+        e.preventDefault();
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTable();
+        }
+    });
+
+    // Event listeners for individual page buttons
+    document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentPage = parseInt(this.textContent);
+            updateTable();
+        });
+    });
+
+    // Initial update on page load
+    updateTable();
+
+</script>
 {% endblock %}
