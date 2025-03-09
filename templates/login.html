@@ -51,6 +51,12 @@
         .login-header h1 {
             margin: 0;
         }
+
+        /* Add this CSS for fade-out animation */
+        .fade-out {
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
     </style>
 </head>
 <body class="w3-white">
@@ -72,9 +78,8 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                <div class="w3-container w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} w3-round w3-display-container w3-padding-small" style="position: relative;">
-                    <span onclick="this.parentElement.style.display='none'" class="w3-button w3-round w3-display-topright" style="position: absolute; color: #fff; font-size: 16px; padding: 13px;">&times;</span>
-                    <p class="w3-left" style="font-size: 12px;">{{ message }}</p>
+                <div class="w3-container w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} w3-round w3-display-container w3-padding-small flash-message" style="position: relative;">
+                    <p style="font-size: 12px;">{{ message }}</p>
                 </div>
                 {% endfor %}
             {% endif %}
@@ -113,15 +118,26 @@
                     <input type="text" id="username" name="username" class="w3-input w3-border w3-padding w3-round" placeholder="Username (Auto-filled)" required readonly><br>
                     <input type="password" name="password" class="w3-input w3-border w3-padding w3-round" placeholder="Password" required><br>
                     <button type="submit" class="w3-button w3-deep-purple w3-round">Register</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-    
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.getElementById("idno").addEventListener("input", function() {
             document.getElementById("username").value = this.value;
         });
+
+        // Hide flash messages after 10 seconds with fade-out animation
+        setTimeout(function() {
+            var flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                message.classList.add('fade-out');
+                setTimeout(function() {
+                    message.style.display = 'none';
+                }, 2000); // Match this duration with the CSS transition duration
+            });
+        }, 2000); // 10000 milliseconds = 10 seconds
     </script>
 </body>
 </html>

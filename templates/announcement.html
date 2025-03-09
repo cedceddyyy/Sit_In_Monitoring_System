@@ -2,26 +2,76 @@
 
 {% block content %}
 <div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
-   <div class="w3-card-4 w3-round-large">
-      <div class="w3-margin w3-padding" style="overflow-y: auto; max-height: 500px; ">
-      <p>               <p><strong>CCS Admin | 2025-Feb-25</strong></p>
-    <div class="card-body bg-light w-100">
-      <p>UC did it again.</p>
-    </div>
-    <hr>
-                <p><strong>CCS Admin | 2025-Feb-03</strong></p>
-    <div class="card-body bg-light w-100">
-      <p>The College of Computer Studies will open the registration of students for the Sit-in privilege starting tomorrow.
-Thank you!
-
-Lab Supervisor</p>
-    </div>
-    <hr>
-                <p><strong>CCS Admin | 2024-May-08</strong></p>
-    <div class="card-body bg-light w-100">
-      <p>Important Announcement  We are excited to announce the launch of our new website! 🎉 Explore our latest products and services now!</p>
-    </div>
+  {% for announcement in announcements %}
+  <div class="w3-card w3-padding w3-margin-bottom w3-round">
+      <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
+      <p>{{ announcement.announcement_detail }}</p>
   </div>
-  </div>
+  {% endfor %}
+ <!-- Pagination -->
+ <div class="w3-bar w3-center w3-padding w3-margin">
+  <a href="#" class="w3-button" id="prevPage">«</a>
+  <span id="paginationNumbers"></span>
+  <a href="#" class="w3-button" id="nextPage">»</a>
 </div>
+</div>
+
+<!-- JavaScript to handle pagination -->
+<script>
+let currentPage = 1;
+const rowsPerPage = 10; // Fixed at 10 feedbacks per page
+const rows = document.querySelectorAll('#tableBody tr');
+const totalRows = rows.length;
+const totalPages = Math.ceil(totalRows / rowsPerPage);
+const paginationNumbers = document.getElementById('paginationNumbers');
+
+function updateTable() {
+  let startRow = (currentPage - 1) * rowsPerPage;
+  let endRow = startRow + rowsPerPage;
+
+  rows.forEach((row, index) => {
+      row.style.display = (index >= startRow && index < endRow) ? '' : 'none';
+  });
+
+  updatePagination();
+}
+
+function updatePagination() {
+  paginationNumbers.innerHTML = '';
+  for (let i = 1; i <= totalPages; i++) {
+      let pageButton = document.createElement('a');
+      pageButton.href = "#";
+      pageButton.classList.add("w3-button");
+      if (i === currentPage) pageButton.classList.add("w3-deep-purple");
+      pageButton.textContent = i;
+      pageButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          currentPage = i;
+          updateTable();
+      });
+      paginationNumbers.appendChild(pageButton);
+  }
+
+  document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
+  document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
+}
+
+document.getElementById('prevPage').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (currentPage > 1) {
+      currentPage--;
+      updateTable();
+  }
+});
+
+document.getElementById('nextPage').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (currentPage < totalPages) {
+      currentPage++;
+      updateTable();
+  }
+});
+
+updateTable();
+</script>
 {% endblock %}

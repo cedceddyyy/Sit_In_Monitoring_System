@@ -89,6 +89,38 @@
         .font-color {
             color: #2C1038;
         }
+
+        /* Add this CSS for fade-out animation */
+        .fade-out {
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+
+        .flash-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .flash-message {
+            width: 300px;
+            padding: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;  /* Center the text */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flash-text {
+            margin: 0;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body class="w3-white">
@@ -121,6 +153,10 @@
             <span class="material-icons">event_note</span> 
             <span class="text">Reservation</span>
         </a>
+        <a href="{{ url_for('feedback') }}" class="{% if request.endpoint == 'feedback' %}active{% endif %}">
+            <span class="material-icons">comment</span> 
+            <span class="text">Feedback</span>
+        </a>
         <a href="{{ url_for('logout') }}" class="w3-display-bottomleft {% if request.endpoint == 'logout' %}active{% endif %}">
             <span class="material-icons">logout</span> 
             <span class="text">Logout</span>
@@ -136,16 +172,14 @@
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for category, message in messages %}
-            <div class="w3-container w3-animate-right w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} 
-                        w3-padding-small w3-round w3-display-container"
-                style="width: 40%; margin-top: 10px; margin-left: auto; margin-right: 10px; margin-bottom: 10px;">
-                <span onclick="this.parentElement.style.display='none'" 
-                    class="w3-button w3-display-topright w3-round" 
-                    style="padding: 19px;">&times;</span>
-                <p>{{ message }}</p>
+            <div class="flash-container">
+                {% for category, message in messages %}
+                <div class="w3-animate-right w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} 
+                            w3-padding-small w3-round w3-display-container flash-message">
+                    <p>{{ message }}</p>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         {% endif %}
         {% endwith %}
 
@@ -167,6 +201,16 @@
         document.getElementById("mySidebar").style.display = "none";
         document.getElementById("openNav").style.display = "inline-block";
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            let messages = document.querySelectorAll(".flash-message");
+            messages.forEach(msg => {
+                msg.style.opacity = "0";
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 3000); // Auto-dismiss after 5 seconds
+    });
 </script>
 </body>
 </html>

@@ -1,0 +1,102 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="w3-container">
+    
+    <!-- Stats Section -->
+    <div class="w3-row-padding w3-margin-top">
+        <div class="w3-quarter">
+            <div class="w3-card w3-padding w3-round color ">
+                <h3>Total Students</h3>
+                <p style="font-size: 24px;">{{ total_students }}</p>
+            </div>
+        </div>
+        <div class="w3-quarter">
+            <div class="w3-card w3-padding w3-round color font-color">
+                <h3>Total Reservations</h3>
+                <p style="font-size: 24px;">{{ total_reservations }}</p>
+            </div>
+        </div>
+        <div class="w3-quarter">
+            <div class="w3-card w3-padding w3-round color font-color">
+                <h3>Total Sit-in</h3>
+                <p style="font-size: 24px;">{{ total_sit_in }}</p>
+            </div>
+        </div>
+        <div class="w3-quarter">
+            <div class="w3-card w3-padding w3-round color font-color">
+                <h3>Feedback Reports</h3>
+                <p style="font-size: 24px;">{{ total_feedback }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="w3-row-padding w3-margin-top font-color">
+    <!--Chart Section-->
+        <div class="w3-half">
+            <div class="w3-card w3-padding">
+                <div id="piechart" style="width: 100%; height: 484px;"></div>
+            </div>
+        </div>
+
+        <!-- Announcement Section -->
+        <div class="w3-half">
+            <div class="w3-card w3-padding" style="overflow-y: auto; max-height: 500px;">
+                <div class="w3-margin-bottom" >
+                    <form method="POST" action="{{ url_for('post_announcement') }}">
+                        <label for="new_announcement" class="w3-text-grey">New Announcement</label>
+                        <textarea id="new_announcement" name="announcement" class="w3-input w3-border w3-round" 
+                            placeholder="Type your announcement here" rows="3" style="resize: vertical;"></textarea>
+                        <button type="submit" class="w3-button w3-round w3-margin-top" style="background-color: #FFDE91;">Submit</button>
+                    </form>
+                </div>             
+                <h2>Posted Announcements</h2>
+                <hr>
+                {% for announcement in announcements %}
+                <div class="w3-card w3-padding w3-margin-bottom w3-round">
+                    <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
+                    <p>{{ announcement.announcement_detail }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Charts Script -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+// Load Google Charts
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart);
+
+// Draw the chart and set the chart values
+function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+        ['Activity', 'Count'],
+        {% if activity_counts %}
+            {% for activity, count in activity_counts.items() %}
+                ['{{ activity }}', {{ count }}],
+            {% endfor %}
+        {% else %}
+            ['No Data', 1],
+        {% endif %}
+    ]);
+    
+    var options = {
+        'title': 'Recent Activity Breakdown',
+        'chartArea': { width: '90%', height: '75%' },
+        'legend': { position: 'bottom' },
+        'responsive': true
+    };
+
+    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+    chart.draw(data, options);
+
+    window.addEventListener('resize', function() {
+        chart.draw(data, options);
+    });
+}
+</script>
+
+{% endblock %}

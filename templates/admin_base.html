@@ -14,7 +14,7 @@
         }
     
         .sidebar {
-            width: 60px; 
+            width: 60px;
             height: 100vh;
             position: fixed;
             top: 0;
@@ -25,11 +25,11 @@
             border-top-right-radius: 5px;
             border-bottom-right-radius: 5px;
         }
-    
+
         .sidebar:hover {
-            width: 220px; /* Expand on hover */
+            width: 250px;
         }
-    
+
         .sidebar a {
             display: flex;
             align-items: center;
@@ -38,31 +38,33 @@
             color: #D3BAFA;
             font-size: 16px;
             transition: 0.3s;
+            white-space: nowrap; 
         }
-    
+
         .sidebar a .material-icons {
             font-size: 24px;
-            margin-right: 10px;
+            margin-right: 15px; 
         }
-    
+
         .sidebar a span.text {
             display: none;
             transition: opacity 0.3s;
         }
-    
+
         .sidebar:hover a span.text {
             display: inline-block;
             opacity: 1;
         }
-    
+
         #main {
-            margin-left: 70px; /* Adjust content */
+            margin-left: 90px; 
             transition: margin-left 0.3s;
         }
-    
+
         .sidebar:hover + #main {
-            margin-left: 230px; /* Expand content space */
+            margin-left: 270px;
         }
+
 
         .sidebar a:hover {
             color: #2C1038;
@@ -89,39 +91,66 @@
         .font-color {
             color: #2C1038;
         }
+
+        .flash-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .flash-message {
+            width: 300px;
+            padding: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;  /* Center the text */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flash-text {
+            margin: 0;
+            font-weight: bold;
+        }
+
+
     </style>
 </head>
 <body class="w3-white">
     <div class="sidebar w3-deep-purple w3-card">
-        <a href="{{ url_for('home') }}" class="{% if request.endpoint == 'home' %}active{% endif %}">
+        <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'home' %}active{% endif %}">
             <span class="material-icons">home</span> 
             <span class="text">Home</span>
         </a>
-        <a href="{{ url_for('search') }}" class="{% if request.endpoint == 'search' %}active{% endif %}">
+        <a href="" class="{% if request.endpoint == 'search' %}active{% endif %}">
             <span class="material-icons">search</span> 
             <span class="text">Search</span>
         </a>
-        <a href="{{ url_for('student') }}" class="{% if request.endpoint == 'student' %}active{% endif %}">
+        <a href="{{ url_for('view_students') }}" class="{% if request.endpoint == 'student' %}active{% endif %}">
             <span class="material-icons">school</span> 
             <span class="text">Student</span>
         </a>
-        <a href="{{ url_for('sit_in') }}" class="{% if request.endpoint == 'sit_in' %}active{% endif %}">
+        <a href="" class="{% if request.endpoint == 'sit_in' %}active{% endif %}">
             <span class="material-icons">event_seat</span> 
             <span class="text">Sit-in</span>
         </a>
-        <a href="{{ url_for('view_sit_in_reservation') }}" class="{% if request.endpoint == 'view_sit_in_reservation' %}active{% endif %}">
+        <a href="" class="{% if request.endpoint == 'view_sit_in_reservation' %}active{% endif %}">
             <span class="material-icons">visibility</span> 
             <span class="text">View Sit-in Reservation</span>
         </a>
-        <a href="{{ url_for('sit_in_reported') }}" class="{% if request.endpoint == 'sit_in_reported' %}active{% endif %}">
+        <a href="" class="{% if request.endpoint == 'sit_in_reported' %}active{% endif %}">
             <span class="material-icons">report_problem</span> 
             <span class="text">Sit-in Reported</span>
         </a>
-        <a href="{{ url_for('feedback_reports') }}" class="{% if request.endpoint == 'feedback_reports' %}active{% endif %}">
+        <a href="{{ url_for('view_feedback') }}" class="{% if request.endpoint == 'feedback_reports' %}active{% endif %}">
             <span class="material-icons">feedback</span> 
             <span class="text">Feedback Reports</span>
         </a>
-        <a href="{{ url_for('reservations') }}" class="{% if request.endpoint == 'reservations' %}active{% endif %}">
+        <a href="" class="{% if request.endpoint == 'reservations' %}active{% endif %}">
             <span class="material-icons">book</span> 
             <span class="text">Reservations</span>
         </a>
@@ -140,18 +169,17 @@
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for category, message in messages %}
-            <div class="w3-container w3-animate-right w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} 
-                        w3-padding-small w3-round w3-display-container"
-                style="width: 40%; margin-top: 10px; margin-left: auto; margin-right: 10px; margin-bottom: 10px;">
-                <span onclick="this.parentElement.style.display='none'" 
-                    class="w3-button w3-display-topright w3-round" 
-                    style="padding: 19px;">&times;</span>
-                <p>{{ message }}</p>
+            <div class="flash-container">
+                {% for category, message in messages %}
+                <div class="w3-animate-right w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} 
+                            w3-padding-small w3-round w3-display-container flash-message">
+                    <p>{{ message }}</p>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         {% endif %}
         {% endwith %}
+
 
         <div class="w3-container">
             {% block content %}
@@ -171,6 +199,17 @@
         document.getElementById("mySidebar").style.display = "none";
         document.getElementById("openNav").style.display = "inline-block";
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            let messages = document.querySelectorAll(".flash-message");
+            messages.forEach(msg => {
+                msg.style.opacity = "0";
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 3000); // Dismiss after 5 seconds
+    });
+
 </script>
 </body>
 </html>
