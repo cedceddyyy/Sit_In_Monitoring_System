@@ -287,6 +287,16 @@ def view_students():
     students = dbhelper.get_students()
     return render_template("students.html", pagetitle="View Students", students=students)
 
+@app.route("/view_sit_in")
+def view_sit_in():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    sit_ins = dbhelper.get_sit_in()
+    return render_template("sit_in.html", pagetitle="Sit-In", sit_ins=sit_ins)
+
+
 @app.route('/search', methods=['GET', 'POST'])
 def search_student_page():
     student = None
@@ -296,6 +306,27 @@ def search_student_page():
         if not student:
             flash('Student not found', 'danger')
     return render_template('search.html', student=student, pagetitle="Search Student")
+
+@app.route('/insert_sit_in', methods=['POST'])
+def insert_sit_in():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+    
+    if request.method == 'POST':
+        student_id = request.form['idno']
+        purpose = request.form['purpose']
+        lab = request.form['lab']
+        
+
+        success = dbhelper.insert_sit_in(student_id, purpose, lab)
+        
+        if success:
+            flash('Sit-In entry added successfully!', 'success')
+        else:
+            flash('Failed to add Sit-In entry.', 'danger')
+        
+        return redirect(url_for('search_student_page'))
 
 if __name__ == "__main__":
     app.run(debug=True)

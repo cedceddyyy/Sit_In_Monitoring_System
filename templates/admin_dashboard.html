@@ -33,15 +33,15 @@
 
     <div class="w3-row-padding w3-margin-top font-color">
     <!--Chart Section-->
-        <div class="w3-half">
-            <div class="w3-card w3-padding">
-                <div id="piechart" style="width: 100%; height: 484px;"></div>
+        <div class="w3-half w3-card w3-round" style=" height: 600px;">
+            <div class="w3-padding">
+                <div id="piechart" style="width: 500px; height: 550px;"></div>
             </div>
         </div>
 
         <!-- Announcement Section -->
         <div class="w3-half">
-            <div class="w3-card w3-padding" style="overflow-y: auto; max-height: 500px;">
+            <div class="w3-card w3-padding" style="overflow-y: auto; max-height: 600px;">
                 <div class="w3-margin-bottom" >
                     <form method="POST" action="{{ url_for('post_announcement') }}">
                         <label for="new_announcement" class="w3-text-grey">New Announcement</label>
@@ -54,7 +54,7 @@
                 <hr>
                 {% for announcement in announcements %}
                 <div class="w3-card w3-padding w3-margin-bottom w3-round">
-                    <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
+                    <p><strong>CCS Admin | {{ announcement.date_created }} {{ announcement.announcement_id }}</strong></p>
                     <p>{{ announcement.announcement_detail }}</p>
                 </div>
                 {% endfor %}
@@ -85,7 +85,7 @@ function drawChart() {
     
     var options = {
         'title': 'Recent Activity Breakdown',
-        'chartArea': { width: '90%', height: '75%' },
+        'chartArea': { width: 'auto', height: '75%' },
         'legend': { position: 'bottom' },
         'responsive': true
     };

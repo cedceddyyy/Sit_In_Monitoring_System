@@ -32,9 +32,9 @@ def create_database():
                  )''')
     
     conn.execute('''CREATE TABLE IF NOT EXISTS announcement (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      announcement_id INTEGER PRIMARY KEY AUTOINCREMENT,
                       announcement_detail TEXT NOT NULL,
-                      date_created DATETIME DEFAULT CURRENT_TIMESTAMP,
+                      date_created DATETIME DEFAULT CURRENT_date,
                       admin_id INTEGER NOT NULL,
                       FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
                  )''')
@@ -45,6 +45,14 @@ def create_database():
                       lab_number INTEGER NOT NULL,
                       date_submitted text default current_date,
                       message TEXT NOT NULL,    
+                      FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
+                 )''')
+    
+    conn.execute('''CREATE TABLE IF NOT EXISTS Sit_in (
+                      Sit_in_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      student_id INTEGER NOT NULL,
+                      purpose varchar(100),
+                      lab varchar(100),  
                       FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
                  )''')
 
@@ -153,11 +161,11 @@ def get_announcements():
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT announcement_detail, date_created FROM announcement ORDER BY date_created DESC")
+    cursor.execute("SELECT announcement_id, announcement_detail, date_created FROM announcement ORDER BY announcement_id desc")
     announcements = cursor.fetchall()
     conn.close()
 
-    return [{"announcement_detail": row[0], "date_created": row[1]} for row in announcements]
+    return [{"announcement.id": row[0], "announcement_detail": row[1], "date_created": row[2]} for row in announcements]
 
 def total_students():
     conn = connect_db()
@@ -213,6 +221,31 @@ def search_student_by_id(idno):
     conn.close()
 
     return student
+
+def insert_sit_in(student_id, purpose, lab):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("INSERT INTO Sit_in (student_id, purpose, lab) VALUES (?, ?, ?)", 
+                       (student_id, purpose, lab))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def get_sit_in():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT student_id, purpose, lab from Sit_in")
+    sit_in_details = cursor.fetchall()
+    conn.close()
+
+    # Convert tuples to dictionaries
+    return [{"student_id": row[0], "purpose": row[1], "lab": row[2]} for row in sit_in_details]
 
 if __name__ == "__main__":
     create_database()
