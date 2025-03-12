@@ -18,7 +18,7 @@
       {% for student in students %}
       <tr>
         <td>{{ student.idno }}</td>
-        <td>{{ student.lasname }}</td>
+        <td>{{ student.lastname }}</td>
         <td>{{ student.firstname }}</td>
         <td>{{ student.middlename}}</td>
         <td>{{ student.course }}</td>
@@ -94,5 +94,5 @@ document.getElementById('nextPage').addEventListener('click', function(e) {
 });
 
 updateTable();
-</script>
+</script> 
 {% endblock %}

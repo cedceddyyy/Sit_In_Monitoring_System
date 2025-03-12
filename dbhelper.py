@@ -204,6 +204,15 @@ def get_feedbacks():
     # Convert tuples to dictionaries
     return [{"student_id": row[0], "lab_number": row[1], "message": row[2], "date_submitted": row[3]} for row in feedback_details]
 
+def search_student_by_id(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT idno, lastname, firstname, middlename FROM users WHERE idno = ?", (idno,))
+    student = cursor.fetchone()
+    conn.close()
+
+    return student
 
 if __name__ == "__main__":
     create_database()

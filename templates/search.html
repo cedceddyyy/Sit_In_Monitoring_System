@@ -1,0 +1,56 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<div class="w3-container w3-padding w3-display-container font-color" style="height: 100vh;">
+    <form method="POST" action="{{ url_for('search_student_page') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
+        <input class="w3-input w3-border w3-round w3-padding" type="text" name="idno" placeholder="Enter Student ID" required style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;">
+        <button class="w3-button w3-deep-purple w3-round" type="submit" style="height: 46px; margin-left: 10px;">
+            <i class="material-icons">search</i>
+        </button>
+    </form>
+    {% if student %}
+    <div id="student-details" class="w3-card-4 w3-animate-top w3-margin-top w3-round font-color" style="max-width: 600px; margin: auto;">
+        <div class="w3-container w3-margin-bottom w3-round font-color color">
+            <h3>Sit-In Form</h3>
+        </div>
+        <form class="w3-container">
+            <div class="w3-margin-bottom font-color">
+                <label>ID Number</label>
+                <input class="w3-input w3-border w3-round" type="text" value="{{ student[0] }}" readonly>
+            </div>
+
+            <div class="w3-margin-bottom font-color">
+                <label>Full Name</label>
+                <input class="w3-input w3-border w3-round" type="text" value="{{ student[1] }} {{ student[2] }} {{ student[3] }}" readonly>
+            </div>
+
+            <div class="w3-margin-bottom font-color">
+                <label>Purpose</label>
+                <input class="w3-input w3-border w3-round" type="text" name="purpose" required>
+            </div>
+
+            <div class="w3-margin-bottom font-color">
+                <label>Lab</label>
+                <input class="w3-input w3-border w3-round" type="text" name="lab" required>
+            </div>
+
+            <div class="w3-margin-bottom font-color">
+                <label>Room</label>
+                <input class="w3-input w3-border w3-round" type="text" name="room" required>
+            </div>
+
+            <div class="w3-center">
+                <button type="submit" class="w3-button w3-margin w3-round" style="background-color: #FFDE91;">Sit-In</button>
+                <button type="button" class="w3-button w3-margin w3-round w3-deep-purple" onclick="hideForm()">Cancel</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function hideForm() {
+    document.getElementById('student-details').style.display = 'none';
+}
+</script>
+{% endblock %}

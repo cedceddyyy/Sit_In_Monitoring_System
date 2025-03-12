@@ -126,7 +126,7 @@
             <span class="material-icons">home</span> 
             <span class="text">Home</span>
         </a>
-        <a href="" class="{% if request.endpoint == 'search' %}active{% endif %}">
+        <a href="{{ url_for('search_student_page') }}" class="{% if request.endpoint == 'search_student_page' %}active{% endif %}">
             <span class="material-icons">search</span> 
             <span class="text">Search</span>
         </a>

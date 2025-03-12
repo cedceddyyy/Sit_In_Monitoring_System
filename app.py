@@ -287,5 +287,15 @@ def view_students():
     students = dbhelper.get_students()
     return render_template("students.html", pagetitle="View Students", students=students)
 
+@app.route('/search', methods=['GET', 'POST'])
+def search_student_page():
+    student = None
+    if request.method == 'POST':
+        idno = request.form['idno']
+        student = dbhelper.search_student_by_id(idno)
+        if not student:
+            flash('Student not found', 'danger')
+    return render_template('search.html', student=student, pagetitle="Search Student")
+
 if __name__ == "__main__":
     app.run(debug=True)
