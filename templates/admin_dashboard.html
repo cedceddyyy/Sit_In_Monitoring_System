@@ -13,7 +13,7 @@
         </div>
         <div class="w3-quarter">
             <div class="w3-card w3-padding w3-round color font-color w3-bar">
-                <h3 class="w3-bar-item">Total Reservations</h3>
+                <h3>Total Reservations</h3>
                 <p class="w3-right w3-margin" style="font-size: 24px;">{{ total_reservations }}</p>
             </div>
         </div>
@@ -52,12 +52,19 @@
                 </div>             
                 <h2>Posted Announcements</h2>
                 <hr>
-                {% for announcement in announcements %}
-                <div class="w3-card w3-padding w3-margin-bottom w3-round">
-                    <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
-                    <p>{{ announcement.announcement_detail }}</p>
+                <div id="admin-announcements-container">
+                    {% for announcement in announcements %}
+                    <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card">
+                        <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
+                        <p>{{ announcement.announcement_detail }}</p>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                <div class="w3-bar w3-center w3-padding w3-margin">
+                    <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round">&laquo; Previous</button>
+                    <span>Page: <span id="page_admin"></span></span>
+                    <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round">Next &raquo;</button>
+                </div>
             </div>
         </div>
     </div>
@@ -73,10 +80,10 @@ google.charts.setOnLoadCallback(drawChart);
 // Draw the chart and set the chart values
 function drawChart() {
     var data = google.visualization.arrayToDataTable([
-        ['Activity', 'Count'],
-        {% if activity_counts %}
-            {% for activity, count in activity_counts.items() %}
-                ['{{ activity }}', {{ count }}],
+        ['Purpose', 'Count'],
+        {% if purpose_counts %}
+            {% for purpose, count in purpose_counts.items() %}
+                ['{{ purpose }}', {{ count }}],
             {% endfor %}
         {% else %}
             ['No Data', 1],
@@ -84,7 +91,7 @@ function drawChart() {
     ]);
     
     var options = {
-        'title': 'Recent Activity Breakdown',
+        'title': 'Sit-In Purposes Breakdown',
         'chartArea': { width: '90%', height: '75%' },
         'legend': { position: 'bottom' },
         'responsive': true
@@ -97,6 +104,61 @@ function drawChart() {
         chart.draw(data, options);
     });
 }
+
+// Pagination for announcements
+var current_page_admin = 1;
+var records_per_page_admin = 8;
+
+function prevPageAdmin() {
+    if (current_page_admin > 1) {
+        current_page_admin--;
+        changePageAdmin(current_page_admin);
+    }
+}
+
+function nextPageAdmin() {
+    if (current_page_admin < numPagesAdmin()) {
+        current_page_admin++;
+        changePageAdmin(current_page_admin);
+    }
+}
+
+function changePageAdmin(page) {
+    var btn_next = document.getElementById("btn_next_admin");
+    var btn_prev = document.getElementById("btn_prev_admin");
+    var listing_table = document.getElementById("admin-announcements-container");
+    var page_span = document.getElementById("page_admin");
+
+    // Validate page
+    if (page < 1) page = 1;
+    if (page > numPagesAdmin()) page = numPagesAdmin();
+
+    [...listing_table.getElementsByClassName('announcement-card')].forEach((card, index) => {
+        card.style.display = (index >= (page - 1) * records_per_page_admin && index < page * records_per_page_admin) ? 'block' : 'none';
+    });
+
+    page_span.innerHTML = page;
+
+    if (page == 1) {
+        btn_prev.style.visibility = "hidden";
+    } else {
+        btn_prev.style.visibility = "visible";
+    }
+
+    if (page == numPagesAdmin()) {
+        btn_next.style.visibility = "hidden";
+    } else {
+        btn_next.style.visibility = "visible";
+    }
+}
+
+function numPagesAdmin() {
+    return Math.ceil(document.getElementsByClassName('announcement-card').length / records_per_page_admin);
+}
+
+window.onload = function() {
+    changePageAdmin(1);
+};
 </script>
 
 {% endblock %}

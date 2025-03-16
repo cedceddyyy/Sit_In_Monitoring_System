@@ -1,0 +1,47 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<div class="w3-container w3-padding w3-display-container font-color" style="height: 100vh;">
+    <form method="GET" action="{{ url_for('sit_in') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
+        <input class="w3-input w3-border w3-round w3-padding" type="text" name="search" placeholder="Search by ID or Purpose" style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;">
+        <button class="w3-button w3-deep-purple w3-round" type="submit" style="height: 46px; margin-left: 10px;">
+            <i class="material-icons">search</i>
+        </button>
+    </form>
+    <table class="w3-table w3-bordered w3-striped w3-margin-top">
+        <thead>
+            <tr>
+                <th>ID Number</th>
+                <th>Full Name</th>
+                <th>Purpose</th>
+                <th>Lab</th>
+                <th>Remaining Sessions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sit_in in sit_ins %}
+            <tr>
+                <td>{{ sit_in.idno }}</td>
+                <td>{{ sit_in.full_name }}</td>
+                <td>{{ sit_in.purpose }}</td>
+                <td>{{ sit_in.lab }}</td>
+                <td>{{ sit_in.remaining_session }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="w3-center w3-margin-top">
+        <ul class="w3-pagination" style="list-style-type: none; padding: 0;">
+            {% if page > 1 %}
+            <li><a href="{{ url_for('sit_in', page=page-1) }}" class="w3-button">&laquo;</a></li>
+            {% endif %}
+            {% for p in range(1, total_pages + 1) %}
+            <li><a href="{{ url_for('sit_in', page=p) }}" class="w3-button {% if p == page %}w3-deep-purple{% endif %}">{{ p }}</a></li>
+            {% endfor %}
+            {% if page < total_pages %}
+            <li><a href="{{ url_for('sit_in', page=page+1) }}" class="w3-button">&raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -78,6 +78,9 @@ def login():
 
             elif user_type == "user":
                 session["user"] = username
+                user_info = dbhelper.get_user_info(username)
+                if user_info:
+                    dbhelper.update_login_time(user_info[0])  # Update login time using idno
                 flash("Login Successful!", "success")
                 return redirect(url_for("dashboard"))  # Redirect regular user
 
@@ -176,7 +179,14 @@ def history():
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
     
-    return render_template("history.html", pagetitle="Sit-in History")
+    # Query the sit_in table to get the records
+    user_info = dbhelper.get_user_info(session["user"])
+    if user_info:
+        sit_in_records = dbhelper.get_sit_in_history(user_info[0])
+    else:
+        sit_in_records = []
+    
+    return render_template("history.html", pagetitle="Sit-in History", sit_in_records=sit_in_records)
 
 @app.route("/reservation")
 def reservation():
@@ -263,8 +273,12 @@ def edit():
 
 @app.route("/logout")
 def logout():
-    session.pop("user", None)
-    flash("You have been logged out!", "info")
+    if "user" in session:
+        user_info = dbhelper.get_user_info(session["user"])
+        if user_info:
+            dbhelper.update_logout_time(user_info[0])  # Update logout time and status using idno
+        session.pop("user", None)
+        flash("You have been logged out!", "info")
     return redirect(url_for('login'))
 
 @app.route("/admin_dashboard")
@@ -276,7 +290,8 @@ def admin_dashboard():
     total_students = dbhelper.total_students()
     total_feedback = dbhelper.total_feedback()
     announcements = dbhelper.get_announcements()
-    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback)
+    purpose_counts = dbhelper.get_purpose_counts()  # Add this line
+    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts)  # Modify this line
 
 @app.route("/view_stundets")
 def view_students():
@@ -296,6 +311,58 @@ def search_student_page():
         if not student:
             flash('Student not found', 'danger')
     return render_template('search.html', student=student, pagetitle="Search Student")
+
+@app.route('/submit_sit_in', methods=['POST'])
+def submit_sit_in():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    idno = request.form['idno']
+    purpose = request.form['purpose']
+    lab = request.form['lab']
+
+    if dbhelper.insert_sit_in(idno, purpose, lab):  
+        dbhelper.decrement_session(idno)
+        dbhelper.update_status_to_active(idno)  # Update status to active
+        flash("Sit-In recorded successfully!", "success")
+    else:
+        flash("Failed to record Sit-In. Try again.", "danger")
+
+    return redirect(url_for('search_student_page'))
+
+@app.route('/sit_in', methods=['GET'])
+def sit_in():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    search = request.args.get('search', '')
+    page = int(request.args.get('page', 1))
+    per_page = 10
+
+    sit_ins, total_pages = dbhelper.get_sit_ins(search, page, per_page)
+
+    return render_template('sit_in.html', sit_ins=sit_ins, page=page, total_pages=total_pages, pagetitle="Current Sit-in")
+
+@app.route("/view_sit_in")
+def view_sit_in():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    sit_in_records = dbhelper.get_all_sit_in_records()
+    return render_template("view_sit_in.html", pagetitle="View Sit-in Records", sit_in_records=sit_in_records)
+
+@app.route('/reset_sessions', methods=['POST'])
+def reset_sessions():
+    if "user" not in session:
+        return {"success": False, "message": "You need to log in first!"}
+
+    if dbhelper.reset_all_sessions():
+        return {"success": True}
+    else:
+        return {"success": False, "message": "Failed to reset sessions."}
 
 if __name__ == "__main__":
     app.run(debug=True)

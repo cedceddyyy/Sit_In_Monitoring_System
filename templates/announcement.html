@@ -2,13 +2,75 @@
 
 {% block content %}
 <div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
-  {% for announcement in announcements %}
-  <div class="w3-card w3-padding w3-margin-bottom w3-round">
-      <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
-      <p>{{ announcement.announcement_detail }}</p>
+  <div id="announcements-container">
+    {% for announcement in announcements %}
+    <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card">
+        <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
+        <p>{{ announcement.announcement_detail }}</p>
+    </div>
+    {% endfor %}
   </div>
-  {% endfor %}
+  <div class="w3-bar w3-center w3-padding w3-margin">
+    <button onclick="prevPage()" id="btn_prev" class="w3-button w3-border w3-round">&laquo; Previous</button>
+    <span>Page: <span id="page"></span></span>
+    <button onclick="nextPage()" id="btn_next" class="w3-button w3-border w3-round">Next &raquo;</button>
+  </div>
 </div>
 
+<script>
+  var current_page = 1;
+  var records_per_page = 8;
+
+  function prevPage() {
+    if (current_page > 1) {
+      current_page--;
+      changePage(current_page);
+    }
+  }
+
+  function nextPage() {
+    if (current_page < numPages()) {
+      current_page++;
+      changePage(current_page);
+    }
+  }
+
+  function changePage(page) {
+    var btn_next = document.getElementById("btn_next");
+    var btn_prev = document.getElementById("btn_prev");
+    var listing_table = document.getElementById("announcements-container");
+    var page_span = document.getElementById("page");
+
+    // Validate page
+    if (page < 1) page = 1;
+    if (page > numPages()) page = numPages();
+
+    [...listing_table.getElementsByClassName('announcement-card')].forEach((card, index) => {
+      card.style.display = (index >= (page - 1) * records_per_page && index < page * records_per_page) ? 'block' : 'none';
+    });
+
+    page_span.innerHTML = page;
+
+    if (page == 1) {
+      btn_prev.style.visibility = "hidden";
+    } else {
+      btn_prev.style.visibility = "visible";
+    }
+
+    if (page == numPages()) {
+      btn_next.style.visibility = "hidden";
+    } else {
+      btn_next.style.visibility = "visible";
+    }
+  }
+
+  function numPages() {
+    return Math.ceil(document.getElementsByClassName('announcement-card').length / records_per_page);
+  }
+
+  window.onload = function() {
+    changePage(1);
+  };
+</script>
 
 {% endblock %}

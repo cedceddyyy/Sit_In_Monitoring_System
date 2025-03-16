@@ -13,10 +13,11 @@
         <div class="w3-container w3-margin-bottom w3-round font-color color">
             <h3>Sit-In Form</h3>
         </div>
-        <form class="w3-container">
+        <form class="w3-container" method="POST" action="{{ url_for('submit_sit_in') }}">
             <div class="w3-margin-bottom font-color">
                 <label>ID Number</label>
                 <input class="w3-input w3-border w3-round" type="text" value="{{ student[0] }}" readonly>
+                <input type="hidden" name="idno" value="{{ student[0] }}">
             </div>
 
             <div class="w3-margin-bottom font-color">
@@ -32,11 +33,6 @@
             <div class="w3-margin-bottom font-color">
                 <label>Lab</label>
                 <input class="w3-input w3-border w3-round" type="text" name="lab" required>
-            </div>
-
-            <div class="w3-margin-bottom font-color">
-                <label>Room</label>
-                <input class="w3-input w3-border w3-round" type="text" name="room" required>
             </div>
 
             <div class="w3-center">

@@ -23,36 +23,14 @@
             </tr>
         </thead>
         <tbody id="tableBody">
+            {% for record in sit_in_records %}
             <tr>
-                <td>March 5, 2025</td>
-                <td>9:00 AM</td>
-                <td>10:30 AM</td>
-                <td>Room 301</td>
+                <td>{{ record.date }}</td>
+                <td>{{ record.login_time }}</td>
+                <td>{{ record.logout_time }}</td>
+                <td>{{ record.lab }}</td>
             </tr>
-            <tr>
-                <td>March 3, 2025</td>
-                <td>1:00 PM</td>
-                <td>2:30 PM</td>
-                <td>Room 204</td>
-            </tr>
-            <tr>
-                <td>March 1, 2025</td>
-                <td>10:00 AM</td>
-                <td>11:30 AM</td>
-                <td>Room 105</td>
-            </tr>
-            <tr>
-                <td>February 25, 2025</td>
-                <td>8:00 AM</td>
-                <td>9:30 AM</td>
-                <td>Room 102</td>
-            </tr>
-            <tr>
-                <td>February 23, 2025</td>
-                <td>12:00 PM</td>
-                <td>1:30 PM</td>
-                <td>Room 301</td>
-            </tr>
+            {% endfor %}
         </tbody>
     </table>
 

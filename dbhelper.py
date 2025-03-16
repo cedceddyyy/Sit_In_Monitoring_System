@@ -19,7 +19,8 @@ def create_database():
                       year_level TINYINT NOT NULL,
                       email VARCHAR(50) NOT NULL,
                       username INTEGER NOT NULL,
-                      password TEXT NOT NULL 
+                      password TEXT NOT NULL,
+                      session INTEGER DEFAULT 30
                  )''')
 
     conn.execute('''CREATE TABLE IF NOT EXISTS admin (
@@ -46,6 +47,19 @@ def create_database():
                       date_submitted text default current_date,
                       message TEXT NOT NULL,    
                       FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
+                 )''')
+
+    conn.execute('''CREATE TABLE IF NOT EXISTS sit_in (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      idno INTEGER NOT NULL,
+                      purpose TEXT NOT NULL,
+                      lab TEXT NOT NULL,
+                      remaining_session INTEGER NOT NULL,
+                      login_time DATETIME DEFAULT NULL,
+                      logout_time DATETIME NULL,
+                      status TEXT DEFAULT 'active',
+                      FOREIGN KEY (idno) REFERENCES users(idno) ON DELETE CASCADE,
+                      FOREIGN KEY (remaining_session) REFERENCES users(session)
                  )''')
 
     conn.commit()
@@ -98,11 +112,11 @@ def get_students():
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, username FROM users")
+    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, session FROM users")
     users = cursor.fetchall()
     conn.close()
 
-    return [{"idno": row[0], "lastname": row[1], "firstname": row[2], "middlename": row[3], "course": row[4], "year_level": row[5], "email": row[6]} for row in users]
+    return [{"idno": row[0], "lastname": row[1], "firstname": row[2], "middlename": row[3], "course": row[4], "year_level": row[5], "email": row[6], "session": row[7]} for row in users]
 
 def update_user_info(username, lastname, firstname, middlename, course, year_level, email):
     conn = connect_db()
@@ -213,6 +227,128 @@ def search_student_by_id(idno):
     conn.close()
 
     return student
+
+def insert_sit_in(idno, purpose, lab):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("INSERT INTO sit_in (idno, purpose, lab, remaining_session) VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?))", 
+                       (idno, purpose, lab, idno))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def update_logout_time(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE sit_in SET logout_time = CURRENT_TIMESTAMP, status = 'inactive' WHERE idno = ? AND logout_time IS NULL", (idno,))
+    conn.commit()
+    conn.close()
+
+def decrement_session(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE users SET session = session - 1 WHERE idno = ?", (idno,))
+    cursor.execute("UPDATE sit_in SET remaining_session = (SELECT session FROM users WHERE idno = ?) WHERE idno = ? AND status = 'active'", (idno, idno))
+    conn.commit()
+    conn.close()
+
+def update_login_time(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE sit_in SET login_time = CURRENT_TIMESTAMP WHERE idno = ? AND logout_time IS NULL", (idno,))
+    conn.commit()
+    conn.close()
+
+def update_status_to_active(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE sit_in SET status = 'active' WHERE idno = ? AND status != 'active'", (idno,))
+    conn.commit()
+    conn.close()
+
+def get_sit_ins(search, page, per_page):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    offset = (page - 1) * per_page
+    search_query = f"%{search}%"
+
+    cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, sit_in.purpose, sit_in.lab, sit_in.remaining_session, sit_in.login_time
+                      FROM sit_in
+                      JOIN users ON  sit_in.idno = users.idno
+                      WHERE (sit_in.idno LIKE ? OR sit_in.purpose LIKE ?) AND sit_in.status = 'active'
+                      ORDER BY sit_in.login_time DESC
+                      LIMIT ? OFFSET ?''', (search_query, search_query, per_page, offset))
+    sit_ins = cursor.fetchall()
+
+    cursor.execute('''SELECT COUNT(*)
+                      FROM sit_in
+                      WHERE (idno LIKE ? OR purpose LIKE ?) AND status = 'active' ''', (search_query, search_query))
+    total_records = cursor.fetchone()[0]
+    total_pages = (total_records + per_page - 1) // per_page
+
+    conn.close()
+
+    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], "remaining_session": row[4], "login_time": row[5]} for row in sit_ins], total_pages
+
+def get_sit_in_history(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute('''SELECT date(login_time) as date, login_time, logout_time, lab 
+                      FROM sit_in 
+                      WHERE idno = ? 
+                      ORDER BY login_time DESC''', (idno,))
+    history = cursor.fetchall()
+    conn.close()
+
+    return [{"date": row[0], "login_time": row[1], "logout_time": row[2], "lab": row[3]} for row in history]
+
+def get_all_sit_in_records():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
+                      sit_in.purpose, sit_in.lab, sit_in.login_time, sit_in.logout_time, date(sit_in.login_time) as date
+                      FROM sit_in
+                      JOIN users ON sit_in.idno = users.idno
+                      ORDER BY sit_in.login_time DESC''')
+    records = cursor.fetchall()
+    conn.close()
+
+    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], "login_time": row[4], "logout_time": row[5], "date": row[6]} for row in records]
+
+def reset_all_sessions():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("UPDATE users SET session = 30")
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def get_purpose_counts():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT purpose, COUNT(*) FROM sit_in GROUP BY purpose")
+    purpose_counts = cursor.fetchall()
+    conn.close()
+
+    return {row[0]: row[1] for row in purpose_counts}
 
 if __name__ == "__main__":
     create_database()
