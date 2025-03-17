@@ -33,15 +33,15 @@
 
     <div class="w3-row-padding w3-margin-top font-color">
     <!--Chart Section-->
-        <div class="w3-half">
-            <div class="w3-card w3-padding">
-                <div id="piechart" style="width: 100%; height: 484px;"></div>
+        <div class="w3-half w3-card w3-round" style=" height: 600px;">
+            <div class="w3-padding">
+                <div id="piechart" style="width: 500px; height: 550px;"></div>
             </div>
         </div>
 
         <!-- Announcement Section -->
         <div class="w3-half">
-            <div class="w3-card w3-padding" style="overflow-y: auto; max-height: 500px;">
+            <div class="w3-card w3-padding" style="overflow-y: auto; max-height: 600px;">
                 <div class="w3-margin-bottom" >
                     <form method="POST" action="{{ url_for('post_announcement') }}">
                         <label for="new_announcement" class="w3-text-grey">New Announcement</label>
@@ -52,6 +52,7 @@
                 </div>             
                 <h2>Posted Announcements</h2>
                 <hr>
+<<<<<<< HEAD
                 <div id="admin-announcements-container">
                     {% for announcement in announcements %}
                     <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card">
@@ -64,6 +65,12 @@
                     <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round">&laquo; Previous</button>
                     <span>Page: <span id="page_admin"></span></span>
                     <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round">Next &raquo;</button>
+=======
+                {% for announcement in announcements %}
+                <div class="w3-card w3-padding w3-margin-bottom w3-round">
+                    <p><strong>CCS Admin | {{ announcement.date_created }} {{ announcement.announcement_id }}</strong></p>
+                    <p>{{ announcement.announcement_detail }}</p>
+>>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
                 </div>
             </div>
         </div>
@@ -91,8 +98,13 @@ function drawChart() {
     ]);
     
     var options = {
+<<<<<<< HEAD
         'title': 'Sit-In Purposes Breakdown',
         'chartArea': { width: '90%', height: '75%' },
+=======
+        'title': 'Recent Activity Breakdown',
+        'chartArea': { width: 'auto', height: '75%' },
+>>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
         'legend': { position: 'bottom' },
         'responsive': true
     };

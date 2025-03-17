@@ -13,33 +13,49 @@
         <div class="w3-container w3-margin-bottom w3-round font-color color">
             <h3>Sit-In Form</h3>
         </div>
+<<<<<<< HEAD
         <form class="w3-container" method="POST" action="{{ url_for('submit_sit_in') }}">
             <div class="w3-margin-bottom font-color">
                 <label>ID Number</label>
                 <input class="w3-input w3-border w3-round" type="text" value="{{ student[0] }}" readonly>
                 <input type="hidden" name="idno" value="{{ student[0] }}">
+=======
+        <form method="POST" action="{{ url_for('insert_sit_in') }}" class="w3-container">
+            <div class="w3-margin-bottom font-color">
+                <label>ID Number</label>
+                <input class="w3-input w3-border w3-round" type="text" name="idno" value="{{ student[0] }}" readonly>
+>>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
             </div>
-
+        
             <div class="w3-margin-bottom font-color">
                 <label>Full Name</label>
                 <input class="w3-input w3-border w3-round" type="text" value="{{ student[1] }} {{ student[2] }} {{ student[3] }}" readonly>
             </div>
-
+        
             <div class="w3-margin-bottom font-color">
                 <label>Purpose</label>
                 <input class="w3-input w3-border w3-round" type="text" name="purpose" required>
             </div>
-
+        
             <div class="w3-margin-bottom font-color">
                 <label>Lab</label>
                 <input class="w3-input w3-border w3-round" type="text" name="lab" required>
             </div>
+<<<<<<< HEAD
 
+=======
+        
+            <div class="w3-margin-bottom font-color">
+                <label>Session</label>
+                <input class="w3-input w3-border w3-round" type="text" name="room" value="30" required>
+            </div>
+        
+>>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
             <div class="w3-center">
                 <button type="submit" class="w3-button w3-margin w3-round" style="background-color: #FFDE91;">Sit-In</button>
                 <button type="button" class="w3-button w3-margin w3-round w3-deep-purple" onclick="hideForm()">Cancel</button>
             </div>
-        </form>
+        </form>        
     </div>
     {% endif %}
 </div>
