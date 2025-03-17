@@ -5,8 +5,8 @@
   <div id="announcements-container">
     {% for announcement in announcements %}
     <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card">
-        <p><strong>CCS Admin | {{ announcement.date_created }}</strong></p>
-        <p>{{ announcement.announcement_detail }}</p>
+        <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
+        <p>{{ announcement[1] }}</p>
     </div>
     {% endfor %}
   </div>

@@ -33,7 +33,7 @@ def create_database():
                  )''')
     
     conn.execute('''CREATE TABLE IF NOT EXISTS announcement (
-                      announcement_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
                       announcement_detail TEXT NOT NULL,
                       date_created DATETIME DEFAULT CURRENT_date,
                       admin_id INTEGER NOT NULL,
@@ -49,13 +49,6 @@ def create_database():
                       FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
                  )''')
     
-    conn.execute('''CREATE TABLE IF NOT EXISTS Sit_in (
-                      Sit_in_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      student_id INTEGER NOT NULL,
-                      purpose varchar(100),
-                      lab varchar(100),  
-                      FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
-                 )''')
 
     conn.execute('''CREATE TABLE IF NOT EXISTS sit_in (
                       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -174,12 +167,11 @@ def get_admin_id(username):
 def get_announcements():
     conn = connect_db()
     cursor = conn.cursor()
-
-    cursor.execute("SELECT announcement_id, announcement_detail, date_created FROM announcement ORDER BY announcement_id desc")
+    
+    cursor.execute("SELECT id, announcement_detail, date_created FROM announcement ORDER BY date_created desc")
     announcements = cursor.fetchall()
     conn.close()
-
-    return [{"announcement.id": row[0], "announcement_detail": row[1], "date_created": row[2]} for row in announcements]
+    return announcements
 
 def total_students():
     conn = connect_db()

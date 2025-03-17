@@ -1,7 +1,6 @@
 {% extends 'admin_base.html' %}
 
 {% block content %}
-<<<<<<< HEAD
 <div class="w3-container w3-padding w3-display-container font-color" style="height: 100vh;">
     <form method="GET" action="{{ url_for('sit_in') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
         <input class="w3-input w3-border w3-round w3-padding" type="text" name="search" placeholder="Search by ID or Purpose" style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;">
@@ -46,92 +45,3 @@
     </div>
 </div>
 {% endblock %}
-=======
-<div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
-  <table class="w3-table w3-striped w3-bordered w3-hoverable">
-    <thead>
-      <tr class="w3-dark-grey">
-        <th>ID Number</th>
-        <th>PURPOSE</th>
-        <th>LAB</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for sit_in in sit_ins %}
-      <tr>
-        <td>{{ sit_in.student_id }}</td>
-        <td>{{ sit_in.purpose }}</td>
-        <td>{{ sit_in.lab }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-<!-- Pagination -->
-<div class="w3-bar w3-center w3-padding w3-margin">
-    <a href="#" class="w3-button" id="prevPage">«</a>
-    <span id="paginationNumbers"></span>
-    <a href="#" class="w3-button" id="nextPage">»</a>
-</div>
-</div>
-
-<!-- JavaScript to handle pagination -->
-<script>
-let currentPage = 1;
-const rowsPerPage = 10; // Fixed at 10 feedbacks per page
-const rows = document.querySelectorAll('#tableBody tr');
-const totalRows = rows.length;
-const totalPages = Math.ceil(totalRows / rowsPerPage);
-const paginationNumbers = document.getElementById('paginationNumbers');
-
-function updateTable() {
-    let startRow = (currentPage - 1) * rowsPerPage;
-    let endRow = startRow + rowsPerPage;
-
-    rows.forEach((row, index) => {
-        row.style.display = (index >= startRow && index < endRow) ? '' : 'none';
-    });
-
-    updatePagination();
-}
-
-function updatePagination() {
-    paginationNumbers.innerHTML = '';
-    for (let i = 1; i <= totalPages; i++) {
-        let pageButton = document.createElement('a');
-        pageButton.href = "#";
-        pageButton.classList.add("w3-button");
-        if (i === currentPage) pageButton.classList.add("w3-deep-purple");
-        pageButton.textContent = i;
-        pageButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            currentPage = i;
-            updateTable();
-        });
-        paginationNumbers.appendChild(pageButton);
-    }
-
-    document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
-    document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
-}
-
-document.getElementById('prevPage').addEventListener('click', function(e) {
-    e.preventDefault();
-    if (currentPage > 1) {
-        currentPage--;
-        updateTable();
-    }
-});
-
-document.getElementById('nextPage').addEventListener('click', function(e) {
-    e.preventDefault();
-    if (currentPage < totalPages) {
-        currentPage++;
-        updateTable();
-    }
-});
-
-updateTable();
-</script> 
-{% endblock %}
->>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d

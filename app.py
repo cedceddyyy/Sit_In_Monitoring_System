@@ -108,7 +108,7 @@ def dashboard():
             "email": user_info[6],
             "profile_image": user_info[7] if len(user_info) > 7 else "default.png"
         }
-        return render_template("dashboard.html", pagetitle="Dashboard" , user=user_data, announcements=announcements)
+        return render_template("dashboard.html", pagetitle="Dashboard", user=user_data, announcements=announcements)
 
     flash("User not found!", "danger")
     return redirect(url_for('dashboard'))
@@ -290,10 +290,10 @@ def admin_dashboard():
     total_students = dbhelper.total_students()
     total_feedback = dbhelper.total_feedback()
     announcements = dbhelper.get_announcements()
-    purpose_counts = dbhelper.get_purpose_counts()  # Add this line
-    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts)  # Modify this line
+    purpose_counts = dbhelper.get_purpose_counts()
+    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts)
 
-@app.route("/view_stundets")
+@app.route("/view_students")
 def view_students():
     if "user" not in session:
         flash("You need to log in first!", "danger")
@@ -308,9 +308,8 @@ def view_sit_in():
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
 
-    sit_ins = dbhelper.get_sit_in()
-    return render_template("sit_in.html", pagetitle="Sit-In", sit_ins=sit_ins)
-
+    sit_in_records = dbhelper.get_all_sit_in_records()
+    return render_template("view_sit_in.html", pagetitle="View Sit-in Records", sit_in_records=sit_in_records)
 
 @app.route('/search', methods=['GET', 'POST'])
 def search_student_page():
@@ -322,7 +321,6 @@ def search_student_page():
             flash('Student not found', 'danger')
     return render_template('search.html', student=student, pagetitle="Search Student")
 
-<<<<<<< HEAD
 @app.route('/submit_sit_in', methods=['POST'])
 def submit_sit_in():
     if "user" not in session:
@@ -356,15 +354,6 @@ def sit_in():
 
     return render_template('sit_in.html', sit_ins=sit_ins, page=page, total_pages=total_pages, pagetitle="Current Sit-in")
 
-@app.route("/view_sit_in")
-def view_sit_in():
-    if "user" not in session:
-        flash("You need to log in first!", "danger")
-        return redirect(url_for("login"))
-
-    sit_in_records = dbhelper.get_all_sit_in_records()
-    return render_template("view_sit_in.html", pagetitle="View Sit-in Records", sit_in_records=sit_in_records)
-
 @app.route('/reset_sessions', methods=['POST'])
 def reset_sessions():
     if "user" not in session:
@@ -395,7 +384,6 @@ def insert_sit_in():
             flash('Failed to add Sit-In entry.', 'danger')
         
         return redirect(url_for('search_student_page'))
->>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
 
 if __name__ == "__main__":
     app.run(debug=True)
