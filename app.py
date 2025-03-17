@@ -374,7 +374,7 @@ def reset_sessions():
         return {"success": True}
     else:
         return {"success": False, "message": "Failed to reset sessions."}
-=======
+
 @app.route('/insert_sit_in', methods=['POST'])
 def insert_sit_in():
     if "user" not in session:

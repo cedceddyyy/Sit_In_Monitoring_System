@@ -52,7 +52,6 @@
                 </div>             
                 <h2>Posted Announcements</h2>
                 <hr>
-<<<<<<< HEAD
                 <div id="admin-announcements-container">
                     {% for announcement in announcements %}
                     <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card">
@@ -65,12 +64,6 @@
                     <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round">&laquo; Previous</button>
                     <span>Page: <span id="page_admin"></span></span>
                     <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round">Next &raquo;</button>
-=======
-                {% for announcement in announcements %}
-                <div class="w3-card w3-padding w3-margin-bottom w3-round">
-                    <p><strong>CCS Admin | {{ announcement.date_created }} {{ announcement.announcement_id }}</strong></p>
-                    <p>{{ announcement.announcement_detail }}</p>
->>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
                 </div>
             </div>
         </div>
@@ -98,13 +91,8 @@ function drawChart() {
     ]);
     
     var options = {
-<<<<<<< HEAD
         'title': 'Sit-In Purposes Breakdown',
         'chartArea': { width: '90%', height: '75%' },
-=======
-        'title': 'Recent Activity Breakdown',
-        'chartArea': { width: 'auto', height: '75%' },
->>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
         'legend': { position: 'bottom' },
         'responsive': true
     };

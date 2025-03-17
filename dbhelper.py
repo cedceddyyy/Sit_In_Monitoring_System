@@ -236,22 +236,13 @@ def search_student_by_id(idno):
 
     return student
 
-<<<<<<< HEAD
 def insert_sit_in(idno, purpose, lab):
-=======
-def insert_sit_in(student_id, purpose, lab):
->>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
     conn = connect_db()
     cursor = conn.cursor()
 
     try:
-<<<<<<< HEAD
         cursor.execute("INSERT INTO sit_in (idno, purpose, lab, remaining_session) VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?))", 
                        (idno, purpose, lab, idno))
-=======
-        cursor.execute("INSERT INTO Sit_in (student_id, purpose, lab) VALUES (?, ?, ?)", 
-                       (student_id, purpose, lab))
->>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
         conn.commit()
         return True
     except sqlite3.Error:
@@ -259,7 +250,6 @@ def insert_sit_in(student_id, purpose, lab):
     finally:
         conn.close()
 
-<<<<<<< HEAD
 def update_logout_time(idno):
     conn = connect_db()
     cursor = conn.cursor()
@@ -367,18 +357,6 @@ def get_purpose_counts():
     conn.close()
 
     return {row[0]: row[1] for row in purpose_counts}
-=======
-def get_sit_in():
-    conn = connect_db()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT student_id, purpose, lab from Sit_in")
-    sit_in_details = cursor.fetchall()
-    conn.close()
-
-    # Convert tuples to dictionaries
-    return [{"student_id": row[0], "purpose": row[1], "lab": row[2]} for row in sit_in_details]
->>>>>>> 5b3a09f58799cb5b68b1cf988cae20ae613bc12d
 
 if __name__ == "__main__":
     create_database()
