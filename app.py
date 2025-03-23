@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, session, flash, url
 import dbhelper
 import os
 from werkzeug.utils import secure_filename
+from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 app.secret_key = "Cedric@#123"
@@ -11,6 +13,12 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def format_datetime(dt_str):
+    local_tz = pytz.timezone(dbhelper.TIMEZONE)
+    dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+    dt = dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 @app.route("/upload_profile", methods=["POST"])
 def upload_profile():
@@ -80,9 +88,8 @@ def login():
                 session["user"] = username
                 user_info = dbhelper.get_user_info(username)
                 if user_info:
-                    dbhelper.update_login_time(user_info[0])  # Update login time using idno
-                flash("Login Successful!", "success")
-                return redirect(url_for("dashboard"))  # Redirect regular user
+                    flash("Login Successful!", "success")
+                    return redirect(url_for("dashboard"))  
 
             else:
                 flash("Invalid credentials! Try again.", "danger")
@@ -111,7 +118,7 @@ def dashboard():
         return render_template("dashboard.html", pagetitle="Dashboard", user=user_data, announcements=announcements)
 
     flash("User not found!", "danger")
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 @app.route("/profile")
 def profile():
@@ -162,6 +169,45 @@ def post_announcement():
         flash("Announcement posted successfully!", "success")
     else:
         flash("Failed to post announcement. Try again.", "danger")
+
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/activate_announcement/<int:announcement_id>", methods=["POST"])
+def activate_announcement(announcement_id):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    if dbhelper.update_announcement_status(announcement_id, "active"):
+        flash("Announcement activated successfully!", "success")
+    else:
+        flash("Failed to activate announcement. Try again.", "danger")
+
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/deactivate_announcement/<int:announcement_id>", methods=["POST"])
+def deactivate_announcement(announcement_id):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    if dbhelper.update_announcement_status(announcement_id, "inactive"):
+        flash("Announcement deactivated successfully!", "success")
+    else:
+        flash("Failed to deactivate announcement. Try again.", "danger")
+
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/delete_announcement/<int:announcement_id>", methods=["POST"])
+def delete_announcement(announcement_id):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    if dbhelper.delete_announcement(announcement_id):
+        flash("Announcement deleted successfully!", "success")
+    else:
+        flash("Failed to delete announcement. Try again.", "danger")
 
     return redirect(url_for("admin_dashboard"))
 
@@ -275,8 +321,6 @@ def edit():
 def logout():
     if "user" in session:
         user_info = dbhelper.get_user_info(session["user"])
-        if user_info:
-            dbhelper.update_logout_time(user_info[0])  # Update logout time and status using idno
         session.pop("user", None)
         flash("You have been logged out!", "info")
     return redirect(url_for('login'))
@@ -289,18 +333,25 @@ def admin_dashboard():
 
     total_students = dbhelper.total_students()
     total_feedback = dbhelper.total_feedback()
-    announcements = dbhelper.get_announcements()
+    total_sit_in = dbhelper.total_sit_in()
+    announcements = dbhelper.get_announcements(include_inactive=True)
     purpose_counts = dbhelper.get_purpose_counts()
-    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts)
+    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts, total_sit_in=total_sit_in)
 
-@app.route("/view_students")
+@app.route("/view_students", methods=['GET', 'POST'])
 def view_students():
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
 
     students = dbhelper.get_students()
-    return render_template("students.html", pagetitle="View Students", students=students)
+    student = None
+    if request.method == 'POST':
+        idno = request.form['idno']
+        student = dbhelper.search_student_by_id(idno)
+        if not student:
+            flash('Student not found', 'danger')
+    return render_template("students.html", pagetitle="View Students", students=students, student=student)
 
 @app.route("/view_sit_in")
 def view_sit_in():
@@ -308,18 +359,11 @@ def view_sit_in():
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
 
-    sit_in_records = dbhelper.get_all_sit_in_records()
-    return render_template("view_sit_in.html", pagetitle="View Sit-in Records", sit_in_records=sit_in_records)
-
-@app.route('/search', methods=['GET', 'POST'])
-def search_student_page():
-    student = None
-    if request.method == 'POST':
-        idno = request.form['idno']
-        student = dbhelper.search_student_by_id(idno)
-        if not student:
-            flash('Student not found', 'danger')
-    return render_template('search.html', student=student, pagetitle="Search Student")
+    search = request.args.get('search', '')
+    sit_in_records = dbhelper.get_all_sit_in_records(search)
+    purpose_counts = dbhelper.get_purpose_counts()
+    lab_counts = dbhelper.get_lab_counts()
+    return render_template("view_sit_in.html", pagetitle="View Sit-in Records", sit_in_records=sit_in_records, purpose_counts=purpose_counts, lab_counts=lab_counts)
 
 @app.route('/submit_sit_in', methods=['POST'])
 def submit_sit_in():
@@ -330,15 +374,16 @@ def submit_sit_in():
     idno = request.form['idno']
     purpose = request.form['purpose']
     lab = request.form['lab']
+    login_time = request.form['login_time']
 
-    if dbhelper.insert_sit_in(idno, purpose, lab):  
+    if dbhelper.insert_sit_in(idno, purpose, lab, login_time):  
         dbhelper.decrement_session(idno)
-        dbhelper.update_status_to_active(idno)  # Update status to active
+        dbhelper.update_status_to_active(idno) 
         flash("Sit-In recorded successfully!", "success")
     else:
         flash("Failed to record Sit-In. Try again.", "danger")
 
-    return redirect(url_for('search_student_page'))
+    return redirect(url_for('view_students'))
 
 @app.route('/sit_in', methods=['GET'])
 def sit_in():
@@ -384,6 +429,16 @@ def insert_sit_in():
             flash('Failed to add Sit-In entry.', 'danger')
         
         return redirect(url_for('search_student_page'))
+
+@app.route('/logout_sit_in/<int:idno>', methods=['POST'])
+def logout_sit_in(idno):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    dbhelper.update_logout_time(idno)
+    flash("User is logged out!", "success")
+    return redirect(url_for('sit_in'))
 
 if __name__ == "__main__":
     app.run(debug=True)
