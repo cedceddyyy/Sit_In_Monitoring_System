@@ -6,12 +6,66 @@
   <div class="w3-bar w3-margin-bottom">
     <label for="rowsPerPage" class="w3-text-deep-purple">Rows per page: </label>
     <select id="rowsPerPage" class="w3-select w3-border" style="max-width: 50px;">
-        <option value="3">3</option>
         <option value="5">5</option>
         <option value="10">10</option>
+        <option value="20">20</option>
     </select>
     <button id="resetSessions" class="w3-button color w3-round w3-right">Reset All Sessions</button> <!-- Moved button for resetting sessions -->
 </div>
+
+  <form method="POST" action="{{ url_for('view_students') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
+    <input class="w3-input w3-border w3-round w3-padding w3-margin-bottom" type="text" name="idno" placeholder="Enter Student ID" required style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;">
+    <button class="w3-button w3-deep-purple w3-round w3-margin-bottom" type="submit" style="height: 46px; margin-left: 10px;">
+        <i class="material-icons">search</i>
+    </button>
+  </form>
+
+  {% if student %}
+  <div id="sitInModal" class="w3-modal w3-round" style="display: block;">
+    <div class="w3-modal-content w3-card-4 w3-animate-top w3-round" style="max-width: 600px; margin: auto;">
+      <header class="w3-container w3-deep-purple w3-round">
+        <span onclick="document.getElementById('sitInModal').style.display='none'" class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
+        <h3>Sit-In Form</h3>
+      </header>
+      <form class="w3-container w3-margin-top" method="POST" action="{{ url_for('submit_sit_in') }}">
+          <div class="w3-margin-bottom font-color">
+              <label>ID Number</label>
+              <input class="w3-input w3-border w3-round" type="text" value="{{ student[0] }}" readonly>
+              <input type="hidden" name="idno" value="{{ student[0] }}">
+          </div>
+      
+          <div class="w3-margin-bottom font-color">
+              <label>Full Name</label>
+              <input class="w3-input w3-border w3-round" type="text" value="{{ student[1] }} {{ student[2] }} {{ student[3] }}" readonly>
+          </div>
+      
+          <div class="w3-margin-bottom font-color">
+              <label>Purpose</label>
+              <select class="w3-select w3-border w3-round" name="purpose" required>
+                  <option value="" disabled selected>Select a purpose</option>
+                  <option value="C#">C#</option>
+                  <option value="Python">Python</option>
+                  <option value="Java">Java</option>
+                  <option value="C++">C++</option>
+                  <option value="JavaScript">JavaScript</option>
+                  <option value="HTML">HTML</option>
+                  <option value="SQL">SQL</option>
+              </select>
+          </div>
+      
+          <div class="w3-margin-bottom font-color">
+              <label>Lab</label>
+              <input class="w3-input w3-border w3-round" type="text" name="lab" required>
+          </div>
+          <input type="hidden" name="login_time" id="login_time">
+          <div class="w3-center">
+              <button type="submit" class="w3-button w3-margin w3-round" style="background-color: #FFDE91;">Sit-In</button>
+              <button type="button" class="w3-button w3-margin w3-round w3-deep-purple" onclick="document.getElementById('sitInModal').style.display='none'">Cancel</button>
+          </div>
+      </form>        
+    </div>
+  </div>
+  {% endif %}
 
   <table class="w3-table w3-striped w3-bordered w3-hoverable">
     <thead>
@@ -56,7 +110,7 @@
 <!-- JavaScript to handle rows per page and pagination -->
 <script>
 let currentPage = 1; // Default page
-let rowsPerPage = 3; // Default rows per page
+let rowsPerPage = 5; // Default rows per page
 let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
 let totalRows = rows.length;
 
@@ -154,5 +208,11 @@ document.getElementById('resetSessions').addEventListener('click', function() {
 // Initial update on page load
 updateTable();
 
+function hideForm() {
+    document.getElementById('sitInModal').style.display = 'none';
+}
+
+// Set the current timestamp to the hidden login_time input field
+document.getElementById('login_time').value = new Date().toISOString();
 </script>
 {% endblock %}

@@ -1,6 +1,9 @@
 import sqlite3
+from datetime import datetime
+import pytz
 
 DB_NAME = "users.db"
+TIMEZONE = "Asia/Manila"
 
 def connect_db():
     return sqlite3.connect(DB_NAME)
@@ -35,8 +38,9 @@ def create_database():
     conn.execute('''CREATE TABLE IF NOT EXISTS announcement (
                       id INTEGER PRIMARY KEY AUTOINCREMENT,
                       announcement_detail TEXT NOT NULL,
-                      date_created DATETIME DEFAULT CURRENT_date,
+                      date_created DATETIME DEFAULT CURRENT_TIMESTAMP,
                       admin_id INTEGER NOT NULL,
+                      status TEXT DEFAULT 'active',
                       FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
                  )''')
     
@@ -44,7 +48,7 @@ def create_database():
                       feedback_id INTEGER PRIMARY KEY AUTOINCREMENT,
                       student_id INTEGER NOT NULL,
                       lab_number INTEGER NOT NULL,
-                      date_submitted text default current_date,
+                      date_submitted DATETIME DEFAULT CURRENT_TIMESTAMP,
                       message TEXT NOT NULL,    
                       FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
                  )''')
@@ -56,7 +60,7 @@ def create_database():
                       purpose TEXT NOT NULL,
                       lab TEXT NOT NULL,
                       remaining_session INTEGER NOT NULL,
-                      login_time DATETIME DEFAULT NULL,
+                      login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
                       logout_time DATETIME NULL,
                       status TEXT DEFAULT 'active',
                       FOREIGN KEY (idno) REFERENCES users(idno) ON DELETE CASCADE,
@@ -164,14 +168,24 @@ def get_admin_id(username):
 
     return admin_id[0] if admin_id else None
 
-def get_announcements():
+def format_datetime(dt_str):
+    local_tz = pytz.timezone(TIMEZONE)
+    dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+    dt = dt.astimezone(local_tz)
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+def get_announcements(include_inactive=False):
     conn = connect_db()
     cursor = conn.cursor()
     
-    cursor.execute("SELECT id, announcement_detail, date_created FROM announcement ORDER BY date_created desc")
+    if include_inactive:
+        cursor.execute("SELECT id, announcement_detail, date_created, status FROM announcement ORDER BY date_created desc")
+    else:
+        cursor.execute("SELECT id, announcement_detail, date_created FROM announcement WHERE status = 'active' ORDER BY date_created desc")
+    
     announcements = cursor.fetchall()
     conn.close()
-    return announcements
+    return [(row[0], row[1], format_datetime(row[2]), row[3] if include_inactive else None) for row in announcements]
 
 def total_students():
     conn = connect_db()
@@ -228,13 +242,13 @@ def search_student_by_id(idno):
 
     return student
 
-def insert_sit_in(idno, purpose, lab):
+def insert_sit_in(idno, purpose, lab, login_time):
     conn = connect_db()
     cursor = conn.cursor()
 
     try:
-        cursor.execute("INSERT INTO sit_in (idno, purpose, lab, remaining_session) VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?))", 
-                       (idno, purpose, lab, idno))
+        cursor.execute("INSERT INTO sit_in (idno, purpose, lab, remaining_session, login_time) VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?), ?)", 
+                       (idno, purpose, lab, idno, login_time))
         conn.commit()
         return True
     except sqlite3.Error:
@@ -313,19 +327,21 @@ def get_sit_in_history(idno):
 
     return [{"date": row[0], "login_time": row[1], "logout_time": row[2], "lab": row[3]} for row in history]
 
-def get_all_sit_in_records():
+def get_all_sit_in_records(search=''):
     conn = connect_db()
     cursor = conn.cursor()
 
+    search_query = f"%{search}%"
     cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
                       sit_in.purpose, sit_in.lab, sit_in.login_time, sit_in.logout_time, date(sit_in.login_time) as date
                       FROM sit_in
                       JOIN users ON sit_in.idno = users.idno
-                      ORDER BY sit_in.login_time DESC''')
+                      WHERE sit_in.idno LIKE ? OR sit_in.purpose LIKE ? OR users.lastname LIKE ? OR users.firstname LIKE ?
+                      ORDER BY sit_in.login_time DESC''', (search_query, search_query, search_query, search_query))
     records = cursor.fetchall()
     conn.close()
 
-    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], "login_time": row[4], "logout_time": row[5], "date": row[6]} for row in records]
+    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], "login_time": format_datetime(row[4]), "logout_time": format_datetime(row[5]) if row[5] else None, "date": row[6]} for row in records]
 
 def reset_all_sessions():
     conn = connect_db()
@@ -349,6 +365,52 @@ def get_purpose_counts():
     conn.close()
 
     return {row[0]: row[1] for row in purpose_counts}
+
+def get_lab_counts():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT lab, COUNT(*) FROM sit_in GROUP BY lab")
+    lab_counts = cursor.fetchall()
+    conn.close()
+
+    return {row[0]: row[1] for row in lab_counts}
+
+def total_sit_in():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM sit_in")
+    total = cursor.fetchone()[0]
+    conn.close()
+
+    return total
+
+def update_announcement_status(announcement_id, status):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("UPDATE announcement SET status = ? WHERE id = ?", (status, announcement_id))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def delete_announcement(announcement_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM announcement WHERE id = ?", (announcement_id,))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     create_database()

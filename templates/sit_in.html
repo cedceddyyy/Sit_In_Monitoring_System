@@ -16,18 +16,30 @@
                 <th>Purpose</th>
                 <th>Lab</th>
                 <th>Remaining Sessions</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            {% for sit_in in sit_ins %}
-            <tr>
-                <td>{{ sit_in.idno }}</td>
-                <td>{{ sit_in.full_name }}</td>
-                <td>{{ sit_in.purpose }}</td>
-                <td>{{ sit_in.lab }}</td>
-                <td>{{ sit_in.remaining_session }}</td>
-            </tr>
-            {% endfor %}
+            {% if sit_ins %}
+                {% for sit_in in sit_ins %}
+                <tr>
+                    <td>{{ sit_in.idno }}</td>
+                    <td>{{ sit_in.full_name }}</td>
+                    <td>{{ sit_in.purpose }}</td>
+                    <td>{{ sit_in.lab }}</td>
+                    <td>{{ sit_in.remaining_session }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('logout_sit_in', idno=sit_in.idno) }}">
+                            <button class="w3-button color w3-round" type="submit">Logout</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6" class="w3-center">No data available</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
     <div class="w3-center w3-margin-top">

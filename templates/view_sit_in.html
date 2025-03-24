@@ -2,15 +2,36 @@
 
 {% block content %}
 <div class="w3-container w3-padding w3-margin w3-animate-bottom w3-display-container" style="height: 100vh;">
+    <!-- Pie Charts -->
+    <div class="w3-row-padding w3-margin-top">
+        <div class="w3-half w3-card w3-round" style="height: 400px; display: flex; justify-content: center; align-items: center;">
+            <div class="w3-padding" style="width: 100%; height: 100%;">
+                <canvas id="purposePieChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+        </div>
+        <div class="w3-half w3-card w3-round" style="height: 400px; display: flex; justify-content: center; align-items: center;">
+            <div class="w3-padding" style="width: 100%; height: 100%;">
+                <canvas id="labBarChart" style="width: 100%; height: 100%;"></canvas> <!-- Changed id to labBarChart -->
+            </div>
+        </div>
+    </div>
 
-    <div class="w3-bar w3-margin-bottom">
+    <div class="w3-bar w3-margin">
         <label for="rowsPerPage" class="w3-text-deep-purple">Rows per page: </label>
         <select id="rowsPerPage" class="w3-select w3-border" style="max-width: 50px;">
-            <option value="3">3</option>
             <option value="5">5</option>
             <option value="10">10</option>
+            <option value="20">20</option>
         </select>
     </div>
+
+    <!-- Search bar -->
+    <form method="GET" action="{{ url_for('view_sit_in') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
+        <input class="w3-input w3-border w3-round w3-padding w3-margin-bottom" type="text" name="search" placeholder="Search by ID or Purpose" style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;" value="{{ request.args.get('search', '') }}">
+        <button class="w3-button w3-deep-purple w3-round w3-margin-bottom" type="submit" style="height: 46px; margin-left: 10px;">
+            <i class="material-icons">search</i>
+        </button>
+    </form>
 
     <table class="w3-table w3-bordered w3-striped">
         <thead class="w3-deep-purple">
@@ -24,7 +45,7 @@
                 <th>Date</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="tableBody">
             {% for record in sit_in_records %}
             <tr>
                 <td>{{ record.idno }}</td>
@@ -39,21 +60,22 @@
         </tbody>
     </table>
 
-<!-- Pagination -->
-<div class="w3-bar w3-center w3-padding w3-margin">
-    <a href="#" class="w3-button" id="prevPage">«</a>
-    <a href="#" class="w3-button w3-deep-purple" id="page1">1</a>
-    <a href="#" class="w3-button" id="page2">2</a>
-    <a href="#" class="w3-button" id="page3">3</a>
-    <a href="#" class="w3-button" id="page4">4</a>
-    <a href="#" class="w3-button" id="nextPage">»</a>
-</div>
+    <!-- Pagination -->
+    <div class="w3-bar w3-center w3-padding w3-margin">
+        <a href="#" class="w3-button" id="prevPage">«</a>
+        <a href="#" class="w3-button w3-deep-purple" id="page1">1</a>
+        <a href="#" class="w3-button" id="page2">2</a>
+        <a href="#" class="w3-button" id="page3">3</a>
+        <a href="#" class="w3-button" id="page4">4</a>
+        <a href="#" class="w3-button" id="nextPage">»</a>
+    </div>
 </div>
 
 <!-- JavaScript to handle rows per page and pagination -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let currentPage = 1; // Default page
-let rowsPerPage = 3; // Default rows per page
+let rowsPerPage = 5; // Default rows per page
 let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
 let totalRows = rows.length;
 
@@ -135,5 +157,106 @@ document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
 // Initial update on page load
 updateTable();
 
+// Draw the charts and set the chart values
+function drawCharts() {
+    // Purpose Pie Chart
+    var purposeCtx = document.getElementById('purposePieChart').getContext('2d');
+    var purposeData = {
+        labels: [
+            {% if purpose_counts %}
+                {% for purpose, count in purpose_counts.items() %}
+                    '{{ purpose }}',
+                {% endfor %}
+            {% else %}
+                'No Data',
+            {% endif %}
+        ],
+        datasets: [{
+            data: [
+                {% if purpose_counts %}
+                    {% for purpose, count in purpose_counts.items() %}
+                        {{ count }},
+                    {% endfor %}
+                {% else %}
+                    1,
+                {% endif %}
+            ],
+            backgroundColor: ['#6A0DAD', '#8A2BE2', '#9370DB', '#D8BFD8', '#DDA0DD', '#E6E6FA', '#F0E68C', '#FFFACD', '#FFEFD5', '#FFDAB9']
+        }]
+    };
+    var purposeChart = new Chart(purposeCtx, {
+        type: 'pie',
+        data: purposeData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'Sit-In Purposes Breakdown'
+                }
+            }
+        }
+    });
+
+    // Lab Bar Chart
+    var labCtx = document.getElementById('labBarChart').getContext('2d'); // Changed id to labBarChart
+    var labData = {
+        labels: [
+            {% if lab_counts %}
+                {% for lab, count in lab_counts.items() %}
+                    '{{ lab }}',
+                {% endfor %}
+            {% else %}
+                'No Data',
+            {% endif %}
+        ],
+        datasets: [{
+            data: [
+                {% if lab_counts %}
+                    {% for lab, count in lab_counts.items() %}
+                        {{ count }},
+                    {% endfor %}
+                {% else %}
+                    1,
+                {% endif %}
+            ],
+            backgroundColor: '#FFDE91' // Changed color to #FFDE91
+        }]
+    };
+    var labChart = new Chart(labCtx, {
+        type: 'bar', // Changed type to bar
+        data: labData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                title: {
+                    display: true,
+                    text: 'Sit-In Labs Breakdown'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    window.addEventListener('resize', function() {
+        purposeChart.resize();
+        labChart.resize();
+    });
+}
+
+// Initial chart drawing
+drawCharts();
 </script>
 {% endblock %}
