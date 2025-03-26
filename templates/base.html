@@ -3,98 +3,93 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="icon" type="image/x-icon" href="../static/favicon/csslogo.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 	<title>Dashboard</title>
     <style>
+        :root {
+            --primary-color: #2C1038;
+            --secondary-color: #D3BAFA;
+            --text-color: #333;
+            --hover-color: #f5f5f5;
+            --transition-speed: 0.3s;
+        }
+
         body {
             font-family: 'Work Sans', sans-serif;
+            color: var(--text-color);
+            background-color: #fafafa;
         }
-    
+
         .sidebar {
-            width: 60px; 
+            width: 60px;
             height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
-            overflow-x: hidden;
-            transition: 0.3s;
-            padding-top: 10px;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
+            background: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            transition: var(--transition-speed);
+            padding-top: 20px;
+            z-index: 1000;
         }
-    
+
         .sidebar:hover {
-            width: 220px; /* Expand on hover */
+            width: 220px;
         }
-    
+
         .sidebar a {
             display: flex;
             align-items: center;
-            padding: 15px;
+            padding: 15px 20px;
             text-decoration: none;
-            color: #D3BAFA;
-            font-size: 16px;
-            transition: 0.3s;
+            color: var(--primary-color);
+            font-size: 14px;
+            transition: var(--transition-speed);
+            border-radius: 0 25px 25px 0;
+            margin: 5px 0;
         }
-    
+
         .sidebar a .material-icons {
-            font-size: 24px;
-            margin-right: 10px;
+            font-size: 20px;
+            margin-right: 15px;
+            transition: var(--transition-speed);
         }
-    
+
         .sidebar a span.text {
             display: none;
-            transition: opacity 0.3s;
+            opacity: 0;
+            transition: opacity var(--transition-speed);
         }
-    
+
         .sidebar:hover a span.text {
             display: inline-block;
             opacity: 1;
         }
-    
-        #main {
-            margin-left: 70px; /* Adjust content */
-            transition: margin-left 0.3s;
-        }
-    
-        .sidebar:hover + #main {
-            margin-left: 230px; /* Expand content space */
-        }
 
         .sidebar a:hover {
-            color: #2C1038;
-        }
-
-        .sidebar a:hover .material-icons {
-            color: #2C1038;
+            background-color: var(--hover-color);
+            color: var(--primary-color);
         }
 
         .sidebar a.active {
-            color: #2C1038;
-            font-weight: bold;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: 500;
         }
 
-        .sidebar a.active .material-icons {
-            color: #2C1038;
+        #main {
+            margin-left: 70px;
+            padding: 20px;
+            transition: margin-left var(--transition-speed);
         }
 
-
-        .color {
-        background-color: #D3BAFA;
+        .sidebar:hover + #main {
+            margin-left: 230px;
         }
 
-        .font-color {
-            color: #2C1038;
-        }
-
-        /* Add this CSS for fade-out animation */
-        .fade-out {
-            opacity: 0;
-            transition: opacity 1s ease-out;
-        }
 
         .flash-container {
             position: fixed;
@@ -107,24 +102,38 @@
         }
 
         .flash-message {
-            width: 300px;
-            padding: 15px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;  /* Center the text */
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-width: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .flash-text {
-            margin: 0;
-            font-weight: bold;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
+        .content-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
-<body class="w3-white">
-    <div class="sidebar w3-deep-purple w3-card">
+<body>
+    <div class="sidebar">
         <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
             <span class="material-icons">dashboard</span> 
             <span class="text">Dashboard</span>
@@ -157,61 +166,46 @@
             <span class="material-icons">comment</span> 
             <span class="text">Feedback</span>
         </a>
-        <a href="{{ url_for('logout') }}" class="w3-display-bottomleft {% if request.endpoint == 'logout' %}active{% endif %}" style="padding-bottom: 30px;">
+        <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
             <span class="material-icons">logout</span> 
             <span class="text">Logout</span>
         </a>          
     </div>
 
     <div id="main">
-        <div class="w3-bar">
-            <div class="w3-container w3-bar-item font-color">
-              <h1>{{ pagetitle }}</h1>
-            </div>
+        <div class="w3-margin">
+            <h1>{{ pagetitle }}</h1>
         </div>  
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="flash-container">
                 {% for category, message in messages %}
-                <div class="w3-animate-right w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} 
-                            w3-padding-small w3-round w3-display-container flash-message">
-                    <p>{{ message }}</p>
+                <div class="flash-message w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }}">
+                    <p style="margin: 0;">{{ message }}</p>
                 </div>
                 {% endfor %}
             </div>
         {% endif %}
         {% endwith %}
 
-        <div class="w3-container">
+        <div class="content-container">
             {% block content %}
             {% endblock %}
         </div>
+    </div>
 
-<script>
-    function w3_open() {
-        document.getElementById("main").style.marginLeft = "10%";
-        document.getElementById("mySidebar").style.width = "auto";
-        document.getElementById("mySidebar").style.display = "block";
-        document.getElementById("openNav").style.display = 'none';
-    }
-
-    function w3_close() {
-        document.getElementById("main").style.marginLeft = "0%";
-        document.getElementById("mySidebar").style.display = "none";
-        document.getElementById("openNav").style.display = "inline-block";
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(function () {
-            let messages = document.querySelectorAll(".flash-message");
-            messages.forEach(msg => {
-                msg.style.opacity = "0";
-                setTimeout(() => msg.remove(), 500);
-            });
-        }, 3000); // Auto-dismiss after 5 seconds
-    });
-</script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            setTimeout(function () {
+                let messages = document.querySelectorAll(".flash-message");
+                messages.forEach(msg => {
+                    msg.style.opacity = "0";
+                    setTimeout(() => msg.remove(), 500);
+                });
+            }, 3000);
+        });
+    </script>
 </body>
 </html>
 
