@@ -66,6 +66,11 @@
                 <label class="font-color"><b>Email:</b></label>
                 <input type="email" name="email" class="w3-input w3-border w3-round" value="{{ user.email }}" required>
             </div>
+
+            <div class="w3-margin-bottom font-color">
+                <label class="font-color"><b>Session:</b></label>
+                <input type="number" name="session" class="w3-input w3-border w3-round" value="{{ user.session }}" readonly>
+            </div>
             
             <div class="w3-center">
                 <button type="submit" class="w3-button w3-deep-purple w3-round w3-padding">Save Changes</button>

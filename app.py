@@ -113,7 +113,8 @@ def dashboard():
             "course": user_info[4],
             "year_level": user_info[5],
             "email": user_info[6],
-            "profile_image": user_info[7] if len(user_info) > 7 else "default.png"
+            "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+            "session": user_info[8]
         }
         return render_template("dashboard.html", pagetitle="Dashboard", user=user_data, announcements=announcements)
 
@@ -137,7 +138,8 @@ def profile():
             "course": user_info[4],
             "year_level": user_info[5],
             "email": user_info[6],
-            "profile_image": user_info[7] if len(user_info) > 7 else "default.png"
+            "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+            "session": user_info[8]
         }
         return render_template("profile.html", pagetitle="Profile" , user=user_data)
     
@@ -310,7 +312,8 @@ def edit():
             "course": user_info[4],
             "year_level": user_info[5],
             "email": user_info[6],
-            "profile_image": user_info[7] if len(user_info) > 7 else "default.png"    
+            "profile_image": user_info[7] if len(user_info) > 7 else "default.png",  
+            "session": user_info[8] 
         }
         return render_template("edit.html", pagetitle="Edit Information", user=user_data)
 

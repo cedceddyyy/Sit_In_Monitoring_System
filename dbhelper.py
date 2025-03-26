@@ -107,7 +107,7 @@ def get_user_info(username):
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, profile_image FROM users WHERE username = ? ", (username,))
+    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, profile_image, session FROM users WHERE username = ? ", (username,))
     user_info = cursor.fetchone()
     conn.close()
 
