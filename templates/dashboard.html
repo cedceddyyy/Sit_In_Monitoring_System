@@ -3,32 +3,44 @@
 <div class="w3-container w3-margin-top w3-animate-bottom">
 
     <div class="w3-row-padding">
-        <!-- Info Card -->
+        <!-- Info Card - Now matches profile.html style -->
         <div class="w3-third">
             <a href="{{ url_for('profile') }}" class="w3-hover-opacity" style="text-decoration: none;">
-            <div class="w3-card-4 w3-round-large">
-                <header class="w3-container color w3-round-large">
-                    <h3>Student Information</h3>
-                </header>
-                <div class="w3-container font-color w3-center" style="height: 515px;">
-                    <div class="w3-padding">
-                        <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}" 
-                        class="w3-circle w3-border" 
-                        alt="Profile Image" 
-                        width="150" height="150">
-                        <p class="w3-opacity font-color">Profile Picture</p>
+                <div class="w3-card-4 w3-round-large">
+                    <header class="w3-container color" style="border-radius: 10px 10px 0 0;">
+                        <h3>Student Information</h3>
+                    </header>
+                    <div class="w3-container font-color w3-center w3-margin" style="height: 515px;">
+                        <!-- Updated content to match profile.html -->
+                        <div class="w3-padding-16">
+                            <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}" 
+                                 class="w3-circle w3-border" 
+                                 alt="Profile Image" 
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                            <h4 class="w3-margin-top">{{ user.firstname }} {{ user.lastname }}</h4>
+                            <p class="w3-text-grey">{{ user.idno }}</p>
+                        </div>
+                        
+                        <div class="w3-padding-horizontal w3-left-align">
+                            <div class="w3-row w3-section">
+                                <div class="w3-col s4"><strong>Course:</strong></div>
+                                <div class="w3-col s8">{{ user.course }}</div>
+                            </div>
+                            <div class="w3-row w3-section">
+                                <div class="w3-col s4"><strong>Year:</strong></div>
+                                <div class="w3-col s8">{{ user.year_level }}</div>
+                            </div>
+                            <div class="w3-row w3-section">
+                                <div class="w3-col s4"><strong>Email:</strong></div>
+                                <div class="w3-col s8">{{ user.email }}</div>
+                            </div>
+                            <div class="w3-row w3-section">
+                                <div class="w3-col s4"><strong>Session:</strong></div>
+                                <div class="w3-col s8">{{ user.session }}</div>
+                            </div>
+                        </div>
                     </div>
-                    <hr>
-                    <div class="w3-container w3-left-align">
-                        <p><strong>ID No:</strong> {{ user.idno }}</p>
-                        <p><strong>Name:</strong> {{ user.firstname }} {{ user.middlename }} {{ user.lastname }}</p>
-                        <p><strong>Course:</strong> {{ user.course }}</p>
-                        <p><strong>Year Level:</strong> {{ user.year_level }}</p>
-                        <p><strong>Email:</strong> {{ user.email }}</p>
-                        <p><strong>Session:</strong> {{ user.session }}</p>
-                    </div>
-                </div>                
-            </div>
+                </div>
             </a>
         </div>
 
@@ -36,20 +48,21 @@
         <div class="w3-third">
             <a href="{{ url_for('announcement') }}" class="w3-hover-opacity" style="text-decoration: none;">
             <div class="w3-card-4 w3-round-large">
-                <header class="w3-container color w3-round-large">
+                <header class="w3-container color" style="border-radius: 10px 10px 0 0;">
                     <h3>Announcements</h3>
                 </header>
                 <div class="w3-container font-color w3-padding w3-margin" style="overflow-y: auto; max-height: 500px;">
                     {% if announcements %}
                         {% for announcement in announcements %}
-                        <div class="w3-margin-bottom w3-round">
+                        <div class="w3-panel w3-round" style="background-color: #f3e5f5; border-left: 5px solid #6a1b9a;">
                             <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
                             <p>{{ announcement[1] }}</p>
                         </div>
-                        <hr>
                         {% endfor %}
                     {% else %}
-                        <p>No announcements available.</p>
+                        <div class="w3-panel w3-round" style="background-color: #f3e5f5; border-left: 5px solid #6a1b9a;">
+                            <p>No announcements available.</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -60,7 +73,7 @@
         <div class="w3-third">
             <a href="{{ url_for('rules') }}" class="w3-hover-opacity" style="text-decoration: none;">
             <div class="w3-card-4 w3-round-large">
-                <header class="w3-container color w3-round-large">
+                <header class="w3-container color" style="border-radius: 10px 10px 0 0;">
                     <h3>Rules and Regulations</h3>
                 </header>
                 <div class="w3-container font-color w3-padding w3-margin" style="overflow-y: auto; max-height: 500px;">
@@ -97,8 +110,6 @@
             </div>
             </a>
         </div>
-
     </div>
-
 </div>
 {% endblock %}

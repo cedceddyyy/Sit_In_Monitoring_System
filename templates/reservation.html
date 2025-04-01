@@ -1,49 +1,79 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
-    <div class="w3-card w3-white w3-round-large w3-padding" style="max-width: 500px; margin: auto;">
-        <form action="" method="POST" class="w3-container">
-            <label class="font-color"><b>Student ID</b></label>
-            <input class="w3-input w3-border w3-round" type="text" name="student_id" required>
+<div class="w3-container w3-padding w3-animate-bottom">
+    <div class="w3-card-4 w3-white w3-round-large" style="max-width: 600px; margin: auto;">
+        <div class="w3-container w3-padding-large">
+            <h2 class="w3-text-dark-grey" style="font-weight: 500;">Make a Reservation</h2>
+            <p class="w3-text-grey">Fill out the form to reserve a lab session</p>
             
-            <label class="font-color"><b>Full Name</b></label>
-            <input class="w3-input w3-border w3-round" type="text" name="full_name" required>
-            
-            <label class="font-color"><b>Course</b></label>
-            <input class="w3-input w3-border w3-round" type="text" name="course" required>
+            <form action="" method="POST" class="w3-container w3-margin-top">
+                <div class="w3-row-padding" style="margin: 0 -16px;">
+                    <div class="w3-half w3-margin-bottom">
+                        <label class="w3-text-dark-grey"><b>Student ID</b></label>
+                        <input class="w3-input w3-border w3-round w3-margin-bottom" 
+                               type="text" name="student_id" required>
+                    </div>
+                    <div class="w3-half w3-margin-bottom">
+                        <label class="w3-text-dark-grey"><b>Full Name</b></label>
+                        <input class="w3-input w3-border w3-round" 
+                               type="text" name="full_name" required>
+                    </div>
+                </div>
+                
+                <label class="w3-text-dark-grey"><b>Course</b></label>
+                <input class="w3-input w3-border w3-round w3-margin-bottom" 
+                       type="text" name="course" required>
 
-            <label class="font-color"><b>Purpose</b></label>
-            <select class="w3-select w3-border w3-round" name="subject" required>
-                <option value="" disabled selected>Select a Purpose</option>
-                <option value="Room 101">C#</option>
-                <option value="Room 202">Java</option>
-                <option value="Room 303">Python</option>
-            </select>
-            
-            <label class="font-color"><b>Date</b></label>
-            <input class="w3-input w3-border w3-round" type="date" name="date" required>
-            
-            <label class="font-color"><b>Time Slot</b></label>
-            <input class="w3-input w3-border w3-round" type="time" name="time" required>
-            
-            <label class="font-color"><b>Lab</b></label>
-            <select class="w3-select w3-border w3-round" name="room" required>
-                <option value="" disabled selected>Select a room</option>
-                <option value="Room 101">101</option>
-                <option value="Room 202">202</option>
-                <option value="Room 303">303</option>
-            </select>
+                <label class="w3-text-dark-grey"><b>Purpose</b></label>
+                <select class="w3-select w3-border w3-round w3-margin-bottom" name="subject" required>
+                    <option value="" disabled selected>Select a Purpose</option>
+                    <option value="Room 101">C#</option>
+                    <option value="Room 202">Java</option>
+                    <option value="Room 303">Python</option>
+                </select>
+                
+                <div class="w3-row-padding" style="margin: 0 -16px;">
+                    <div class="w3-half w3-margin-bottom">
+                        <label class="w3-text-dark-grey"><b>Date</b></label>
+                        <input class="w3-input w3-border w3-round" 
+                               type="date" name="date" required>
+                    </div>
+                    <div class="w3-half w3-margin-bottom">
+                        <label class="w3-text-dark-grey"><b>Time Slot</b></label>
+                        <input class="w3-input w3-border w3-round" 
+                               type="time" name="time" required>
+                    </div>
+                </div>
+                
+                <label class="w3-text-dark-grey"><b>Lab</b></label>
+                <select class="w3-select w3-border w3-round w3-margin-bottom" name="room" required>
+                    <option value="" disabled selected>Select a room</option>
+                    <option value="Room 101">101</option>
+                    <option value="Room 202">202</option>
+                    <option value="Room 303">303</option>
+                </select>
 
-            <label class="font-color"><b>Available PC:</b></label>
-            <input class="w3-input w3-border w3-round" type="number" name="num_pc" value="10" required>
-
-            <label class="font-color"><b>Remaining Session:</b>
-            <input class="w3-input w3-border w3-round" type="number" name="session" value="30">
-            
-            
-            <button class="w3-button w3-deep-purple w3-round w3-margin-top" type="submit">Reserve</button>
-        </form>
+                <div class="w3-row-padding" style="margin: 0 -16px;">
+                    <div class="w3-half w3-margin-bottom">
+                        <label class="w3-text-dark-grey"><b>Available PC</b></label>
+                        <input class="w3-input w3-border w3-round" 
+                               type="number" name="num_pc" value="10" required>
+                    </div>
+                    <div class="w3-half w3-margin-bottom">
+                        <label class="w3-text-dark-grey"><b>Remaining Session</b></label>
+                        <input class="w3-input w3-border w3-round" 
+                               type="number" name="session" value="30">
+                    </div>
+                </div>
+                
+                <button class="w3-button w3-round w3-margin-top" 
+                        style="background-color: #FFDE91; color: #2C1038;" 
+                        type="submit">
+                    <i class="material-icons" style="vertical-align: middle;">event_available</i> Reserve
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
