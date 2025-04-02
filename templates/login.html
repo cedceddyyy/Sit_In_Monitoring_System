@@ -3,108 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <title>Login</title>
     <style>
+        :root {
+            --primary-color: #2C1038;
+            --secondary-color: #D3BAFA;
+            --text-color: #333;
+            --hover-color: #f5f5f5;
+            --transition-speed: 0.3s;
+        }
+
         body {
             font-family: 'Work Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fafafa;
         }
 
-        .color {
-        background-color: #D3BAFA;
-        }
-
-        .font-color {
-            color: #2C1038;
-        }
-        
         .container {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
-        .button:hover {
-            color: #D3BAFA;
+
+        .w3-half {
+            height: 100vh;
         }
+
+        .w3-half:first-child {
+            background-image: url(static/images/login.jpg);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .w3-half:first-child::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(44, 16, 56, 0.8), rgba(211, 186, 250, 0.8));
+        }
+
+        .w3-half:last-child {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            padding: 0 20px;
+            height: 100vh;
+        }
+
+        .login-container {
+            padding: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
         .logo {
-            width: 100px;
+            width: 80px;
             height: auto;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
+
         .login-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
+            margin-bottom: 20px;
         }
-        .login-header hr {
-            flex-grow: 1;
-            border: none;
-            height: 2px;
-            background-color: #2C1038;
-            opacity: 0.5;
-            margin: 0 10px;
-            border-radius: 3px;
-        }
-        .login-header h1 {
+
+        .login-header h2 {
             margin: 0;
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 24px;
         }
 
-        /* Add this CSS for fade-out animation */
-        .fade-out {
-            opacity: 0;
-            transition: opacity 1s ease-out;
+        .form-group {
+            margin-bottom: 15px;
         }
 
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: var(--transition-speed);
+            box-sizing: border-box;
+            background: #f8f8f8;
+        }
 
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(211, 186, 250, 0.2);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-speed);
+            margin-top: 10px;
+        }
+
+        .login-button:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .register-link {
+            margin-top: 15px;
+            color: #666;
+        }
+
+        .register-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition-speed);
+        }
+
+        .register-link a:hover {
+            color: var(--secondary-color);
+        }
+
+        .flash-message {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .flash-message.success { 
+            border-color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        .flash-message.danger { 
+            border-color: #f44336;
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        .flash-message.info { 
+            border-color: #2196F3;
+            background-color: rgba(33, 150, 243, 0.1);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Modal Styles */
+        .w3-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .w3-modal-content {
+            position: relative;
+            background-color: white;
+            margin: 40px auto;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .close-button {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: var(--transition-speed);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-button:hover {
+            color: var(--primary-color);
+            background: #f5f5f5;
+        }
+
+        .register-form h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: var(--transition-speed);
+            background: #f8f8f8;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(211, 186, 250, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .w3-half:first-child {
+                display: none;
+            }
+            
+            .w3-half:last-child {
+                width: 100%;
+            }
+
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .w3-modal-content {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
     </style>
 </head>
-<body class="w3-white">
-    <div class="w3-half w3-container" style="height: 100vh; background-image: url(static/images/login.jpg); background-size: cover;"></div>
-    <div class="w3-half w3-container w3-card w3-padding w3-white w3-center container">
-        <div>
+<body>
+    <div class="w3-half w3-container" style="height: 100vh;"></div>
+    <div class="w3-half w3-container w3-white">
+        <div class="login-container">
             <img src="static/images/logo.png" alt="Logo" class="logo">
             <div class="login-header">
-                <hr>
-                <h2 class="w3-opacity font-color">Login</h2>
-                <hr>
+                <h2>Login</h2>
             </div>
-            <form method="POST" class="w3-padding-32 font-color">
-                <input type="text" name="username" class="w3-input w3-border w3-padding w3-round" placeholder="&#128100; USERNAME" required><br>
-                <input type="password" name="password" class="w3-input w3-border w3-padding w3-round" placeholder="&#128274; PASSWORD" required>
-                <br>
-                <button type="submit" class="w3-button w3-deep-purple w3-round">Login</button>
+            <form method="POST">
+                <div class="form-group">
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="login-button">Login</button>
             </form>
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                <div class="w3-container w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }} w3-round w3-display-container w3-padding-small flash-message" style="position: relative;">
-                    <p style="font-size: 12px;">{{ message }}</p>
+                <div class="flash-message {{ category }}">
+                    {{ message }}
                 </div>
                 {% endfor %}
             {% endif %}
-        {% endwith %}
-            <p class="w3-opacity">Don't have an account? <a href="#" onclick="document.getElementById('registerModal').style.display='block'" class="button">Register</a></p>
+            {% endwith %}
+            <div class="register-link">
+                Don't have an account? <a href="#" onclick="document.getElementById('registerModal').style.display='block'">Register</a>
+            </div>
         </div>
     </div>
-    
+
     <!-- Registration Modal -->
     <div id="registerModal" class="w3-modal">
-        <div class="w3-modal-content w3-animate-top w3-card-4" style="max-width: 500px;">
-            <div class="w3-container w3-padding w3-white w3-center font-color">
-                <span onclick="document.getElementById('registerModal').style.display='none'" class="w3-button w3-display-topright">&times;</span>
-                <h1 class="font-color">Register</h1>
-                <form method="POST" class="w3-padding font-color">
+        <div class="w3-modal-content">
+            <span class="close-button" onclick="document.getElementById('registerModal').style.display='none'">&times;</span>
+            <div class="register-form">
+                <h1>Register</h1>
+                <form method="POST">
                     <input type="hidden" name="register" value="1">
-                    <input type="text" id="idno" name="idno" class="w3-input w3-border w3-padding w3-round" placeholder="ID Number" required oninput="this.value = this.value.replace(/[^0-9]/g, '')"><br>
-                    <input type="text" name="lastname" class="w3-input w3-border w3-padding w3-round" placeholder="Last Name" required><br>
-                    <input type="text" name="firstname" class="w3-input w3-border w3-padding w3-round" placeholder="First Name" required><br>
-                    <input type="text" name="middlename" class="w3-input w3-border w3-padding w3-round" placeholder="Middle Name"><br>
-                    <div class="w3-row" style="margin-bottom: 10px;">
-                        <div class="w3-col s6" style="padding-right: 5px;">
-                            <select name="course" class="w3-input w3-border w3-padding w3-round" required>
+                    <div class="form-group">
+                        <input type="text" id="idno" name="idno" placeholder="ID Number" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="lastname" placeholder="Last Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="firstname" placeholder="First Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="middlename" placeholder="Middle Name">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select name="course" required>
                                 <option value="" disabled selected>Course</option>
                                 <option value="BSIT">BSIT</option>
                                 <option value="BSCS">BSCS</option>
@@ -112,14 +361,20 @@
                                 <option value="BSCRIM">BSCRIM</option>
                             </select>
                         </div>
-                        <div class="w3-col s6" style="padding-left: 5px;">
-                            <input type="number" name="year_level" class="w3-input w3-border w3-padding w3-round" placeholder="Year Level" required>
+                        <div class="form-group">
+                            <input type="number" name="year_level" placeholder="Year Level" required>
                         </div>
-                    </div><br>
-                    <input type="email" name="email" class="w3-input w3-border w3-padding w3-round" placeholder="Email" required><br>
-                    <input type="text" id="username" name="username" class="w3-input w3-border w3-padding w3-round" placeholder="Username (Auto-filled)" required readonly><br>
-                    <input type="password" name="password" class="w3-input w3-border w3-padding w3-round" placeholder="Password" required><br>
-                    <button type="submit" class="w3-button w3-deep-purple w3-round">Register</button>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="username" name="username" placeholder="Username (Auto-filled)" required readonly>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="login-button">Register</button>
                 </form>
             </div>
         </div>
@@ -131,14 +386,22 @@
         });
 
         document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(function () {
-            let messages = document.querySelectorAll(".flash-message");
-            messages.forEach(msg => {
-                msg.style.opacity = "0";
-                setTimeout(() => msg.remove(), 500);
-            });
-        }, 3000); // Dismiss after 5 seconds
-    });
+            setTimeout(function () {
+                let messages = document.querySelectorAll(".flash-message");
+                messages.forEach(msg => {
+                    msg.style.opacity = "0";
+                    setTimeout(() => msg.remove(), 500);
+                });
+            }, 3000);
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            let modal = document.getElementById('registerModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     </script>
 </body>
 </html>

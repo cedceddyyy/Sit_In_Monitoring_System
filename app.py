@@ -8,7 +8,7 @@ import pytz
 app = Flask(__name__)
 app.secret_key = "Cedric@#123"
 
-app.config["UPLOAD_FOLDER"] = "static/uploads"
+app.config["UPLOAD_FOLDER"] = "static/uploads"  # Corrected filepath for profile images
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 def allowed_file(filename):

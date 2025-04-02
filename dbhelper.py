@@ -23,6 +23,7 @@ def create_database():
                       email VARCHAR(50) NOT NULL,
                       username INTEGER NOT NULL,
                       password TEXT NOT NULL,
+                      profile_image TEXT,
                       session INTEGER DEFAULT 30
                  )''')
 
@@ -117,11 +118,11 @@ def get_students():
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, session FROM users")
+    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, session, profile_image FROM users")
     users = cursor.fetchall()
     conn.close()
 
-    return [{"idno": row[0], "lastname": row[1], "firstname": row[2], "middlename": row[3], "course": row[4], "year_level": row[5], "email": row[6], "session": row[7]} for row in users]
+    return [{"idno": row[0], "lastname": row[1], "firstname": row[2], "middlename": row[3], "course": row[4], "year_level": row[5], "email": row[6], "session": row[7], "profile_image": row[8] if row[8] else "default.png"} for row in users]
 
 def update_user_info(username, lastname, firstname, middlename, course, year_level, email):
     conn = connect_db()

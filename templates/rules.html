@@ -1,37 +1,98 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
-    <div class="w3-round-large">
-        <div class="w3-container font-color w3-padding " >
-            <p><strong>LABORATORY RULES AND REGULATIONS</strong></p>
-            <p>To avoid embarrassment and maintain camaraderie with your friends and superiors at our laboratories, please observe the following:</p>
-            <p>1. Maintain silence, proper decorum, and discipline inside the laboratory. Mobile phones, walkmans and other personal pieces of equipment must be switched off.</p>
-            <p>2. Games are not allowed inside the lab. This includes computer-related games, card games and other games that may disturb the operation of the lab.</p>
-            <p>3. Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.</p>
-            <p>4. Getting access to other websites not related to the course (especially pornographic and illicit sites) is strictly prohibited.</p>
-            <p>5. Deleting computer files and changing the set-up of the computer is a major offense.</p>
-            <p>6. Observe computer time usage carefully. A fifteen-minute allowance is given for each use. Otherwise, the unit will be given to those who wish to "sit-in".</p>
-            <p>7. Observe proper decorum while inside the laboratory.</p>
-            <ul>
-            <li>Do not get inside the lab unless the instructor is present.</li>
-            <li>All bags, knapsacks, and the likes must be deposited at the counter.</li>
-            <li>Follow the seating arrangement of your instructor.</li>
-            <li>At the end of class, all software programs must be closed.</li>
-            <li>Return all chairs to their proper places after using.</li>
-            </ul>
-            <p>8. Chewing gum, eating, drinking, smoking, and other forms of vandalism are prohibited inside the lab.</p>
-            <p>9. Anyone causing a continual disturbance will be asked to leave the lab. Acts or gestures offensive to the members of the community, including public display of physical intimacy, are not tolerated.</p>
-            <p>10. Persons exhibiting hostile or threatening behavior such as yelling, swearing, or disregarding requests made by lab personnel will be asked to leave the lab.</p>
-            <p>11. For serious offense, the lab personnel may call the Civil Security Office (CSU) for assistance.</p>
-            <p>12. Any technical problem or difficulty must be addressed to the laboratory supervisor, student assistant or instructor immediately.</p>
-            <br>
-            <p><strong>DISCIPLINARY ACTION</strong></p>
-            <ul>
-            <li>First Offense - The Head or the Dean or OIC recommends to the Guidance Center for a suspension from classes for each offender.</li>
-            <li>Second and Subsequent Offenses - A recommendation for a heavier sanction will be endorsed to the Guidance Center.</li>
-            </ul>
+<div class="w3-container w3-animate-bottom">
+    <div class="w3-card-4 w3-round-large w3-margin-bottom" style="background-color: white;">
+        <header class="w3-container" style="background-color: #D3BAFA; color: #2C1038; border-radius: 8px 8px 0 0;">
+            <h2><i class="material-icons" style="vertical-align: middle;">rules</i> Laboratory Rules and Regulations</h2>
+        </header>
+        
+        <div class="w3-container w3-padding-16">
+            <div class="w3-panel" style="background-color: #f5f5f5; border-left: 4px solid #D3BAFA; padding: 16px;">
+                <p>To avoid embarrassment and maintain camaraderie with your friends and superiors at our laboratories, please observe the following:</p>
+            </div>
+            
+            <div class="w3-row-padding">
+                <div class="w3-half">
+                    <ol class="w3-ul w3-card" style="counter-reset: item 0; border: 1px solid #e0e0e0;">
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">1</span>
+                            <span>Maintain silence, proper decorum, and discipline inside the laboratory. Mobile phones, walkmans and other personal pieces of equipment must be switched off.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">2</span>
+                            <span>Games are not allowed inside the lab. This includes computer-related games, card games and other games that may disturb the operation of the lab.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">3</span>
+                            <span>Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">4</span>
+                            <span>Getting access to other websites not related to the course (especially pornographic and illicit sites) is strictly prohibited.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">5</span>
+                            <span>Deleting computer files and changing the set-up of the computer is a major offense.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">6</span>
+                            <span>Observe computer time usage carefully. A fifteen-minute allowance is given for each use. Otherwise, the unit will be given to those who wish to "sit-in".</span>
+                        </li>
+                    </ol>
+                </div>
+                
+                <div class="w3-half">
+                    <ol class="w3-ul w3-card" style="counter-reset: item 6; border: 1px solid #e0e0e0;">
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">7</span>
+                            <span>Observe proper decorum while inside the laboratory.
+                                <ul class="w3-ul w3-margin-top">
+                                    <li>Do not get inside the lab unless the instructor is present.</li>
+                                    <li>All bags, knapsacks, and the likes must be deposited at the counter.</li>
+                                    <li>Follow the seating arrangement of your instructor.</li>
+                                    <li>At the end of class, all software programs must be closed.</li>
+                                    <li>Return all chairs to their proper places after using.</li>
+                                </ul>
+                            </span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">8</span>
+                            <span>Chewing gum, eating, drinking, smoking, and other forms of vandalism are prohibited inside the lab.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">9</span>
+                            <span>Anyone causing a continual disturbance will be asked to leave the lab. Acts or gestures offensive to the members of the community, including public display of physical intimacy, are not tolerated.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">10</span>
+                            <span>Persons exhibiting hostile or threatening behavior such as yelling, swearing, or disregarding requests made by lab personnel will be asked to leave the lab.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">11</span>
+                            <span>For serious offense, the lab personnel may call the Civil Security Office (CSU) for assistance.</span>
+                        </li>
+                        <li class="w3-padding-16" style="display: flex; align-items: flex-start;">
+                            <span class="w3-badge" style="background-color: #D3BAFA; color: #2C1038; margin-right: 10px; flex-shrink: 0;">12</span>
+                            <span>Any technical problem or difficulty must be addressed to the laboratory supervisor, student assistant or instructor immediately.</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="w3-panel" style="background-color: #fff8f8; border-left: 4px solid #ff5252; padding: 16px; margin-top: 20px;">
+                <h3><i class="material-icons" style="vertical-align: middle; color: #ff5252;">warning</i> Disciplinary Action</h3>
+                <ul class="w3-ul">
+                    <li class="w3-padding-small"><strong>First Offense</strong> - The Head or the Dean or OIC recommends to the Guidance Center for a suspension from classes for each offender.</li>
+                    <li class="w3-padding-small"><strong>Second and Subsequent Offenses</strong> - A recommendation for a heavier sanction will be endorsed to the Guidance Center.</li>
+                </ul>
+            </div>
         </div>
+        
+        <footer class="w3-container" style="background-color: #f5f5f5; padding: 16px; border-radius: 0 0 8px 8px;">
+            <p class="w3-small">Please follow these rules to ensure a productive learning environment for everyone.</p>
+        </footer>
     </div>
 </div>
+
 {% endblock %}
