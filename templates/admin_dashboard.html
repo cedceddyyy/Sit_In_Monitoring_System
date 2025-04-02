@@ -2,80 +2,81 @@
 
 {% block content %}
 <div class="w3-container">
-    
     <!-- Stats Section -->
     <div class="w3-row-padding w3-margin-top">
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round color w3-bar">
+            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
                 <h3>Total Students</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px;">{{ total_students }}</p>
+                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_students }}</p>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round color font-color w3-bar">
+            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
                 <h3>Total Reservations</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px;">{{ total_reservations }}</p>
+                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_reservations }}</p>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round color font-color w3-bar">
+            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
                 <h3>Total Sit-in</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px;">{{ total_sit_in }}</p>
+                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_sit_in }}</p>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round color font-color w3-bar">
+            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
                 <h3>Feedback Reports</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px;">{{ total_feedback }}</p>
+                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_feedback }}</p>
             </div>
         </div>
     </div>
 
-    <div class="w3-row-padding w3-margin-top font-color">
-    <!--Chart Section-->
-        <div class="w3-half w3-card w3-round" style="height: 600px; display: flex; justify-content: center; align-items: center;">
-            <div class="w3-padding" style="width: 100%; height: 100%;">
-                <canvas id="piechart" style="width: 100%; height: 100%;"></canvas>
+    <div class="w3-row-padding w3-margin-top">
+        <!--Chart Section-->
+        <div class="w3-half">
+            <div class="w3-card w3-padding w3-round w3-white" style="height: 600px; display: flex; justify-content: center; align-items: center;">
+                <div class="w3-padding" style="width: 100%; height: 100%;">
+                    <canvas id="piechart" style="width: 100%; height: 100%;"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- Announcement Section -->
         <div class="w3-half">
-            <div class="w3-card w3-padding" style="overflow-y: auto; max-height: 600px; scrollbar-width: none; -ms-overflow-style: none;">
+            <div class="w3-card w3-padding w3-round w3-white" style="overflow-y: auto; max-height: 600px; scrollbar-width: none; -ms-overflow-style: none;">
                 <style>
                     .w3-card::-webkit-scrollbar {
                         display: none;
                     }
                 </style>
                 <div class="w3-margin" style="text-align: right;">
-                    <button onclick="document.getElementById('announcementModal').style.display='block'" class="w3-button w3-round" style="background-color: #FFDE91;">Add Announcement</button>
+                    <button onclick="document.getElementById('announcementModal').style.display='block'" class="w3-button w3-round" style="background-color: var(--primary-color); color: white;">Add Announcement</button>
                 </div>
                 <h2>Posted Announcements</h2>
                 <hr>
                 <div id="admin-announcements-container">
                     {% for announcement in announcements %}
-                    <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card {% if announcement[3] == 'inactive' %}w3-opacity{% endif %}">
+                    <div class="w3-card w3-padding w3-margin-bottom w3-round w3-white announcement-card {% if announcement[3] == 'inactive' %}w3-opacity{% endif %}" style="border-left: 4px solid var(--secondary-color);">
                         <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
                         <p>{{ announcement[1] }}</p>
                         {% if announcement[3] == 'active' %}
                         <form method="POST" action="{{ url_for('deactivate_announcement', announcement_id=announcement[0]) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to deactivate this announcement?');">
-                            <button type="submit" class="w3-button w3-round w3-deep-purple" style="color: white;">Deactivate</button>
+                            <button type="submit" class="w3-button w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">Deactivate</button>
                         </form>
                         {% else %}
                         <form method="POST" action="{{ url_for('activate_announcement', announcement_id=announcement[0]) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to activate this announcement?');">
-                            <button type="submit" class="w3-button w3-round" style="background-color: #FFDE91; color: white;">Activate</button>
+                            <button type="submit" class="w3-button w3-round" style="background-color: #FFDE91; color: var(--primary-color);">Activate</button>
                         </form>
                         {% endif %}
                         <form method="POST" action="{{ url_for('delete_announcement', announcement_id=announcement[0]) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this announcement?');">
-                            <button type="submit" class="w3-button w3-round" style="background-color: #D3BAFA; color: white;">Delete</button>
+                            <button type="submit" class="w3-button w3-round" style="background-color: #f5f5f5; color: var(--primary-color);">Delete</button>
                         </form>
                     </div>
                     {% endfor %}
                 </div>
                 <div class="w3-bar w3-center w3-padding w3-margin">
-                    <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round">&laquo; Previous</button>
+                    <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round" style="color: var(--primary-color);">&laquo; Previous</button>
                     <span>Page: <span id="page_admin"></span></span>
-                    <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round">Next &raquo;</button>
+                    <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round" style="color: var(--primary-color);">Next &raquo;</button>
                 </div>
             </div>
         </div>
@@ -84,16 +85,16 @@
 
 <!-- Announcement Modal -->
 <div id="announcementModal" class="w3-modal">
-    <div class="w3-modal-content w3-animate-top w3-card-4 w3-round">
-        <header class="w3-container w3-deep-purple w3-round w3-margin-bottom">
-            <span onclick="document.getElementById('announcementModal').style.display='none'" class="w3-button w3-display-topright w3-round" style="padding: 21px;">&times;</span>
+    <div class="w3-modal-content w3-animate-top w3-card-4 w3-round" style="max-width: 600px;">
+        <header class="w3-container" style="background-color: var(--primary-color); color: white; border-radius: 8px 8px 0 0;">
+            <span onclick="document.getElementById('announcementModal').style.display='none'" class="w3-button w3-display-topright" style="padding: 21px;">&times;</span>
             <h2>New Announcement</h2>
         </header>
         <div class="w3-container">
             <form method="POST" action="{{ url_for('post_announcement') }}">
                 <label for="new_announcement" class="w3-text-grey">Announcement</label>
                 <textarea id="new_announcement" name="announcement" class="w3-input w3-border w3-round" placeholder="Type your announcement here" rows="3" style="resize: vertical;"></textarea>
-                <button type="submit" class="w3-button w3-round w3-margin w3-right" style="background-color: #FFDE91;">Submit</button>
+                <button type="submit" class="w3-button w3-round w3-margin w3-right" style="background-color: var(--secondary-color); color: var(--primary-color);">Submit</button>
             </form>
         </div>
     </div>
@@ -137,10 +138,17 @@ function drawChart() {
             plugins: {
                 legend: {
                     position: 'bottom',
+                    labels: {
+                        color: 'var(--text-color)'
+                    }
                 },
                 title: {
                     display: true,
-                    text: 'Sit-In Purposes Breakdown'
+                    text: 'Sit-In Purposes Breakdown',
+                    color: 'var(--text-color)',
+                    font: {
+                        family: "'Work Sans', sans-serif"
+                    }
                 }
             }
         }
@@ -210,4 +218,4 @@ window.onload = function() {
 };
 </script>
 
-{% endblock %}
+{% endblock %}w

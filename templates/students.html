@@ -1,222 +1,231 @@
 {% extends 'admin_base.html' %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
+<div class="w3-container w3-padding-16 w3-margin w3-animate-bottom">
 
-  <div class="w3-bar w3-margin-bottom">
-    <label for="rowsPerPage" class="w3-text-deep-purple">Rows per page: </label>
-    <select id="rowsPerPage" class="w3-select w3-border" style="max-width: 50px;">
-        <option value="5">5</option>
-        <option value="10">10</option>
-        <option value="20">20</option>
-    </select>
-    <button id="resetSessions" class="w3-button color w3-round w3-right">Reset All Sessions</button> <!-- Moved button for resetting sessions -->
-</div>
-
-  <form method="POST" action="{{ url_for('view_students') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
-    <input class="w3-input w3-border w3-round w3-padding w3-margin-bottom" type="text" name="idno" placeholder="Enter Student ID" required style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;">
-    <button class="w3-button w3-deep-purple w3-round w3-margin-bottom" type="submit" style="height: 46px; margin-left: 10px;">
-        <i class="material-icons">search</i>
-    </button>
-  </form>
-
-  {% if student %}
-  <div id="sitInModal" class="w3-modal w3-round" style="display: block;">
-    <div class="w3-modal-content w3-card-4 w3-animate-top w3-round" style="max-width: 600px; margin: auto;">
-      <header class="w3-container w3-deep-purple w3-round">
-        <span onclick="document.getElementById('sitInModal').style.display='none'" class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
-        <h3>Sit-In Form</h3>
-      </header>
-      <form class="w3-container w3-margin-top" method="POST" action="{{ url_for('submit_sit_in') }}">
-          <div class="w3-margin-bottom font-color">
-              <label>ID Number</label>
-              <input class="w3-input w3-border w3-round" type="text" value="{{ student[0] }}" readonly>
-              <input type="hidden" name="idno" value="{{ student[0] }}">
-          </div>
-      
-          <div class="w3-margin-bottom font-color">
-              <label>Full Name</label>
-              <input class="w3-input w3-border w3-round" type="text" value="{{ student[1] }} {{ student[2] }} {{ student[3] }}" readonly>
-          </div>
-      
-          <div class="w3-margin-bottom font-color">
-              <label>Purpose</label>
-              <select class="w3-select w3-border w3-round" name="purpose" required>
-                  <option value="" disabled selected>Select a purpose</option>
-                  <option value="C#">C#</option>
-                  <option value="Python">Python</option>
-                  <option value="Java">Java</option>
-                  <option value="C++">C++</option>
-                  <option value="JavaScript">JavaScript</option>
-                  <option value="HTML">HTML</option>
-                  <option value="SQL">SQL</option>
-              </select>
-          </div>
-      
-          <div class="w3-margin-bottom font-color">
-              <label>Lab</label>
-              <input class="w3-input w3-border w3-round" type="text" name="lab" required>
-          </div>
-          <input type="hidden" name="login_time" id="login_time">
-          <div class="w3-center">
-              <button type="submit" class="w3-button w3-margin w3-round" style="background-color: #FFDE91;">Sit-In</button>
-              <button type="button" class="w3-button w3-margin w3-round w3-deep-purple" onclick="document.getElementById('sitInModal').style.display='none'">Cancel</button>
-          </div>
-      </form>        
+    <div class="w3-bar w3-margin-bottom">
+        <label for="rowsPerPage" class="w3-text-grey">Rows per page: </label>
+        <select id="rowsPerPage" class="w3-select w3-border w3-round" style="max-width: 70px; display: inline-block;">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+        </select>
+        <button id="resetSessions" class="w3-button w3-round w3-right" style="background-color: var(--secondary-color); color: var(--primary-color);">Reset All Sessions</button>
     </div>
-  </div>
-  {% endif %}
 
-  <table class="w3-table w3-striped w3-bordered w3-hoverable">
-    <thead>
-      <tr class="w3-dark-grey">
-        <th>Profile</th> <!-- New column for profile images -->
-        <th>ID Number</th>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Middle Name</th>
-        <th>Course</th>
-        <th>Year Level</th>
-        <th>Email</th>
-        <th>Session</th> <!-- New column for session -->
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      {% for student in students %}
-      <tr>
-        <td>
-          <img src="{{ url_for('static', filename='uploads/' + student.profile_image) }}" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%;">
-        </td> <!-- Corrected filepath for profile image -->
-        <td>{{ student.idno }}</td>
-        <td>{{ student.lastname }}</td>
-        <td>{{ student.firstname }}</td>
-        <td>{{ student.middlename }}</td>
-        <td>{{ student.course }}</td>
-        <td>{{ student.year_level }}</td>
-        <td>{{ student.email }}</td>
-        <td>{{ student.session }}</td> <!-- Display session -->
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <form method="POST" action="{{ url_for('view_students') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex; margin-bottom: 20px;">
+        <input class="w3-input w3-border w3-round" type="text" name="idno" placeholder="Enter Student ID" required style="flex: 1;">
+        <button class="w3-button w3-round" type="submit" style="background-color: var(--secondary-color); color: var(--primary-color); margin-left: 10px;">
+            <i class="material-icons">search</i>
+        </button>
+    </form>
 
-  <!-- Pagination -->
-  <div class="w3-bar w3-center w3-padding w3-margin">
-    <a href="#" class="w3-button" id="prevPage">«</a>
-    <a href="#" class="w3-button w3-deep-purple" id="page1">1</a>
-    <a href="#" class="w3-button" id="page2">2</a>
-    <a href="#" class="w3-button" id="page3">3</a>
-    <a href="#" class="w3-button" id="page4">4</a>
-    <a href="#" class="w3-button" id="nextPage">»</a>
-</div>
+    {% if student %}
+    <div id="sitInModal" class="w3-modal w3-round" style="display: block;">
+        <div class="w3-modal-content w3-card-4 w3-animate-top w3-round" style="max-width: 600px; margin: auto;">
+            <header class="w3-container" style="background-color: var(--primary-color); color: white; border-radius: 8px 8px 0 0;">
+                <span onclick="document.getElementById('sitInModal').style.display='none'" class="w3-button w3-display-topright" style="padding: 16px;">&times;</span>
+                <h3>Sit-In Form</h3>
+            </header>
+            <form class="w3-container w3-margin-top" method="POST" action="{{ url_for('submit_sit_in') }}">
+                <div class="w3-margin-bottom">
+                    <label>ID Number</label>
+                    <input class="w3-input w3-border w3-round" type="text" value="{{ student[0] }}" readonly>
+                    <input type="hidden" name="idno" value="{{ student[0] }}">
+                </div>
+            
+                <div class="w3-margin-bottom">
+                    <label>Full Name</label>
+                    <input class="w3-input w3-border w3-round" type="text" value="{{ student[1] }} {{ student[2] }} {{ student[3] }}" readonly>
+                </div>
+            
+                <div class="w3-margin-bottom">
+                    <label>Purpose</label>
+                    <select class="w3-select w3-border w3-round" name="purpose" required>
+                        <option value="" disabled selected>Select a purpose</option>
+                        <option value="C#">C#</option>
+                        <option value="Python">Python</option>
+                        <option value="Java">Java</option>
+                        <option value="C++">C++</option>
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="HTML">HTML</option>
+                        <option value="SQL">SQL</option>
+                    </select>
+                </div>
+            
+                <div class="w3-margin-bottom">
+                    <label>Lab</label>
+                    <input class="w3-input w3-border w3-round" type="text" name="lab" required>
+                </div>
+                <input type="hidden" name="login_time" id="login_time">
+                <div class="w3-center">
+                    <button type="submit" class="w3-button w3-margin w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">Sit-In</button>
+                    <button type="button" class="w3-button w3-margin w3-round w3-light-grey" onclick="document.getElementById('sitInModal').style.display='none'">Cancel</button>
+                </div>
+            </form>        
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Table -->
+    <div class="w3-card w3-round">
+        <table class="w3-table w3-bordered">
+            <thead>
+                <tr class="w3-light-grey">
+                    <th>Profile</th>
+                    <th>ID Number</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Course</th>
+                    <th>Year Level</th>
+                    <th>Email</th>
+                    <th>Session</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for student in students %}
+                <tr>
+                    <td>
+                        <img src="{{ url_for('static', filename='uploads/' + student.profile_image) }}" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%;">
+                    </td>
+                    <td>{{ student.idno }}</td>
+                    <td>{{ student.lastname }}</td>
+                    <td>{{ student.firstname }}</td>
+                    <td>{{ student.middlename }}</td>
+                    <td>{{ student.course }}</td>
+                    <td>{{ student.year_level }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.session }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="w3-center w3-padding-16">
+        <div class="w3-bar">
+            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="prevPage">«</a>
+            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page1">1</a>
+            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page2">2</a>
+            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page3">3</a>
+            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page4">4</a>
+            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="nextPage">»</a>
+        </div>
+    </div>
 </div>
 
 <!-- JavaScript to handle rows per page and pagination -->
 <script>
-let currentPage = 1; // Default page
-let rowsPerPage = 5; // Default rows per page
-let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
-let totalRows = rows.length;
+    let currentPage = 1; // Default page
+    let rowsPerPage = 10; // Default rows per page
+    let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
+    let totalRows = rows.length;
 
-// Function to handle rows per page change
-document.getElementById('rowsPerPage').addEventListener('change', function() {
-    rowsPerPage = parseInt(this.value); // Get the selected value
-    currentPage = 1; // Reset to the first page
-    updateTable(); // Update table display
-});
-
-// Function to update the table based on the current page and rows per page
-function updateTable() {
-    let startRow = (currentPage - 1) * rowsPerPage;
-    let endRow = startRow + rowsPerPage;
-
-    // Hide all rows initially
-    rows.forEach((row, index) => {
-        if (index >= startRow && index < endRow) {
-            row.style.display = ''; // Show rows for the current page
-        } else {
-            row.style.display = 'none'; // Hide rows for other pages
-        }
+    // Function to handle rows per page change
+    document.getElementById('rowsPerPage').addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value); // Get the selected value
+        currentPage = 1; // Reset to the first page
+        updateTable(); // Update table display
     });
 
-    updatePagination(); // Update pagination buttons
-}
+    // Function to update the table based on the current page and rows per page
+    function updateTable() {
+        let startRow = (currentPage - 1) * rowsPerPage;
+        let endRow = startRow + rowsPerPage;
 
-// Function to update pagination buttons
-function updatePagination() {
-    let totalPages = Math.ceil(totalRows / rowsPerPage);
-    let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
-    
-    // Hide all page buttons and display only the relevant ones
-    pageButtons.forEach((button, index) => {
-        if (index + 1 <= totalPages) {
-            button.style.display = ''; // Show valid page buttons
-            button.textContent = index + 1; // Set page number
-        } else {
-            button.style.display = 'none'; // Hide extra page buttons
-        }
-    });
+        // Hide all rows initially
+        rows.forEach((row, index) => {
+            if (index >= startRow && index < endRow) {
+                row.style.display = ''; // Show rows for the current page
+            } else {
+                row.style.display = 'none'; // Hide rows for other pages
+            }
+        });
 
-    // Highlight the current page
-    pageButtons.forEach(button => button.classList.remove('w3-deep-purple'));
-    document.getElementById('page' + currentPage).classList.add('w3-deep-purple');
-
-    // Enable/disable next/prev buttons
-    document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
-    document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
-}
-
-// Event listeners for pagination buttons
-document.getElementById('prevPage').addEventListener('click', function(e) {
-    e.preventDefault();
-    if (currentPage > 1) {
-        currentPage--;
-        updateTable();
+        updatePagination(); // Update pagination buttons
     }
-});
 
-document.getElementById('nextPage').addEventListener('click', function(e) {
-    e.preventDefault();
-    let totalPages = Math.ceil(totalRows / rowsPerPage);
-    if (currentPage < totalPages) {
-        currentPage++;
-        updateTable();
+    // Function to update pagination buttons
+    function updatePagination() {
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+        let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
+        
+        // Hide all page buttons and display only the relevant ones
+        pageButtons.forEach((button, index) => {
+            if (index + 1 <= totalPages) {
+                button.style.display = ''; // Show valid page buttons
+                button.textContent = index + 1; // Set page number
+            } else {
+                button.style.display = 'none'; // Hide extra page buttons
+            }
+        });
+
+        // Highlight the current page
+        pageButtons.forEach(button => {
+            button.classList.remove('w3-deep-purple');
+            button.classList.add('w3-light-grey');
+        });
+        document.getElementById('page' + currentPage).classList.remove('w3-light-grey');
+        document.getElementById('page' + currentPage).classList.add('w3-deep-purple');
+
+        // Enable/disable next/prev buttons
+        document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
+        document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
     }
-});
 
-// Event listeners for individual page buttons
-document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
-    button.addEventListener('click', function(e) {
+    // Event listeners for pagination buttons
+    document.getElementById('prevPage').addEventListener('click', function(e) {
         e.preventDefault();
-        currentPage = parseInt(this.textContent);
-        updateTable();
+        if (currentPage > 1) {
+            currentPage--;
+            updateTable();
+        }
     });
-});
 
-// Event listener for reset sessions button
-document.getElementById('resetSessions').addEventListener('click', function() {
-    if (confirm("Are you sure you want to reset all sessions?")) {
-        fetch('/reset_sessions', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("All sessions have been reset to 30.");
-                    location.reload(); // Reload the page to reflect changes
-                } else {
-                    alert("Failed to reset sessions.");
-                }
-            });
+    document.getElementById('nextPage').addEventListener('click', function(e) {
+        e.preventDefault();
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTable();
+        }
+    });
+
+    // Event listeners for individual page buttons
+    document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentPage = parseInt(this.textContent);
+            updateTable();
+        });
+    });
+
+    // Event listener for reset sessions button
+    document.getElementById('resetSessions').addEventListener('click', function() {
+        if (confirm("Are you sure you want to reset all sessions?")) {
+            fetch('/reset_sessions', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("All sessions have been reset to 30.");
+                        location.reload(); // Reload the page to reflect changes
+                    } else {
+                        alert("Failed to reset sessions.");
+                    }
+                });
+        }
+    });
+
+    // Initial update on page load
+    updateTable();
+
+    function hideForm() {
+        document.getElementById('sitInModal').style.display = 'none';
     }
-});
 
-// Initial update on page load
-updateTable();
-
-function hideForm() {
-    document.getElementById('sitInModal').style.display = 'none';
-}
-
-// Set the current timestamp to the hidden login_time input field
-document.getElementById('login_time').value = new Date().toISOString();
+    // Set the current timestamp to the hidden login_time input field
+    document.getElementById('login_time').value = new Date().toISOString();
 </script>
 {% endblock %}

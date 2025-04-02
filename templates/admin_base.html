@@ -90,44 +90,47 @@
             margin-left: 270px;
         }
 
-        .flash-container {
+        .flash-message {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .flash-message {
             background: white;
             padding: 15px 25px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            min-width: 300px;
+            text-align: center;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: slideIn 0.3s ease-out;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+        }
+
+        .flash-message.success { 
+            border-color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        .flash-message.danger { 
+            border-color: #f44336;
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        .flash-message.info { 
+            border-color: #2196F3;
+            background-color: rgba(33, 150, 243, 0.1);
         }
 
         @keyframes slideIn {
             from {
-                transform: translateX(100%);
+                transform: translateY(-20px);
                 opacity: 0;
             }
             to {
-                transform: translateX(0);
+                transform: translateY(0);
                 opacity: 1;
             }
-        }
-
-        .content-container {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
     </style>
 </head>
@@ -177,18 +180,16 @@
         </div>  
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-container">
+            {% if messages %}
                 {% for category, message in messages %}
-                <div class="flash-message w3-{{ 'green' if category=='success' else 'red' if category=='danger' else 'blue' }}">
-                    <p style="margin: 0;">{{ message }}</p>
+                <div class="flash-message {{ category }}">
+                    {{ message }}
                 </div>
                 {% endfor %}
-            </div>
-        {% endif %}
-        {% endwith %}
+            {% endif %}
+            {% endwith %}
 
-        <div class="content-container">
+        <div>
             {% block content %}
             {% endblock %}
         </div>
