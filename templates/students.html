@@ -10,7 +10,7 @@
             <option value="10" selected>10</option>
             <option value="20">20</option>
         </select>
-        <button id="resetSessions" class="w3-button w3-round w3-right" style="background-color: var(--secondary-color); color: var(--primary-color);">Reset All Sessions</button>
+        <button id="resetSessions" class="w3-button w3-round w3-right" style="background-color: #FFDE91; color: var(--primary-color);">Reset All Sessions</button>
     </div>
 
     <form method="POST" action="{{ url_for('view_students') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex; margin-bottom: 20px;">
@@ -168,7 +168,7 @@
             button.classList.add('w3-light-grey');
         });
         document.getElementById('page' + currentPage).classList.remove('w3-light-grey');
-        document.getElementById('page' + currentPage).classList.add('w3-deep-purple');
+        document.getElementById('page' + currentPage).classList.add('paging-backcolor', 'w3-round');
 
         // Enable/disable next/prev buttons
         document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
