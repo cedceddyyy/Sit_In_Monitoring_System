@@ -1,8 +1,7 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 import dbhelper
 import os
 from werkzeug.utils import secure_filename
-from datetime import datetime
 import pytz
 
 app = Flask(__name__)
@@ -13,12 +12,6 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def format_datetime(dt_str):
-    local_tz = pytz.timezone(dbhelper.TIMEZONE)
-    dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
-    dt = dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 @app.route("/upload_profile", methods=["POST"])
 def upload_profile():
@@ -167,6 +160,10 @@ def post_announcement():
         return redirect(url_for("admin_dashboard"))
 
     admin_id = dbhelper.get_admin_id(session["user"])
+    if not admin_id:
+        flash("Admin ID not found. Please check your account.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
     if dbhelper.insert_announcement(announcement_detail, admin_id):
         flash("Announcement posted successfully!", "success")
     else:
@@ -339,7 +336,13 @@ def admin_dashboard():
     total_sit_in = dbhelper.total_sit_in()
     announcements = dbhelper.get_announcements(include_inactive=True)
     purpose_counts = dbhelper.get_purpose_counts()
-    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts, total_sit_in=total_sit_in)
+    leaderboard = dbhelper.get_leaderboard()
+
+    # Add rank to leaderboard data
+    for rank, student in enumerate(leaderboard, start=1):
+        student["rank"] = rank
+
+    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts, total_sit_in=total_sit_in, leaderboard=leaderboard)
 
 @app.route("/view_students", methods=['GET', 'POST'])
 def view_students():
@@ -381,7 +384,6 @@ def submit_sit_in():
 
     if dbhelper.insert_sit_in(idno, purpose, lab, login_time):  
         dbhelper.decrement_session(idno)
-        dbhelper.update_status_to_active(idno) 
         flash("Sit-In recorded successfully!", "success")
     else:
         flash("Failed to record Sit-In. Try again.", "danger")
@@ -434,14 +436,25 @@ def insert_sit_in():
         return redirect(url_for('search_student_page'))
 
 @app.route('/logout_sit_in/<int:idno>', methods=['POST'])
-def logout_sit_in(idno):
+def logout_sit_in(idno):  # Changed parameter name from idno to id
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
 
-    dbhelper.update_logout_time(idno)
+    dbhelper.update_logout_time(idno)  # Use id instead of idno
     flash("User is logged out!", "success")
     return redirect(url_for('sit_in'))
+
+@app.route('/sit_in_reports', methods=['GET'])
+def sit_in_reports():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    date_filter = request.args.get('date', '')
+    sit_in_records = dbhelper.get_all_sit_in_records_by_date(date_filter)
+
+    return render_template("sit_in_reports.html", pagetitle="Generate Reports", sit_in_records=sit_in_records)
 
 if __name__ == "__main__":
     app.run(debug=True)

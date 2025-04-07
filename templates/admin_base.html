@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="icon" type="image/x-icon" href="../static/favicon/csslogo.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 	<title>Admin Dashboard</title>
     <style>
         :root {
@@ -132,6 +135,16 @@
                 opacity: 1;
             }
         }
+
+        .paging-backcolor {
+        background-color: #2C1038;
+        border-radius: 3px;
+    }
+
+    .paging-color {
+        color: white;
+    }
+
     </style>
 </head>
 <body>
@@ -156,7 +169,7 @@
             <span class="material-icons">visibility</span> 
             <span class="text">View Sit-in Reservation</span>
         </a>
-        <a href="" class="{% if request.endpoint == 'sit_in_reported' %}active{% endif %}">
+        <a href="{{ url_for('sit_in_reports') }}" class="{% if request.endpoint == 'sit_in_reports' %}active{% endif %}">
             <span class="material-icons">report_problem</span> 
             <span class="text">Sit-in Reported</span>
         </a>

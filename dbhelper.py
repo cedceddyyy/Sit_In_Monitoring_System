@@ -149,12 +149,12 @@ def insert_announcement(announcement_detail, admin_id):
     conn = connect_db()
     cursor = conn.cursor()
 
-    try: 
-        cursor.execute("INSERT INTO announcement (announcement_detail, admin_id) VALUES (?, ?)" , (announcement_detail, admin_id))
+    try:
+        cursor.execute("INSERT INTO announcement (announcement_detail, admin_id) VALUES (?, ?)", (announcement_detail, admin_id))
         conn.commit()
         return True
-
-    except sqlite3.IntegrityError:
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")  # Debug log
         return False
     finally:
         conn.close()
@@ -170,10 +170,26 @@ def get_admin_id(username):
     return admin_id[0] if admin_id else None
 
 def format_datetime(dt_str):
+    if not dt_str:
+        return None
     local_tz = pytz.timezone(TIMEZONE)
-    dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
-    dt = dt.astimezone(local_tz)
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
+    
+    try:
+        # First try to parse as ISO format with Z (UTC)
+        if 'Z' in dt_str:
+            dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+        else:
+            # If no Z, assume it's in UTC format without timezone info
+            dt = datetime.fromisoformat(dt_str)
+            # Add UTC timezone info
+            dt = dt.replace(tzinfo=pytz.UTC)
+        
+        # Convert to local timezone
+        dt = dt.astimezone(local_tz)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        # If parsing fails, return the original string
+        return dt_str
 
 def get_announcements(include_inactive=False):
     conn = connect_db()
@@ -257,11 +273,11 @@ def insert_sit_in(idno, purpose, lab, login_time):
     finally:
         conn.close()
 
-def update_logout_time(idno):
+def update_logout_time(idno):  # Rename parameter to idno
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("UPDATE sit_in SET logout_time = CURRENT_TIMESTAMP, status = 'inactive' WHERE idno = ? AND logout_time IS NULL", (idno,))
+    cursor.execute("UPDATE sit_in SET logout_time = CURRENT_TIMESTAMP, status = 'inactive' WHERE idno = ?", (idno,))
     conn.commit()
     conn.close()
 
@@ -279,14 +295,6 @@ def update_login_time(idno):
     cursor = conn.cursor()
 
     cursor.execute("UPDATE sit_in SET login_time = CURRENT_TIMESTAMP WHERE idno = ? AND logout_time IS NULL", (idno,))
-    conn.commit()
-    conn.close()
-
-def update_status_to_active(idno):
-    conn = connect_db()
-    cursor = conn.cursor()
-
-    cursor.execute("UPDATE sit_in SET status = 'active' WHERE idno = ? AND status != 'active'", (idno,))
     conn.commit()
     conn.close()
 
@@ -342,7 +350,36 @@ def get_all_sit_in_records(search=''):
     records = cursor.fetchall()
     conn.close()
 
-    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], "login_time": format_datetime(row[4]), "logout_time": format_datetime(row[5]) if row[5] else None, "date": row[6]} for row in records]
+    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], 
+             "login_time": format_datetime(row[4]) if row[4] else None, 
+             "logout_time": format_datetime(row[5]) if row[5] else None, 
+             "date": row[6]} for row in records]
+
+def get_all_sit_in_records_by_date(date_filter):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    if date_filter:
+        cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
+                          sit_in.purpose, sit_in.lab, sit_in.login_time, sit_in.logout_time, date(sit_in.login_time) as date
+                          FROM sit_in
+                          JOIN users ON sit_in.idno = users.idno
+                          WHERE date(sit_in.login_time) = ?
+                          ORDER BY sit_in.login_time DESC''', (date_filter,))
+    else:
+        cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
+                          sit_in.purpose, sit_in.lab, sit_in.login_time, sit_in.logout_time, date(sit_in.login_time) as date
+                          FROM sit_in
+                          JOIN users ON sit_in.idno = users.idno
+                          ORDER BY sit_in.login_time DESC''')
+
+    records = cursor.fetchall()
+    conn.close()
+
+    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], 
+             "login_time": format_datetime(row[4]) if row[4] else None, 
+             "logout_time": format_datetime(row[5]) if row[5] else None, 
+             "date": row[6]} for row in records]
 
 def reset_all_sessions():
     conn = connect_db()
@@ -412,6 +449,28 @@ def delete_announcement(announcement_id):
         return False
     finally:
         conn.close()
+
+def get_leaderboard():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT 
+            users.idno, 
+            users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name,
+            COUNT(sit_in.id) AS total_sit_ins,
+            SUM((julianday(sit_in.logout_time) - julianday(sit_in.login_time)) * 24) AS total_hours
+        FROM sit_in
+        JOIN users ON sit_in.idno = users.idno
+        WHERE sit_in.logout_time IS NOT NULL
+        GROUP BY users.idno
+        ORDER BY total_sit_ins DESC, total_hours DESC
+        LIMIT 5
+    ''')
+    leaderboard = cursor.fetchall()
+    conn.close()
+
+    return [{"idno": row[0], "full_name": row[1], "total_sit_ins": row[2], "total_hours": round(row[3], 2) if row[3] else 0} for row in leaderboard]
 
 if __name__ == "__main__":
     create_database()

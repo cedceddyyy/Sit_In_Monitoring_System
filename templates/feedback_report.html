@@ -1,12 +1,14 @@
 {% extends 'admin_base.html' %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-animate-bottom w3-display-container">
+<div class="w3-container w3-padding-16 w3-margin w3-animate-bottom">
+
     {% if feedbacks %}
-    <div class="w3-responsive">
-        <table class="w3-table w3-bordered w3-striped w3-hoverable">
-            <thead class="w3-light-grey">
-                <tr>
+    <!-- Table -->
+    <div class="w3-card w3-round">
+        <table class="w3-table w3-bordered">
+            <thead>
+                <tr class="w3-light-grey">
                     <th>Student ID</th>
                     <th>Lab Number</th>
                     <th>Message</th>
@@ -28,9 +30,9 @@
     {% else %}
     <p class="w3-text-gray w3-center">No feedback available.</p>
     {% endif %}
-     
-     <!-- Pagination -->
-     <div class="w3-bar w3-center w3-padding w3-margin">
+
+    <!-- Pagination -->
+    <div class="w3-bar w3-center w3-padding w3-margin">
         <a href="#" class="w3-button" id="prevPage">«</a>
         <span id="paginationNumbers"></span>
         <a href="#" class="w3-button" id="nextPage">»</a>
@@ -63,7 +65,7 @@
             let pageButton = document.createElement('a');
             pageButton.href = "#";
             pageButton.classList.add("w3-button");
-            if (i === currentPage) pageButton.classList.add("w3-deep-purple");
+            if (i === currentPage) pageButton.classList.add("paging-backcolor", "paging-color");
             pageButton.textContent = i;
             pageButton.addEventListener('click', function(e) {
                 e.preventDefault();
