@@ -20,6 +20,52 @@
                     <option value="303">303</option>
                 </select>
                 
+                <label class="w3-text-dark-grey"><b>Rating</b></label>
+                <div class="star-rating">
+                    <input type="radio" id="5-stars" name="rating" value="5" required />
+                    <label for="5-stars" class="star">&#9733;</label>
+                    <input type="radio" id="4-stars" name="rating" value="4" />
+                    <label for="4-stars" class="star">&#9733;</label>
+                    <input type="radio" id="3-stars" name="rating" value="3" />
+                    <label for="3-stars" class="star">&#9733;</label>
+                    <input type="radio" id="2-stars" name="rating" value="2" />
+                    <label for="2-stars" class="star">&#9733;</label>
+                    <input type="radio" id="1-star" name="rating" value="1" />
+                    <label for="1-star" class="star">&#9733;</label>
+                </div>
+
+                <style>
+                    .star-rating {
+                        direction: rtl;
+                        display: flex;
+                        justify-content: center;
+                        gap: 5px;
+                    }
+                    .star-rating input[type="radio"] {
+                        display: none;
+                    }
+                    .star-rating label {
+                        font-size: 2em;
+                        color: #ccc;
+                        cursor: pointer;
+                        transition: color 0.2s ease-in-out;
+                    }
+                    .star-rating input[type="radio"]:checked ~ label,
+                    .star-rating label:hover,
+                    .star-rating label:hover ~ label {
+                        color: #FFD700;
+                    }
+                </style>
+
+                <script>
+                    document.querySelectorAll('.star-rating input').forEach((input) => {
+                        input.addEventListener('change', function() {
+                            const ratingValue = this.value;
+                            console.log('Selected rating:', ratingValue);
+                        });
+                    });
+                </script>
+                
                 <label class="w3-text-dark-grey"><b>Message</b></label>
                 <textarea class="w3-input w3-border w3-round w3-margin-bottom" 
                           name="message" rows="4" style="resize: vertical;" 

@@ -23,7 +23,7 @@
             <div class="w3-col m4">
                 <label class="w3-text-dark-grey"><b>Search Records</b></label>
                 <input type="text" id="tableFilterInput" class="w3-input w3-border w3-round" 
-                       placeholder="Search all columns..." onkeyup="filterTable('tableFilterInput', 'sitInTable')">
+                       placeholder="Search all columns..." value="{{ request.args.get('search', '') }}">
             </div>
         </div>
     </div>
@@ -177,9 +177,15 @@
     // Existing functions
     function filterReports() {
         const date = document.getElementById('search_date').value;
+        const search = document.getElementById('tableFilterInput').value;
+        let url = '/sit_in_reports?';
         if (date) {
-            window.location.href = `/sit_in_reports?date=${date}`;
+            url += `date=${date}&`;
         }
+        if (search) {
+            url += `search=${search}`;
+        }
+        window.location.href = url;
     }
 
     function resetFilters() {
