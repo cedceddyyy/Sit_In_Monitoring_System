@@ -23,7 +23,7 @@
             <div class="w3-col m4">
                 <label class="w3-text-dark-grey"><b>Search Records</b></label>
                 <input type="text" id="tableFilterInput" class="w3-input w3-border w3-round" 
-                       placeholder="Search all columns..." onkeyup="filterTable('tableFilterInput', 'sitInTable')">
+                       placeholder="Search all columns..." value="{{ request.args.get('search', '') }}">
             </div>
         </div>
     </div>
@@ -176,9 +176,15 @@
     // Existing functions
     function filterReports() {
         const date = document.getElementById('search_date').value;
+        const search = document.getElementById('tableFilterInput').value;
+        let url = '/sit_in_reports?';
         if (date) {
-            window.location.href = `/sit_in_reports?date=${date}`;
+            url += `date=${date}&`;
         }
+        if (search) {
+            url += `search=${search}`;
+        }
+        window.location.href = url;
     }
 
     function resetFilters() {
@@ -234,7 +240,12 @@
 
     function downloadCSV() {
         const data = getFilteredTableData();
-        let csv = data.map(row => row.join(',')).join('\n');
+        let csv = data.map((row, index) => {
+            if (index === 0) {
+                return row.join(','); // Header row
+            }
+            return row.join(',');
+        }).join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
         const link = document.createElement('a');
         const date = document.getElementById('search_date').value;
@@ -246,7 +257,19 @@
 
     function downloadExcel() {
         const data = getFilteredTableData();
+
+        // Add header row with styling
         const ws = XLSX.utils.aoa_to_sheet(data);
+        const headerRange = XLSX.utils.decode_range(ws['!ref']);
+        for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+            if (!ws[cellAddress]) continue;
+            ws[cellAddress].s = {
+                fill: { fgColor: { rgb: "D3BAFA" } }, // Purple header background
+                font: { bold: true } // Bold header text
+            };
+        }
+
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
         const date = document.getElementById('search_date').value;
@@ -270,7 +293,12 @@
                     table: {
                         headerRows: 1,
                         widths: Array(data[0].length).fill('*'),
-                        body: data
+                        body: data.map((row, index) => {
+                            if (index === 0) {
+                                return row.map(cell => ({ text: cell, fillColor: '#D3BAFA', bold: true }));
+                            }
+                            return row;
+                        })
                     }
                 }
             ],

@@ -258,11 +258,12 @@ def feedback():
     if request.method == "POST":
         lab_number = request.form.get('lab_number')
         message = request.form.get('message')
+        rating = request.form.get('rating')  # Get the rating from the form
 
-        if not lab_number or not message:
+        if not lab_number or not message or not rating:
             flash("Please fill out all fields!", "danger")      
         else:
-            success = dbhelper.insert_feedback(student_id, lab_number, message)
+            success = dbhelper.insert_feedback(student_id, lab_number, message, int(rating))
             if success:
                 flash("Feedback submitted successfully!", "success")    
             else:
@@ -452,9 +453,20 @@ def sit_in_reports():
         return redirect(url_for("login"))
 
     date_filter = request.args.get('date', '')
-    sit_in_records = dbhelper.get_all_sit_in_records_by_date(date_filter)
+    search_filter = request.args.get('search', '')
+    sit_in_records = dbhelper.get_all_sit_in_records_by_date_and_purpose(date_filter, search_filter)
 
     return render_template("sit_in_reports.html", pagetitle="Generate Reports", sit_in_records=sit_in_records)
+
+@app.route('/reset_session/<int:idno>', methods=['POST'])
+def reset_session(idno):
+    if "user" not in session:
+        return jsonify({"success": False, "message": "You need to log in first!"})
+
+    if dbhelper.reset_session(idno):
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "message": "Failed to reset session."})
 
 if __name__ == "__main__":
     app.run(debug=True)

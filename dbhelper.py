@@ -50,7 +50,8 @@ def create_database():
                       student_id INTEGER NOT NULL,
                       lab_number INTEGER NOT NULL,
                       date_submitted DATETIME DEFAULT CURRENT_TIMESTAMP,
-                      message TEXT NOT NULL,    
+                      message TEXT NOT NULL,
+                      rating INTEGER CHECK(rating >= 1 AND rating <= 5),
                       FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
                  )''')
     
@@ -224,13 +225,13 @@ def total_feedback():
 
     return total
 
-def insert_feedback(student_id, lab_number, message):
+def insert_feedback(student_id, lab_number, message, rating):
     conn = connect_db()
     cursor = conn.cursor()
 
     try:
-        cursor.execute("INSERT INTO feedback (student_id, lab_number, message) VALUES (?, ?, ?)", 
-                       (student_id, lab_number, message))
+        cursor.execute("INSERT INTO feedback (student_id, lab_number, message, rating) VALUES (?, ?, ?, ?)", 
+                       (student_id, lab_number, message, rating))
         conn.commit()
         return True
     except sqlite3.Error:
@@ -242,12 +243,12 @@ def get_feedbacks():
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT student_id, lab_number, message, date_submitted FROM feedback ORDER BY date_submitted DESC")
+    cursor.execute("SELECT student_id, lab_number, message, date_submitted, rating FROM feedback ORDER BY date_submitted DESC")
     feedback_details = cursor.fetchall()
     conn.close()
 
     # Convert tuples to dictionaries
-    return [{"student_id": row[0], "lab_number": row[1], "message": row[2], "date_submitted": row[3]} for row in feedback_details]
+    return [{"student_id": row[0], "lab_number": row[1], "message": row[2], "date_submitted": row[3], "rating": row[4]} for row in feedback_details]
 
 def search_student_by_id(idno):
     conn = connect_db()
@@ -381,6 +382,34 @@ def get_all_sit_in_records_by_date(date_filter):
              "logout_time": format_datetime(row[5]) if row[5] else None, 
              "date": row[6]} for row in records]
 
+def get_all_sit_in_records_by_date_and_purpose(date_filter, search_filter):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    search_query = f"%{search_filter}%"
+    if date_filter:
+        cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
+                          sit_in.purpose, sit_in.lab, sit_in.login_time, sit_in.logout_time, date(sit_in.login_time) as date
+                          FROM sit_in
+                          JOIN users ON sit_in.idno = users.idno
+                          WHERE date(sit_in.login_time) = ? AND (sit_in.purpose LIKE ? OR users.lastname LIKE ? OR users.firstname LIKE ?)
+                          ORDER BY sit_in.login_time DESC''', (date_filter, search_query, search_query, search_query))
+    else:
+        cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
+                          sit_in.purpose, sit_in.lab, sit_in.login_time, sit_in.logout_time, date(sit_in.login_time) as date
+                          FROM sit_in
+                          JOIN users ON sit_in.idno = users.idno
+                          WHERE sit_in.purpose LIKE ? OR users.lastname LIKE ? OR users.firstname LIKE ?
+                          ORDER BY sit_in.login_time DESC''', (search_query, search_query, search_query))
+
+    records = cursor.fetchall()
+    conn.close()
+
+    return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], 
+             "login_time": format_datetime(row[4]) if row[4] else None, 
+             "logout_time": format_datetime(row[5]) if row[5] else None, 
+             "date": row[6]} for row in records]
+
 def reset_all_sessions():
     conn = connect_db()
     cursor = conn.cursor()
@@ -471,6 +500,19 @@ def get_leaderboard():
     conn.close()
 
     return [{"idno": row[0], "full_name": row[1], "total_sit_ins": row[2], "total_hours": round(row[3], 2) if row[3] else 0} for row in leaderboard]
+
+def reset_session(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("UPDATE users SET session = 30 WHERE idno = ?", (idno,))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     create_database()
