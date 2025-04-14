@@ -260,16 +260,18 @@ def search_student_by_id(idno):
 
     return student
 
-def insert_sit_in(idno, purpose, lab, login_time):
+def insert_sit_in(idno, purpose, lab):
     conn = connect_db()
     cursor = conn.cursor()
 
     try:
-        cursor.execute("INSERT INTO sit_in (idno, purpose, lab, remaining_session, login_time) VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?), ?)", 
-                       (idno, purpose, lab, idno, login_time))
+        cursor.execute('''INSERT INTO sit_in (idno, purpose, lab, remaining_session) 
+                          VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?))''', 
+                       (idno, purpose, lab, idno))
         conn.commit()
         return True
-    except sqlite3.Error:
+    except sqlite3.Error as e:
+        print(f"Error inserting sit-in: {e}")  # Debugging log
         return False
     finally:
         conn.close()

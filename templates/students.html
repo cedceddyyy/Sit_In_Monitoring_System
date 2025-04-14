@@ -33,12 +33,6 @@
                     <input class="w3-input w3-border w3-round" type="text" value="{{ student[0] }}" readonly>
                     <input type="hidden" name="idno" value="{{ student[0] }}">
                 </div>
-            
-                <div class="w3-margin-bottom">
-                    <label>Full Name</label>
-                    <input class="w3-input w3-border w3-round" type="text" value="{{ student[1] }} {{ student[2] }} {{ student[3] }}" readonly>
-                </div>
-            
                 <div class="w3-margin-bottom">
                     <label>Purpose</label>
                     <select class="w3-select w3-border w3-round" name="purpose" required>
@@ -58,7 +52,6 @@
                         <option value="Capstone">Capstone</option>
                     </select>
                 </div>
-            
                 <div class="w3-margin-bottom">
                     <label>Lab</label>
                     <select class="w3-select w3-border w3-round" name="lab" required>
@@ -72,7 +65,6 @@
                         <option value="517">517</option>
                     </select>
                 </div>
-                <input type="hidden" name="login_time" id="login_time">
                 <div class="w3-center">
                     <button type="submit" class="w3-button w3-margin w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">Sit-In</button>
                     <button type="button" class="w3-button w3-margin w3-round w3-light-grey" onclick="document.getElementById('sitInModal').style.display='none'">Cancel</button>
@@ -227,9 +219,6 @@
     function hideForm() {
         document.getElementById('sitInModal').style.display = 'none';
     }
-
-    // Set the current timestamp to the hidden login_time input field
-    document.getElementById('login_time').value = new Date().toISOString();
 
     function resetSession(idno) {
         if (confirm("Are you sure you want to reset the session for this student?")) {

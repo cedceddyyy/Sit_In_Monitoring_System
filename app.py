@@ -381,9 +381,8 @@ def submit_sit_in():
     idno = request.form['idno']
     purpose = request.form['purpose']
     lab = request.form['lab']
-    login_time = request.form['login_time']
 
-    if dbhelper.insert_sit_in(idno, purpose, lab, login_time):  
+    if dbhelper.insert_sit_in(idno, purpose, lab):  
         dbhelper.decrement_session(idno)
         flash("Sit-In recorded successfully!", "success")
     else:
