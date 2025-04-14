@@ -1,0 +1,287 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<div class="w3-container">
+    <div class="w3-round w3-padding" style="margin-bottom: 20px;">
+        
+        <div class="w3-row-padding w3-margin-top">
+            <div class="w3-col m4">
+                <label class="w3-text-dark-grey"><b>Filter by Date</b></label>
+                <input type="date" id="search_date" class="w3-input w3-border w3-round" 
+                       value="{{ request.args.get('date', '') }}">
+            </div>
+            <div class="w3-col m4 w3-margin-top" style="padding-top: 7px;">
+                <button class="w3-button w3-round" 
+                        style="background-color: var(--secondary-color); color: var(--primary-color);"
+                        onclick="filterReports()">
+                    <i class="material-icons" style="vertical-align: middle;">search</i> Search
+                </button>
+                <button class="w3-button w3-round w3-light-grey" onclick="resetFilters()">
+                    <i class="material-icons" style="vertical-align: middle;">refresh</i> Reset
+                </button>
+            </div>
+            <div class="w3-col m4">
+                <label class="w3-text-dark-grey"><b>Search Records</b></label>
+                <input type="text" id="tableFilterInput" class="w3-input w3-border w3-round" 
+                       placeholder="Search all columns..." onkeyup="filterTable('tableFilterInput', 'sitInTable')">
+            </div>
+        </div>
+    </div>
+
+    <div class="w3-card w3-round w3-white w3-padding">
+        <!-- Rows per page selector -->
+        <div class="w3-bar w3-margin-bottom">
+            <label for="rowsPerPage" class="w3-text-grey">Rows per page: </label>
+            <select id="rowsPerPage" class="w3-select w3-border w3-round" style="max-width: 70px; display: inline-block;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <div class="w3-responsive">
+            <table class="w3-table w3-bordered w3-hoverable" id="sitInTable">
+                <thead>
+                    <tr class="w3-light-grey">
+                        <th>ID Number</th>
+                        <th>Purpose</th>
+                        <th>Laboratory</th>
+                        <th>Login Time</th>
+                        <th>Logout Time</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for record in sit_in_records %}
+                    <tr>
+                        <td>{{ record.idno }}</td>
+                        <td>{{ record.purpose }}</td>
+                        <td>{{ record.lab }}</td>
+                        <td>{{ record.login_time.split(' ')[1] if record.login_time else '' }}</td>
+                        <td>{{ record.logout_time.split(' ')[1] if record.logout_time else '' }}</td>
+                        <td>{{ record.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="w3-bar w3-center w3-padding w3-margin">
+            <a href="#" class="w3-button" id="prevPage">«</a>
+            <span id="paginationNumbers"></span>
+            <a href="#" class="w3-button" id="nextPage">»</a>
+        </div>
+
+        <div class="w3-margin-top w3-center">
+            <button class="w3-button w3-round" 
+                    style="background-color: var(--secondary-color); color: var(--primary-color);"
+                    onclick="downloadCSV()">
+                <i class="material-icons" style="vertical-align: middle;">file_download</i> CSV
+            </button>
+            <button class="w3-button w3-round" 
+                    style="background-color: var(--secondary-color); color: var(--primary-color);"
+                    onclick="downloadExcel()">
+                <i class="material-icons" style="vertical-align: middle;">file_download</i> Excel
+            </button>
+            <button class="w3-button w3-round" 
+                    style="background-color: var(--secondary-color); color: var(--primary-color);"
+                    onclick="downloadPDF()">
+                <i class="material-icons" style="vertical-align: middle;">file_download</i> PDF
+            </button>
+            <button class="w3-button w3-round w3-light-grey" onclick="window.print()">
+                <i class="material-icons" style="vertical-align: middle;">print</i> Print
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pagination variables
+    let currentPage = 1;
+    let rowsPerPage = 10; // Default rows per page
+    const rows = document.querySelectorAll('#tableBody tr');
+    const totalRows = rows.length;
+    const paginationNumbers = document.getElementById('paginationNumbers');
+
+    // Initialize pagination
+    updateTable();
+
+    // Rows per page change handler
+    document.getElementById('rowsPerPage').addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value);
+        currentPage = 1; // Reset to first page when changing rows per page
+        updateTable();
+    });
+
+    // Update table display based on current page and rows per page
+    function updateTable() {
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        const startRow = (currentPage - 1) * rowsPerPage;
+        const endRow = startRow + rowsPerPage;
+
+        // Show/hide rows based on pagination
+        rows.forEach((row, index) => {
+            row.style.display = (index >= startRow && index < endRow) ? '' : 'none';
+        });
+
+        updatePagination(totalPages);
+    }
+
+    // Update pagination controls
+    function updatePagination(totalPages) {
+        paginationNumbers.innerHTML = '';
+        
+        // Create page number buttons
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('a');
+            pageButton.href = "#";
+            pageButton.classList.add("w3-button");
+            if (i === currentPage) {
+                pageButton.classList.add("paging-backcolor", "paging-color");
+            }
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = i;
+                updateTable();
+            });
+            paginationNumbers.appendChild(pageButton);
+        }
+
+        // Update prev/next button visibility
+        document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
+        document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
+    }
+
+    // Previous page button handler
+    document.getElementById('prevPage').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            updateTable();
+        }
+    });
+
+    // Next page button handler
+    document.getElementById('nextPage').addEventListener('click', function(e) {
+        e.preventDefault();
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTable();
+        }
+
+    // Existing functions
+    function filterReports() {
+        const date = document.getElementById('search_date').value;
+        if (date) {
+            window.location.href = `/sit_in_reports?date=${date}`;
+        }
+    }
+
+    function resetFilters() {
+        window.location.href = '/sit_in_reports';
+    }
+
+    function filterTable(inputId, tableId) {
+        const input = document.getElementById(inputId);
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById(tableId);
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            let match = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].innerText.toLowerCase().includes(filter)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = match ? '' : 'none';
+        }
+        
+        // Reset pagination when filtering
+        currentPage = 1;
+        updateTable();
+    }
+
+    function getFilteredTableData() {
+        const table = document.getElementById('sitInTable');
+        const rows = table.getElementsByTagName('tr');
+        const data = [];
+        
+        // Add header row
+        const headerCells = rows[0].getElementsByTagName('th');
+        const headerRow = Array.from(headerCells).map(cell => cell.innerText);
+        data.push(headerRow);
+        
+        // Add visible data rows (considering both pagination and filtering)
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i].style.display !== 'none') {
+                const cells = rows[i].getElementsByTagName('td');
+                const rowData = Array.from(cells).map(cell => cell.innerText);
+                data.push(rowData);
+            }
+        }
+        
+        return data;
+    }
+
+    function downloadCSV() {
+        const data = getFilteredTableData();
+        let csv = data.map(row => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        const date = document.getElementById('search_date').value;
+        const filename = date ? `sit_in_reports_${date}.csv` : 'sit_in_reports.csv';
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+    }
+
+    function downloadExcel() {
+        const data = getFilteredTableData();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+        const date = document.getElementById('search_date').value;
+        const filename = date ? `sit_in_reports_${date}.xlsx` : 'sit_in_reports.xlsx';
+        XLSX.writeFile(wb, filename);
+    }
+
+    function downloadPDF() {
+        const data = getFilteredTableData();
+        const date = document.getElementById('search_date').value;
+        const docDefinition = {
+            content: [
+                { 
+                    text: 'Sit-In Reports' + (date ? ` - ${date}` : ''), 
+                    style: 'header', 
+                    fontSize: 18, 
+                    bold: true, 
+                    margin: [0, 0, 0, 10] 
+                },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: Array(data[0].length).fill('*'),
+                        body: data
+                    }
+                }
+            ],
+            styles: {
+                header: {
+                    alignment: 'center'
+                }
+            }
+        };
+        const filename = date ? `sit_in_reports_${date}.pdf` : 'sit_in_reports.pdf';
+        pdfMake.createPdf(docDefinition).download(filename);
+    }
+</script>
+{% endblock %}

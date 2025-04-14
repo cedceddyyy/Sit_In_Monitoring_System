@@ -15,7 +15,7 @@
 
     <form method="POST" action="{{ url_for('view_students') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex; margin-bottom: 20px;">
         <input class="w3-input w3-border w3-round" type="text" name="idno" placeholder="Enter Student ID" required style="flex: 1;">
-        <button class="w3-button w3-round" type="submit" style="background-color: var(--secondary-color); color: var(--primary-color); margin-left: 10px;">
+        <button class="w3-button w3-round" type="submit" style="background-color: var(--primary-color); color: white; margin-left: 10px;">
             <i class="material-icons">search</i>
         </button>
     </form>
@@ -23,8 +23,8 @@
     {% if student %}
     <div id="sitInModal" class="w3-modal w3-round" style="display: block;">
         <div class="w3-modal-content w3-card-4 w3-animate-top w3-round" style="max-width: 600px; margin: auto;">
-            <header class="w3-container" style="background-color: var(--primary-color); color: white; border-radius: 8px 8px 0 0;">
-                <span onclick="document.getElementById('sitInModal').style.display='none'" class="w3-button w3-display-topright" style="padding: 16px;">&times;</span>
+            <header class="w3-container w3-round" style="background-color: var(--primary-color); color: white; border-radius: 5px 5px 0 0;">
+                <span onclick="document.getElementById('sitInModal').style.display='none'" class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
                 <h3>Sit-In Form</h3>
             </header>
             <form class="w3-container w3-margin-top" method="POST" action="{{ url_for('submit_sit_in') }}">
@@ -104,15 +104,10 @@
     </div>
 
     <!-- Pagination -->
-    <div class="w3-center w3-padding-16">
-        <div class="w3-bar">
-            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="prevPage">«</a>
-            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page1">1</a>
-            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page2">2</a>
-            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page3">3</a>
-            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="page4">4</a>
-            <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="nextPage">»</a>
-        </div>
+    <div class="w3-bar w3-center w3-padding w3-margin">
+        <a href="#" class="w3-button" id="prevPage">«</a>
+        <span id="paginationNumbers"></span>
+        <a href="#" class="w3-button" id="nextPage">»</a>
     </div>
 </div>
 
@@ -120,8 +115,10 @@
 <script>
     let currentPage = 1; // Default page
     let rowsPerPage = 10; // Default rows per page
-    let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
-    let totalRows = rows.length;
+    const rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
+    const totalRows = rows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    const paginationNumbers = document.getElementById('paginationNumbers');
 
     // Function to handle rows per page change
     document.getElementById('rowsPerPage').addEventListener('change', function() {
@@ -132,35 +129,32 @@
 
     // Function to update the table based on the current page and rows per page
     function updateTable() {
-        let startRow = (currentPage - 1) * rowsPerPage;
-        let endRow = startRow + rowsPerPage;
+        const startRow = (currentPage - 1) * rowsPerPage;
+        const endRow = startRow + rowsPerPage;
 
-        // Hide all rows initially
         rows.forEach((row, index) => {
-            if (index >= startRow && index < endRow) {
-                row.style.display = ''; // Show rows for the current page
-            } else {
-                row.style.display = 'none'; // Hide rows for other pages
-            }
+            row.style.display = (index >= startRow && index < endRow) ? '' : 'none';
         });
 
-        updatePagination(); // Update pagination buttons
+        updatePagination();
     }
 
     // Function to update pagination buttons
     function updatePagination() {
-        let totalPages = Math.ceil(totalRows / rowsPerPage);
-        let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
-        
-        // Hide all page buttons and display only the relevant ones
-        pageButtons.forEach((button, index) => {
-            if (index + 1 <= totalPages) {
-                button.style.display = ''; // Show valid page buttons
-                button.textContent = index + 1; // Set page number
-            } else {
-                button.style.display = 'none'; // Hide extra page buttons
-            }
-        });
+        paginationNumbers.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('a');
+            pageButton.href = "#";
+            pageButton.classList.add("w3-button");
+            if (i === currentPage) pageButton.classList.add("paging-backcolor", "paging-color");
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = i;
+                updateTable();
+            });
+            paginationNumbers.appendChild(pageButton);
+        }
 
         // Highlight the current page
         pageButtons.forEach(button => {
@@ -186,20 +180,10 @@
 
     document.getElementById('nextPage').addEventListener('click', function(e) {
         e.preventDefault();
-        let totalPages = Math.ceil(totalRows / rowsPerPage);
         if (currentPage < totalPages) {
             currentPage++;
             updateTable();
         }
-    });
-
-    // Event listeners for individual page buttons
-    document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            currentPage = parseInt(this.textContent);
-            updateTable();
-        });
     });
 
     // Event listener for reset sessions button

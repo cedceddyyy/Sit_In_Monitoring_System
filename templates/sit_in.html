@@ -1,59 +1,143 @@
 {% extends 'admin_base.html' %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-display-container font-color" style="height: 100vh;">
-    <form method="GET" action="{{ url_for('sit_in') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
-        <input class="w3-input w3-border w3-round w3-padding" type="text" name="search" placeholder="Search by ID or Purpose" style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;">
-        <button class="w3-button w3-deep-purple w3-round" type="submit" style="height: 46px; margin-left: 10px;">
-            <i class="material-icons">search</i>
-        </button>
-    </form>
-    <table class="w3-table w3-bordered w3-striped w3-margin-top">
-        <thead>
-            <tr>
-                <th>ID Number</th>
-                <th>Full Name</th>
-                <th>Purpose</th>
-                <th>Lab</th>
-                <th>Remaining Sessions</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if sit_ins %}
-                {% for sit_in in sit_ins %}
-                <tr>
-                    <td>{{ sit_in.idno }}</td>
-                    <td>{{ sit_in.full_name }}</td>
-                    <td>{{ sit_in.purpose }}</td>
-                    <td>{{ sit_in.lab }}</td>
-                    <td>{{ sit_in.remaining_session }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('logout_sit_in', idno=sit_in.idno) }}">
-                            <button class="w3-button color w3-round" type="submit">Logout</button>
-                        </form>
-                    </td>
+<div class="w3-container w3-padding-16 w3-margin w3-animate-bottom">
+
+    <!-- Search Bar -->
+    <div class="w3-bar w3-margin-bottom">
+        <form method="GET" action="{{ url_for('sit_in') }}" class="w3-row" style="max-width: 600px; margin: 0 auto; display: flex;">
+            <input class="w3-input w3-border w3-round" type="text" name="search" placeholder="Search by ID or Purpose" style="flex: 1;">
+            <button class="w3-button w3-round" type="submit" style="background-color: var(--primary-color); color: white; margin-left: 10px;">
+                <i class="material-icons">search</i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="w3-card w3-round">
+        <table class="w3-table w3-bordered">
+            <thead>
+                <tr class="w3-light-grey">
+                    <th>ID Number</th>
+                    <th>Full Name</th>
+                    <th>Purpose</th>
+                    <th>Lab</th>
+                    <th>Remaining Sessions</th>
+                    <th>Action</th>
                 </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="6" class="w3-center">No data available</td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
-    <div class="w3-center w3-margin-top">
-        <ul class="w3-pagination" style="list-style-type: none; padding: 0;">
-            {% if page > 1 %}
-            <li><a href="{{ url_for('sit_in', page=page-1) }}" class="w3-button">&laquo;</a></li>
-            {% endif %}
-            {% for p in range(1, total_pages + 1) %}
-            <li><a href="{{ url_for('sit_in', page=p) }}" class="w3-button {% if p == page %}w3-deep-purple{% endif %}">{{ p }}</a></li>
-            {% endfor %}
-            {% if page < total_pages %}
-            <li><a href="{{ url_for('sit_in', page=page+1) }}" class="w3-button">&raquo;</a></li>
-            {% endif %}
-        </ul>
+            </thead>
+            <tbody>
+                {% if sit_ins %}
+                    {% for sit_in in sit_ins %}
+                    <tr>
+                        <td>{{ sit_in.idno }}</td>
+                        <td>{{ sit_in.full_name }}</td>
+                        <td>{{ sit_in.purpose }}</td>
+                        <td>{{ sit_in.lab }}</td>
+                        <td>{{ sit_in.remaining_session }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('logout_sit_in', idno=sit_in.idno) }}" style="display: inline;">
+                                <button class="w3-button w3-round" type="submit" style="background-color: var(--secondary-color); color: var(--primary-color);">Time out</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="w3-center">No data available</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="w3-bar w3-center w3-padding w3-margin">
+        <a href="#" class="w3-button" id="prevPage">«</a>
+        <a href="#" class="w3-button " id="page1">1</a>
+        <a href="#" class="w3-button" id="page2">2</a>
+        <a href="#" class="w3-button" id="page3">3</a>
+        <a href="#" class="w3-button" id="page4">4</a>
+        <a href="#" class="w3-button" id="nextPage">»</a>
     </div>
 </div>
+
+<!-- JavaScript to handle pagination -->
+<script>
+let currentPage = 1; // Default page
+let rowsPerPage = 10; // Default rows per page
+let rows = document.querySelectorAll('tbody tr'); // All rows in the table body
+let totalRows = rows.length;
+
+// Function to update the table based on the current page and rows per page
+function updateTable() {
+    let startRow = (currentPage - 1) * rowsPerPage;
+    let endRow = startRow + rowsPerPage;
+
+    // Hide all rows initially
+    rows.forEach((row, index) => {
+        if (index >= startRow && index < endRow) {
+            row.style.display = ''; // Show rows for the current page
+        } else {
+            row.style.display = 'none'; // Hide rows for other pages
+        }
+    });
+
+    updatePagination(); // Update pagination buttons
+}
+
+// Function to update pagination buttons
+function updatePagination() {
+    let totalPages = Math.ceil(totalRows / rowsPerPage);
+    let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
+    
+    // Hide all page buttons and display only the relevant ones
+    pageButtons.forEach((button, index) => {
+        if (index + 1 <= totalPages) {
+            button.style.display = ''; // Show valid page buttons
+            button.textContent = index + 1; // Set page number
+        } else {
+            button.style.display = 'none'; // Hide extra page buttons
+        }
+    });
+
+    // Highlight the current page
+    pageButtons.forEach(button => button.classList.remove('w3-light-grey'));
+    document.getElementById('page' + currentPage).classList.add('paging-backcolor','paging-color');
+
+    // Enable/disable next/prev buttons
+    document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
+    document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
+}
+
+// Event listeners for pagination buttons
+document.getElementById('prevPage').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (currentPage > 1) {
+        currentPage--;
+        updateTable();
+    }
+});
+
+document.getElementById('nextPage').addEventListener('click', function(e) {
+    e.preventDefault();
+    let totalPages = Math.ceil(totalRows / rowsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        updateTable();
+    }
+});
+
+// Event listeners for individual page buttons
+document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentPage = parseInt(this.textContent);
+        updateTable();
+    });
+});
+
+// Initial update on page load
+updateTable();
+</script>
 {% endblock %}

@@ -1,7 +1,8 @@
 {% extends "admin_base.html" %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-margin w3-animate-bottom w3-display-container" style="height: 100vh;">
+<div class="w3-container w3-padding-16 w3-margin w3-animate-bottom">
+
     <!-- Pie Charts -->
     <div class="w3-row-padding w3-margin-top">
         <div class="w3-half w3-card w3-round" style="height: 400px; display: flex; justify-content: center; align-items: center;">
@@ -11,14 +12,15 @@
         </div>
         <div class="w3-half w3-card w3-round" style="height: 400px; display: flex; justify-content: center; align-items: center;">
             <div class="w3-padding" style="width: 100%; height: 100%;">
-                <canvas id="labBarChart" style="width: 100%; height: 100%;"></canvas> <!-- Changed id to labBarChart -->
+                <canvas id="labBarChart" style="width: 100%; height: 100%;"></canvas>
             </div>
         </div>
     </div>
 
+    <!-- Rows per page -->
     <div class="w3-bar w3-margin">
-        <label for="rowsPerPage" class="w3-text-deep-purple">Rows per page: </label>
-        <select id="rowsPerPage" class="w3-select w3-border" style="max-width: 50px;">
+        <label for="rowsPerPage" class="w3-text-grey">Rows per page: </label>
+        <select id="rowsPerPage" class="w3-select w3-border w3-round" style="max-width: 50px;">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
@@ -26,44 +28,49 @@
     </div>
 
     <!-- Search bar -->
-    <form method="GET" action="{{ url_for('view_sit_in') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex;">
-        <input class="w3-input w3-border w3-round w3-padding w3-margin-bottom" type="text" name="search" placeholder="Search by ID or Purpose" style="height: 46px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1;" value="{{ request.args.get('search', '') }}">
-        <button class="w3-button w3-deep-purple w3-round w3-margin-bottom" type="submit" style="height: 46px; margin-left: 10px;">
-            <i class="material-icons">search</i>
-        </button>
-    </form>
+    <div class="w3-bar w3-margin-bottom">
+        <form method="GET" action="{{ url_for('view_sit_in') }}" class="w3-row" style="max-width: 600px; margin: 0 auto; display: flex;">
+            <input class="w3-input w3-border w3-round" type="text" name="search" placeholder="Search by ID or Purpose" style="flex: 1;" value="{{ request.args.get('search', '') }}">
+            <button class="w3-button w3-round" type="submit" style="background-color: var(--primary-color); color: white; margin-left: 10px;">
+                <i class="material-icons">search</i>
+            </button>
+        </form>
+    </div>
 
-    <table class="w3-table w3-bordered w3-striped">
-        <thead class="w3-deep-purple">
-            <tr class="w3-text-white">
-                <th>ID No</th>
-                <th>Full Name</th>
-                <th>Purpose</th>
-                <th>Lab</th>
-                <th>Login Time</th>
-                <th>Logout Time</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            {% for record in sit_in_records %}
-            <tr>
-                <td>{{ record.idno }}</td>
-                <td>{{ record.full_name }}</td>
-                <td>{{ record.purpose }}</td>
-                <td>{{ record.lab }}</td>
-                <td>{{ record.login_time }}</td>
-                <td>{{ record.logout_time }}</td>
-                <td>{{ record.date }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Table -->
+    <div class="w3-card w3-round">
+        <table class="w3-table w3-bordered">
+            <thead>
+                <tr class="w3-light-grey">
+                    <th>ID No</th>
+                    <th>Full Name</th>
+                    <th>Purpose</th>
+                    <th>Lab</th>
+                    <th>Login Time</th>
+                    <th>Logout Time</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for record in sit_in_records %}
+                <tr>
+                    <td>{{ record.idno }}</td>
+                    <td>{{ record.full_name }}</td>
+                    <td>{{ record.purpose }}</td>
+                    <td>{{ record.lab }}</td>
+                    <td>{{ record.login_time }}</td>
+                    <td>{{ record.logout_time if record.logout_time else "N/A" }}</td>
+                    <td>{{ record.date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Pagination -->
     <div class="w3-bar w3-center w3-padding w3-margin">
         <a href="#" class="w3-button" id="prevPage">«</a>
-        <a href="#" class="w3-button w3-deep-purple" id="page1">1</a>
+        <a href="#" class="w3-button" id="page1">1</a>
         <a href="#" class="w3-button" id="page2">2</a>
         <a href="#" class="w3-button" id="page3">3</a>
         <a href="#" class="w3-button" id="page4">4</a>
@@ -119,8 +126,8 @@ function updatePagination() {
     });
 
     // Highlight the current page
-    pageButtons.forEach(button => button.classList.remove('w3-deep-purple'));
-    document.getElementById('page' + currentPage).classList.add('w3-deep-purple');
+    pageButtons.forEach(button => button.classList.remove('w3-light-grey'));
+    document.getElementById('page' + currentPage).classList.add('paging-backcolor','paging-color');
 
     // Enable/disable next/prev buttons
     document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
@@ -203,7 +210,7 @@ function drawCharts() {
     });
 
     // Lab Bar Chart
-    var labCtx = document.getElementById('labBarChart').getContext('2d'); // Changed id to labBarChart
+    var labCtx = document.getElementById('labBarChart').getContext('2d');
     var labData = {
         labels: [
             {% if lab_counts %}
@@ -224,11 +231,11 @@ function drawCharts() {
                     1,
                 {% endif %}
             ],
-            backgroundColor: '#FFDE91' // Changed color to #FFDE91
+            backgroundColor: '#FFDE91'
         }]
     };
     var labChart = new Chart(labCtx, {
-        type: 'bar', // Changed type to bar
+        type: 'bar',
         data: labData,
         options: {
             responsive: true,

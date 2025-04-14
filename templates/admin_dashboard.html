@@ -1,82 +1,207 @@
 {% extends "admin_base.html" %}
 
 {% block content %}
-<div class="w3-container">
+<div class="w3-container" style="padding-bottom: 32px;">
     <!-- Stats Section -->
     <div class="w3-row-padding w3-margin-top">
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
-                <h3>Total Students</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_students }}</p>
+            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
+                <h3><i class="material-icons" style="vertical-align: middle;">people</i> Students</h3>
+                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_students }}</p>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
-                <h3>Total Reservations</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_reservations }}</p>
+            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
+                <h3><i class="material-icons" style="vertical-align: middle;">event_seat</i> Sit-ins</h3>
+                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_sit_in }}</p>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
-                <h3>Total Sit-in</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_sit_in }}</p>
+            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
+                <h3><i class="material-icons" style="vertical-align: middle;">book</i> Reservations</h3>
+                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_reservations }}</p>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white w3-bar" style="border-left: 4px solid var(--secondary-color);">
-                <h3>Feedback Reports</h3>
-                <p class="w3-right w3-margin" style="font-size: 24px; color: var(--primary-color);">{{ total_feedback }}</p>
+            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
+                <h3><i class="material-icons" style="vertical-align: middle;">feedback</i> Feedback</h3>
+                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_feedback }}</p>
             </div>
         </div>
     </div>
 
+    <!-- Main Content Area -->
     <div class="w3-row-padding w3-margin-top">
-        <!--Chart Section-->
+        <!-- Left Column - Announcements -->
         <div class="w3-half">
-            <div class="w3-card w3-padding w3-round w3-white" style="height: 600px; display: flex; justify-content: center; align-items: center;">
-                <div class="w3-padding" style="width: 100%; height: 100%;">
-                    <canvas id="piechart" style="width: 100%; height: 100%;"></canvas>
+            <div class="w3-card w3-round w3-white" style="height: calc(100% - 16px); display: flex; flex-direction: column;">
+                <div class="w3-padding" style="flex: 1; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>Posted Announcements</h2>
+                        <button onclick="document.getElementById('announcementModal').style.display='block'" 
+                                class="w3-button w3-round" style="background-color: #FFDE91;">
+                            Add Announcement
+                        </button>
+                    </div>
+                    <hr>
+                    <div id="admin-announcements-container">
+                        {% for announcement in announcements %}
+                        <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card {% if announcement[3] == 'inactive' %}w3-opacity{% endif %}">
+                            <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
+                            <p>{{ announcement[1] }}</p>
+                            <div>
+                                {% if announcement[3] == 'active' %}
+                                <form method="POST" action="{{ url_for('deactivate_announcement', announcement_id=announcement[0]) }}" style="display:inline;">
+                                    <button type="submit" class="w3-button w3-round w3-deep-purple" style="color: white;">Deactivate</button>
+                                </form>
+                                {% else %}
+                                <form method="POST" action="{{ url_for('activate_announcement', announcement_id=announcement[0]) }}" style="display:inline;">
+                                    <button type="submit" class="w3-button w3-round" style="background-color: #FFDE91; color: white;">Activate</button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('delete_announcement', announcement_id=announcement[0]) }}" style="display:inline;">
+                                    <button type="submit" class="w3-button w3-round" style="background-color: #D3BAFA; color: white;">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="w3-bar w3-center w3-padding">
+                    <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round">&laquo; Previous</button>
+                    <span>Page: <span id="page_admin"></span></span>
+                    <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round">Next &raquo;</button>
                 </div>
             </div>
         </div>
 
-        <!-- Announcement Section -->
-        <div class="w3-half">
-            <div class="w3-card w3-padding w3-round w3-white" style="overflow-y: auto; max-height: 600px; scrollbar-width: none; -ms-overflow-style: none;">
-                <style>
-                    .w3-card::-webkit-scrollbar {
-                        display: none;
-                    }
-                </style>
-                <div class="w3-margin" style="text-align: right;">
-                    <button onclick="document.getElementById('announcementModal').style.display='block'" class="w3-button w3-round" style="background-color: var(--primary-color); color: white;">Add Announcement</button>
-                </div>
-                <h2>Posted Announcements</h2>
-                <hr>
-                <div id="admin-announcements-container">
-                    {% for announcement in announcements %}
-                    <div class="w3-card w3-padding w3-margin-bottom w3-round w3-white announcement-card {% if announcement[3] == 'inactive' %}w3-opacity{% endif %}" style="border-left: 4px solid var(--secondary-color);">
-                        <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
-                        <p>{{ announcement[1] }}</p>
-                        {% if announcement[3] == 'active' %}
-                        <form method="POST" action="{{ url_for('deactivate_announcement', announcement_id=announcement[0]) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to deactivate this announcement?');">
-                            <button type="submit" class="w3-button w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">Deactivate</button>
-                        </form>
-                        {% else %}
-                        <form method="POST" action="{{ url_for('activate_announcement', announcement_id=announcement[0]) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to activate this announcement?');">
-                            <button type="submit" class="w3-button w3-round" style="background-color: #FFDE91; color: var(--primary-color);">Activate</button>
-                        </form>
-                        {% endif %}
-                        <form method="POST" action="{{ url_for('delete_announcement', announcement_id=announcement[0]) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this announcement?');">
-                            <button type="submit" class="w3-button w3-round" style="background-color: #f5f5f5; color: var(--primary-color);">Delete</button>
-                        </form>
+        <!-- Right Column - Leaderboard and Chart -->
+        <div class="w3-half" style="display: flex; flex-direction: column; height: 100%;">
+            <!-- Leaderboard -->
+            <div class="w3-card w3-round w3-white w3-margin-bottom" style="flex: 1; min-height: 0;">
+                <div class="w3-container" style="position: relative; padding-top: 16px;">
+                    <h2 class="w3-text-dark-grey" style="display: inline-block; margin: 0;">
+                        <i class="material-icons" style="vertical-align: middle; color: var(--primary-color);">emoji_events</i>
+                        Top Performers
+                    </h2>
+                    <div class="w3-right">
+                        <span class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                            <i class="material-icons" style="font-size: 16px; vertical-align: middle;">query_stats</i>
+                            Leaderboard
+                        </span>
                     </div>
-                    {% endfor %}
                 </div>
-                <div class="w3-bar w3-center w3-padding w3-margin">
-                    <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round" style="color: var(--primary-color);">&laquo; Previous</button>
-                    <span>Page: <span id="page_admin"></span></span>
-                    <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round" style="color: var(--primary-color);">Next &raquo;</button>
+                <div class="w3-panel" style="overflow-y: auto; height: calc(100% - 80px);">
+                    {% if leaderboard %}
+                        <!-- First Place -->
+                        {% if leaderboard|length >= 1 %}
+                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #fff9e6; border-left: 4px solid gold;">
+                            <div class="w3-col" style="width: 50px;">
+                                <div class="w3-circle" style="width: 40px; height: 40px; background-color: gold; color: white; display: flex; align-items: center; justify-content: center;">
+                                    <span style="font-weight: bold;">1</span>
+                                </div>
+                            </div>
+                            <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
+                                <h4 style="margin: 0; color: var(--primary-color);">{{ leaderboard[0].full_name }}</h4>
+                                <small class="w3-text-grey">{{ leaderboard[0].idno }}</small>
+                            </div>
+                            <div class="w3-col" style="width: 130px; text-align: right;">
+                                <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                    {{ leaderboard[0].total_hours }} hrs
+                                </div>
+                                <div class="w3-small w3-text-grey">{{ leaderboard[0].total_sit_ins }} sessions</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Second Place -->
+                        {% if leaderboard|length >= 2 %}
+                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #f5f5f5; border-left: 4px solid silver;">
+                            <div class="w3-col" style="width: 50px;">
+                                <div class="w3-circle" style="width: 40px; height: 40px; background-color: silver; color: white; display: flex; align-items: center; justify-content: center;">
+                                    <span style="font-weight: bold;">2</span>
+                                </div>
+                            </div>
+                            <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
+                                <h4 style="margin: 0; color: var(--primary-color);">{{ leaderboard[1].full_name }}</h4>
+                                <small class="w3-text-grey">{{ leaderboard[1].idno }}</small>
+                            </div>
+                            <div class="w3-col" style="width: 130px; text-align: right;">
+                                <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                    {{ leaderboard[1].total_hours }} hrs
+                                </div>
+                                <div class="w3-small w3-text-grey">{{ leaderboard[1].total_sit_ins }} sessions</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Third Place -->
+                        {% if leaderboard|length >= 3 %}
+                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #f9f5f0; border-left: 4px solid #cd7f32;">
+                            <div class="w3-col" style="width: 50px;">
+                                <div class="w3-circle" style="width: 40px; height: 40px; background-color: #cd7f32; color: white; display: flex; align-items: center; justify-content: center;">
+                                    <span style="font-weight: bold;">3</span>
+                                </div>
+                            </div>
+                            <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
+                                <h4 style="margin: 0; color: var(--primary-color);">{{ leaderboard[2].full_name }}</h4>
+                                <small class="w3-text-grey">{{ leaderboard[2].idno }}</small>
+                            </div>
+                            <div class="w3-col" style="width: 130px; text-align: right;">
+                                <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                    {{ leaderboard[2].total_hours }} hrs
+                                </div>
+                                <div class="w3-small w3-text-grey">{{ leaderboard[2].total_sit_ins }} sessions</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Other Students -->
+                        {% if leaderboard|length > 3 %}
+                        <div id="moreStudents" class="w3-hide">
+                            <div class="w3-container w3-padding-16">
+                                <h4 class="w3-text-grey" style="margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;">
+                                    <i class="material-icons" style="vertical-align: middle;">star_outline</i>
+                                    Other Top Students
+                                </h4>
+                                {% for student in leaderboard[3:10] %}
+                                <div class="w3-row w3-padding-small w3-hover-light-grey w3-round" style="margin-bottom: 8px;">
+                                    <div class="w3-col" style="width: 50px;">
+                                        <span class="w3-badge w3-padding" style="background-color: var(--secondary-color); color: var(--primary-color);">{{ loop.index + 3 }}</span>
+                                    </div>
+                                    <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
+                                        <span style="color: var(--primary-color);">{{ student.full_name }}</span>
+                                        <small class="w3-text-grey">{{ student.idno }}</small>
+                                    </div>
+                                    <div class="w3-col" style="width: 130px; text-align: right;">
+                                        <small class="w3-text-grey">{{ student.total_hours }} hrs • {{ student.total_sit_ins }} sessions</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if leaderboard|length > 3 %}
+                        <div class="w3-center w3-margin-top">
+                            <button id="showMoreBtn" class="w3-button w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                <i class="material-icons" style="vertical-align: middle;">expand_more</i> Show More
+                            </button>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="w3-center w3-padding-32">
+                            <i class="material-icons w3-text-grey" style="font-size: 48px;">sentiment_dissatisfied</i>
+                            <p class="w3-text-grey">No leaderboard data available yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="w3-card w3-round w3-white" style="flex: 1; min-height: 0; margin-top: 16px;">
+                <div style="height: 100%; padding: 16px;">
+                    <canvas id="piechart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
         </div>
@@ -86,24 +211,26 @@
 <!-- Announcement Modal -->
 <div id="announcementModal" class="w3-modal">
     <div class="w3-modal-content w3-animate-top w3-card-4 w3-round" style="max-width: 600px;">
-        <header class="w3-container" style="background-color: var(--primary-color); color: white; border-radius: 8px 8px 0 0;">
-            <span onclick="document.getElementById('announcementModal').style.display='none'" class="w3-button w3-display-topright" style="padding: 21px;">&times;</span>
+        <header class="w3-container w3-deep-purple w3-round w3-margin-bottom">
+            <span onclick="document.getElementById('announcementModal').style.display='none'" 
+                  class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
             <h2>New Announcement</h2>
         </header>
         <div class="w3-container">
             <form method="POST" action="{{ url_for('post_announcement') }}">
                 <label for="new_announcement" class="w3-text-grey">Announcement</label>
-                <textarea id="new_announcement" name="announcement" class="w3-input w3-border w3-round" placeholder="Type your announcement here" rows="3" style="resize: vertical;"></textarea>
-                <button type="submit" class="w3-button w3-round w3-margin w3-right" style="background-color: var(--secondary-color); color: var(--primary-color);">Submit</button>
+                <textarea id="new_announcement" name="announcement" class="w3-input w3-border w3-round" 
+                          placeholder="Type your announcement here" rows="3" style="resize: vertical;"></textarea>
+                <button type="submit" class="w3-button w3-round w3-margin w3-right" style="background-color: #FFDE91;">Submit</button>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Chart.js Script -->
+<!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="text/javascript">
-// Draw the chart and set the chart values
+<script>
+// Initialize chart
 function drawChart() {
     var ctx = document.getElementById('piechart').getContext('2d');
     var data = {
@@ -117,6 +244,7 @@ function drawChart() {
             {% endif %}
         ],
         datasets: [{
+            label: 'Sit-In Purposes',
             data: [
                 {% if purpose_counts %}
                     {% for purpose, count in purpose_counts.items() %}
@@ -129,40 +257,44 @@ function drawChart() {
             backgroundColor: ['#6A0DAD', '#8A2BE2', '#9370DB', '#D8BFD8', '#DDA0DD', '#E6E6FA', '#F0E68C', '#FFFACD', '#FFEFD5', '#FFDAB9']
         }]
     };
-    var chart = new Chart(ctx, {
-        type: 'pie',
+    new Chart(ctx, {
+        type: 'bar',
         data: data,
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: 'var(--text-color)'
-                    }
-                },
-                title: {
-                    display: true,
-                    text: 'Sit-In Purposes Breakdown',
-                    color: 'var(--text-color)',
-                    font: {
-                        family: "'Work Sans', sans-serif"
-                    }
-                }
+                legend: { display: false },
+                title: { display: true, text: 'Sit-In Purposes Breakdown' }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Purpose' } },
+                y: { title: { display: true, text: 'Count' } }
             }
         }
     });
-
-    window.addEventListener('resize', function() {
-        chart.resize();
-    });
 }
 
-// Initial chart drawing
-drawChart();
+// Leaderboard show more/less
+document.addEventListener('DOMContentLoaded', function() {
+    drawChart();
+    
+    const showMoreBtn = document.getElementById('showMoreBtn');
+    if (showMoreBtn) {
+        showMoreBtn.addEventListener('click', function() {
+            const moreStudents = document.getElementById('moreStudents');
+            if (moreStudents.classList.contains('w3-hide')) {
+                moreStudents.classList.remove('w3-hide');
+                this.innerHTML = '<i class="material-icons" style="vertical-align: middle;">expand_less</i> Show Less';
+            } else {
+                moreStudents.classList.add('w3-hide');
+                this.innerHTML = '<i class="material-icons" style="vertical-align: middle;">expand_more</i> Show More';
+            }
+        });
+    }
+});
 
-// Pagination for announcements
+// Announcement pagination functions remain the same
 var current_page_admin = 1;
 var records_per_page_admin = 8;
 
@@ -186,7 +318,6 @@ function changePageAdmin(page) {
     var listing_table = document.getElementById("admin-announcements-container");
     var page_span = document.getElementById("page_admin");
 
-    // Validate page
     if (page < 1) page = 1;
     if (page > numPagesAdmin()) page = numPagesAdmin();
 
@@ -195,18 +326,8 @@ function changePageAdmin(page) {
     });
 
     page_span.innerHTML = page;
-
-    if (page == 1) {
-        btn_prev.style.visibility = "hidden";
-    } else {
-        btn_prev.style.visibility = "visible";
-    }
-
-    if (page == numPagesAdmin()) {
-        btn_next.style.visibility = "hidden";
-    } else {
-        btn_next.style.visibility = "visible";
-    }
+    btn_prev.style.visibility = (page == 1) ? "hidden" : "visible";
+    btn_next.style.visibility = (page == numPagesAdmin()) ? "hidden" : "visible";
 }
 
 function numPagesAdmin() {
@@ -217,5 +338,4 @@ window.onload = function() {
     changePageAdmin(1);
 };
 </script>
-
-{% endblock %}w
+{% endblock %}
