@@ -198,17 +198,13 @@
             <span class="material-icons">rules</span> 
             <span class="text">Rules</span>
         </a>
-        <a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">
+        <a href="{{ url_for('history_feedback') }}" class="{% if request.endpoint == 'history_feedback' %}active{% endif %}">
             <span class="material-icons">history</span> 
             <span class="text">History</span>
         </a>
         <a href="{{ url_for('reservation') }}" class="{% if request.endpoint == 'reservation' %}active{% endif %}">
             <span class="material-icons">event_note</span> 
             <span class="text">Reservation</span>
-        </a>
-        <a href="{{ url_for('feedback') }}" class="{% if request.endpoint == 'feedback' %}active{% endif %}">
-            <span class="material-icons">comment</span> 
-            <span class="text">Feedback</span>
         </a>
         <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
             <span class="material-icons">logout</span> 

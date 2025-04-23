@@ -45,6 +45,7 @@
                 <thead>
                     <tr class="w3-light-grey">
                         <th>ID Number</th>
+                        <th>Full Name</th> <!-- Add Full Name column -->
                         <th>Purpose</th>
                         <th>Laboratory</th>
                         <th>Login Time</th>
@@ -56,6 +57,7 @@
                     {% for record in sit_in_records %}
                     <tr>
                         <td>{{ record.idno }}</td>
+                        <td>{{ record.full_name }}</td> <!-- Add Full Name data -->
                         <td>{{ record.purpose }}</td>
                         <td>{{ record.lab }}</td>
                         <td>{{ record.login_time.split(' ')[1] if record.login_time else '' }}</td>
@@ -172,6 +174,7 @@
             currentPage++;
             updateTable();
         }
+    });
 
     // Existing functions
     function filterReports() {
@@ -226,7 +229,7 @@
         const headerRow = Array.from(headerCells).map(cell => cell.innerText);
         data.push(headerRow);
         
-        // Add visible data rows (considering both pagination and filtering)
+        // Add visible data rows
         for (let i = 1; i < rows.length; i++) {
             if (rows[i].style.display !== 'none') {
                 const cells = rows[i].getElementsByTagName('td');
@@ -240,12 +243,7 @@
 
     function downloadCSV() {
         const data = getFilteredTableData();
-        let csv = data.map((row, index) => {
-            if (index === 0) {
-                return row.join(','); // Header row
-            }
-            return row.join(',');
-        }).join('\n');
+        let csv = data.map(row => row.join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
         const link = document.createElement('a');
         const date = document.getElementById('search_date').value;
@@ -257,21 +255,9 @@
 
     function downloadExcel() {
         const data = getFilteredTableData();
-
-        // Add header row with styling
         const ws = XLSX.utils.aoa_to_sheet(data);
-        const headerRange = XLSX.utils.decode_range(ws['!ref']);
-        for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-            if (!ws[cellAddress]) continue;
-            ws[cellAddress].s = {
-                fill: { fgColor: { rgb: "D3BAFA" } }, // Purple header background
-                font: { bold: true } // Bold header text
-            };
-        }
-
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+        XLSX.utils.book_append_sheet(wb, ws, "Sit-In Reports");
         const date = document.getElementById('search_date').value;
         const filename = date ? `sit_in_reports_${date}.xlsx` : 'sit_in_reports.xlsx';
         XLSX.writeFile(wb, filename);
@@ -283,10 +269,33 @@
         const docDefinition = {
             content: [
                 { 
+                    text: 'University of Cebu Main Campus', 
+                    style: 'header', 
+                    fontSize: 16, 
+                    bold: true, 
+                    alignment: 'center', 
+                    margin: [0, 0, 0, 5] 
+                },
+                { 
+                    text: 'College of Computer Studies', 
+                    style: 'subheader', 
+                    fontSize: 14, 
+                    alignment: 'center', 
+                    margin: [0, 0, 0, 5] 
+                },
+                { 
+                    text: 'Computer Laboratory Sit-In Management System', 
+                    style: 'subheader', 
+                    fontSize: 14, 
+                    alignment: 'center', 
+                    margin: [0, 0, 0, 10] 
+                },
+                { 
                     text: 'Sit-In Reports' + (date ? ` - ${date}` : ''), 
                     style: 'header', 
                     fontSize: 18, 
                     bold: true, 
+                    alignment: 'center', 
                     margin: [0, 0, 0, 10] 
                 },
                 {
@@ -304,6 +313,9 @@
             ],
             styles: {
                 header: {
+                    alignment: 'center'
+                },
+                subheader: {
                     alignment: 'center'
                 }
             }

@@ -52,6 +52,8 @@ def create_database():
                       date_submitted DATETIME DEFAULT CURRENT_TIMESTAMP,
                       message TEXT NOT NULL,
                       rating INTEGER CHECK(rating >= 1 AND rating <= 5),
+                      login_time DATETIME NOT NULL,
+                      logout_time DATETIME NOT NULL,
                       FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
                  )''')
     
@@ -225,13 +227,13 @@ def total_feedback():
 
     return total
 
-def insert_feedback(student_id, lab_number, message, rating):
+def insert_feedback(student_id, lab_number, message, rating, login_time, logout_time):
     conn = connect_db()
     cursor = conn.cursor()
 
     try:
-        cursor.execute("INSERT INTO feedback (student_id, lab_number, message, rating) VALUES (?, ?, ?, ?)", 
-                       (student_id, lab_number, message, rating))
+        cursor.execute("INSERT INTO feedback (student_id, lab_number, message, rating, login_time, logout_time) VALUES (?, ?, ?, ?, ?, ?)", 
+                       (student_id, lab_number, message, rating, login_time, logout_time))
         conn.commit()
         return True
     except sqlite3.Error:
@@ -243,12 +245,12 @@ def get_feedbacks():
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT student_id, lab_number, message, date_submitted, rating FROM feedback ORDER BY date_submitted DESC")
+    cursor.execute("SELECT student_id, lab_number, message, date_submitted, rating, login_time, logout_time FROM feedback ORDER BY date_submitted DESC")
     feedback_details = cursor.fetchall()
     conn.close()
 
     # Convert tuples to dictionaries
-    return [{"student_id": row[0], "lab_number": row[1], "message": row[2], "date_submitted": row[3], "rating": row[4]} for row in feedback_details]
+    return [{"student_id": row[0], "lab_number": row[1], "message": row[2], "date_submitted": row[3], "rating": row[4], "login_time": row[5], "logout_time": row[6]} for row in feedback_details]
 
 def search_student_by_id(idno):
     conn = connect_db()
@@ -260,16 +262,18 @@ def search_student_by_id(idno):
 
     return student
 
-def insert_sit_in(idno, purpose, lab, login_time):
+def insert_sit_in(idno, purpose, lab):
     conn = connect_db()
     cursor = conn.cursor()
 
     try:
-        cursor.execute("INSERT INTO sit_in (idno, purpose, lab, remaining_session, login_time) VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?), ?)", 
-                       (idno, purpose, lab, idno, login_time))
+        cursor.execute('''INSERT INTO sit_in (idno, purpose, lab, remaining_session) 
+                          VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?))''', 
+                       (idno, purpose, lab, idno))
         conn.commit()
         return True
-    except sqlite3.Error:
+    except sqlite3.Error as e:
+        print(f"Error inserting sit-in: {e}")  # Debugging log
         return False
     finally:
         conn.close()
@@ -311,7 +315,8 @@ def get_sit_ins(search, page, per_page):
                       JOIN users ON  sit_in.idno = users.idno
                       WHERE (sit_in.idno LIKE ? OR sit_in.purpose LIKE ?) AND sit_in.status = 'active'
                       ORDER BY sit_in.login_time DESC
-                      LIMIT ? OFFSET ?''', (search_query, search_query, per_page, offset))
+                      LIMIT ? OFFSET ?
+                      ''', (search_query, search_query, per_page, offset))
     sit_ins = cursor.fetchall()
 
     cursor.execute('''SELECT COUNT(*)
@@ -342,12 +347,18 @@ def get_all_sit_in_records(search=''):
     cursor = conn.cursor()
 
     search_query = f"%{search}%"
-    cursor.execute('''SELECT sit_in.idno, users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
-                      sit_in.purpose, sit_in.lab, sit_in.login_time, sit_in.logout_time, date(sit_in.login_time) as date
-                      FROM sit_in
-                      JOIN users ON sit_in.idno = users.idno
-                      WHERE sit_in.idno LIKE ? OR sit_in.purpose LIKE ? OR users.lastname LIKE ? OR users.firstname LIKE ?
-                      ORDER BY sit_in.login_time DESC''', (search_query, search_query, search_query, search_query))
+    cursor.execute('''
+        SELECT sit_in.idno, 
+               users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name, 
+               sit_in.purpose, 
+               sit_in.lab, 
+               sit_in.login_time, 
+               sit_in.logout_time, 
+               date(sit_in.login_time) as date
+        FROM sit_in
+        JOIN users ON sit_in.idno = users.idno
+        WHERE sit_in.idno LIKE ? OR sit_in.purpose LIKE ? OR users.lastname LIKE ? OR users.firstname LIKE ?
+    ''', (search_query, search_query, search_query, search_query))
     records = cursor.fetchall()
     conn.close()
 

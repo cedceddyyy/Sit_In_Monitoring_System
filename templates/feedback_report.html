@@ -12,8 +12,9 @@
                     <th>Student ID</th>
                     <th>Lab Number</th>
                     <th>Message</th>
-                    <th>Date Submitted</th>
                     <th>Rating</th>
+                    <th>Login Time</th>
+                    <th>Logout Time</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -22,7 +23,6 @@
                     <td>{{ feedback.student_id }}</td>
                     <td>{{ feedback.lab_number }}</td>
                     <td>{{ feedback.message }}</td>
-                    <td>{{ feedback.date_submitted }}</td>
                     <td>
                         {% for _ in range(feedback.rating) %}
                             <span style="color: #FFD700;">&#9733;</span>
@@ -31,6 +31,8 @@
                             <span style="color: #ccc;">&#9733;</span>
                         {% endfor %}
                     </td>
+                    <td>{{ feedback.login_time }}</td>
+                    <td>{{ feedback.logout_time }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

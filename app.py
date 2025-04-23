@@ -218,39 +218,22 @@ def rules():
 
     return render_template("rules.html", pagetitle="Rules")
 
-@app.route("/history")
-def history():
+@app.route("/history", methods=["GET", "POST"])
+def history_feedback():
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
     
-    # Query the sit_in table to get the records
+    # Fetch student ID from the session
     user_info = dbhelper.get_user_info(session["user"])
     if user_info:
-        sit_in_records = dbhelper.get_sit_in_history(user_info[0])
-    else:
-        sit_in_records = []
-    
-    return render_template("history.html", pagetitle="Sit-in History", sit_in_records=sit_in_records)
+        student_id = user_info[0]
+        sit_in_records = dbhelper.get_sit_in_history(student_id)
 
-@app.route("/reservation")
-def reservation():
-    if "user" not in session:
-        flash("You need to log in first!", "danger")
-        return redirect(url_for("login"))
-
-    return render_template("reservation.html", pagetitle="Reservation")
-
-@app.route("/feedback", methods=["GET", "POST"])
-def feedback():
-    if "user" not in session:
-        flash("You need to log in first!", "danger")
-        return redirect(url_for("login"))
-
-    # Fetch student ID from the session
-    user_id = dbhelper.get_user_info(session["user"])
-    if user_id:
-        student_id = user_id[0]  
+        # Fetch login_time and logout_time for each sit_in record
+        for record in sit_in_records:
+            record['login_time'] = record['login_time']
+            record['logout_time'] = record['logout_time']
     else:
         flash("User not found!", "danger")
         return redirect(url_for("dashboard"))
@@ -259,17 +242,28 @@ def feedback():
         lab_number = request.form.get('lab_number')
         message = request.form.get('message')
         rating = request.form.get('rating')  # Get the rating from the form
+        login_time = request.form.get('login_time')
+        logout_time = request.form.get('logout_time')
 
-        if not lab_number or not message or not rating:
+        if not lab_number or not message or not rating or not login_time or not logout_time:
             flash("Please fill out all fields!", "danger")      
         else:
-            success = dbhelper.insert_feedback(student_id, lab_number, message, int(rating))
+            success = dbhelper.insert_feedback(student_id, lab_number, message, int(rating), login_time, logout_time)
             if success:
-                flash("Feedback submitted successfully!", "success")    
+                flash("Feedback submitted successfully!", "success")   
+                return redirect(url_for("history_feedback"))
             else:
                 flash("Failed to submit feedback. Try again.", "danger")
 
-    return render_template("feedback.html", pagetitle="Feedback", student_id=student_id)
+    return render_template("history.html", pagetitle="Sit-in History", sit_in_records=sit_in_records, student_id=student_id)
+
+@app.route("/reservation")
+def reservation():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    return render_template("reservation.html", pagetitle="Reservation")
 
 @app.route("/view_feedback")
 def view_feedback():
@@ -381,9 +375,8 @@ def submit_sit_in():
     idno = request.form['idno']
     purpose = request.form['purpose']
     lab = request.form['lab']
-    login_time = request.form['login_time']
 
-    if dbhelper.insert_sit_in(idno, purpose, lab, login_time):  
+    if dbhelper.insert_sit_in(idno, purpose, lab):  
         dbhelper.decrement_session(idno)
         flash("Sit-In recorded successfully!", "success")
     else:

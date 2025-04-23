@@ -21,6 +21,7 @@
                     <th>Time In</th>
                     <th>Time Out</th>
                     <th>Room</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -30,6 +31,7 @@
                     <td>{{ record.login_time }}</td>
                     <td>{{ record.logout_time }}</td>
                     <td>{{ record.lab }}</td>
+                    <td><button class="w3-button w3-round color" onclick="openFeedbackModal('{{ record.idno }}', '{{ record.lab }}', '{{ record.login_time }}', '{{ record.logout_time }}')">Feedback</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -47,95 +49,162 @@
             <a href="#" class="w3-button w3-light-grey w3-hover-light-grey" id="nextPage">»</a>
         </div>
     </div>
-</div>
 
-<!-- JavaScript to handle rows per page and pagination -->
-<script>
-    let currentPage = 1; // Default page
-    let rowsPerPage = 10; // Default rows per page
-    let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
-    let totalRows = rows.length;
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="w3-modal" style="display:none;">
+        <div class="w3-modal-content w3-card-4 w3-animate-top w3-round" style="max-width:600px">
+            <header class="w3-container w3-theme">
+                <span onclick="document.getElementById('feedbackModal').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                <h2>Submit Feedback</h2>
+            </header>
+            <div class="w3-container">
+                <form action="/history" method="POST" class="w3-container w3-margin-top">
+                    <label class="w3-text-dark-grey"><b>Student ID</b></label>
+                    <input class="w3-input w3-border w3-round w3-margin-bottom w3-light-grey" type="text" name="student_id" value="{{ session['user'] }}" readonly required>
+                    <label class="w3-text-dark-grey"><b>Laboratory Number</b></label>
+                    <input class="w3-input w3-border w3-round w3-margin-bottom" type="text" name="lab_number" id="modalLabNumber" readonly required>
+                    <input type="hidden" name="login_time" id="modalLoginTime" required>
+                    <input type="hidden" name="logout_time" id="modalLogoutTime" required>
+                    <label class="w3-text-dark-grey"><b>Rating</b></label></br>
+                    <div class="star-rating w3-center">
+                        <input type="radio" id="5-stars" name="rating" value="5" required />
+                        <label for="5-stars" class="star">&#9733;</label>
+                        <input type="radio" id="4-stars" name="rating" value="4" />
+                        <label for="4-stars" class="star">&#9733;</label>
+                        <input type="radio" id="3-stars" name="rating" value="3" />
+                        <label for="3-stars" class="star">&#9733;</label>
+                        <input type="radio" id="2-stars" name="rating" value="2" />
+                        <label for="2-stars" class="star">&#9733;</label>
+                        <input type="radio" id="1-star" name="rating" value="1" />
+                        <label for="1-star" class="star">&#9733;</label>
+                    </div></br>
+                    <label class="w3-text-dark-grey"><b>Message</b></label>
+                    <textarea class="w3-input w3-border w3-round w3-margin-bottom" name="message" rows="4" style="resize: vertical;" placeholder="Enter your feedback here..." required></textarea>
+                    <button class="w3-button w3-round w3-margin-top w3-margin-bottom w3-theme" type="submit" style="background-color: #FFDE91;">
+                        <i class="material-icons" style="vertical-align: middle;">send</i> Submit Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    // Function to handle rows per page change
-    document.getElementById('rowsPerPage').addEventListener('change', function() {
-        rowsPerPage = parseInt(this.value); // Get the selected value
-        currentPage = 1; // Reset to the first page
-        updateTable(); // Update table display
-    });
-
-    // Function to update the table based on the current page and rows per page
-    function updateTable() {
-        let startRow = (currentPage - 1) * rowsPerPage;
-        let endRow = startRow + rowsPerPage;
-
-        // Hide all rows initially
-        rows.forEach((row, index) => {
-            if (index >= startRow && index < endRow) {
-                row.style.display = ''; // Show rows for the current page
-            } else {
-                row.style.display = 'none'; // Hide rows for other pages
-            }
-        });
-
-        updatePagination(); // Update pagination buttons
-    }
-
-    // Function to update pagination buttons
-    function updatePagination() {
-        let totalPages = Math.ceil(totalRows / rowsPerPage);
-        let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
-        
-        // Hide all page buttons and display only the relevant ones
-        pageButtons.forEach((button, index) => {
-            if (index + 1 <= totalPages) {
-                button.style.display = ''; // Show valid page buttons
-                button.textContent = index + 1; // Set page number
-            } else {
-                button.style.display = 'none'; // Hide extra page buttons
-            }
-        });
-
-        // Highlight the current page
-        pageButtons.forEach(button => {
-            button.classList.remove('w3-deep-purple');
-            button.classList.add('w3-light-grey');
-        });
-        document.getElementById('page' + currentPage).classList.remove('w3-light-grey');
-        document.getElementById('page' + currentPage).classList.add('paging-backcolor', 'paging-color');
-
-        // Enable/disable next/prev buttons
-        document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
-        document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
-    }
-
-    // Event listeners for pagination buttons
-    document.getElementById('prevPage').addEventListener('click', function(e) {
-        e.preventDefault();
-        if (currentPage > 1) {
-            currentPage--;
-            updateTable();
+    <style>
+        .star-rating {
+            direction: rtl;
+            display: inline-flex;
+            justify-content: center;
+            gap: 5px;
         }
-    });
-
-    document.getElementById('nextPage').addEventListener('click', function(e) {
-        e.preventDefault();
-        let totalPages = Math.ceil(totalRows / rowsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            updateTable();
+        .star-rating input[type="radio"] {
+            display: none;
         }
-    });
+        .star-rating label {
+            font-size: 2em;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+        .star-rating input[type="radio"]:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #FFD700;
+        }
+    </style>
 
-    // Event listeners for individual page buttons
-    document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
-        button.addEventListener('click', function(e) {
+    <script>
+        let currentPage = 1; // Default page
+        let rowsPerPage = 10; // Default rows per page
+        let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
+        let totalRows = rows.length;
+
+        // Function to handle rows per page change
+        document.getElementById('rowsPerPage').addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value); // Get the selected value
+            currentPage = 1; // Reset to the first page
+            updateTable(); // Update table display
+        });
+
+        // Function to update the table based on the current page and rows per page
+        function updateTable() {
+            let startRow = (currentPage - 1) * rowsPerPage;
+            let endRow = startRow + rowsPerPage;
+
+            // Hide all rows initially
+            rows.forEach((row, index) => {
+                if (index >= startRow && index < endRow) {
+                    row.style.display = ''; // Show rows for the current page
+                } else {
+                    row.style.display = 'none'; // Hide rows for other pages
+                }
+            });
+
+            updatePagination(); // Update pagination buttons
+        }
+
+        // Function to update pagination buttons
+        function updatePagination() {
+            let totalPages = Math.ceil(totalRows / rowsPerPage);
+            let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
+            
+            // Hide all page buttons and display only the relevant ones
+            pageButtons.forEach((button, index) => {
+                if (index + 1 <= totalPages) {
+                    button.style.display = ''; // Show valid page buttons
+                    button.textContent = index + 1; // Set page number
+                } else {
+                    button.style.display = 'none'; // Hide extra page buttons
+                }
+            });
+
+            // Highlight the current page
+            pageButtons.forEach(button => {
+                button.classList.remove('w3-deep-purple');
+                button.classList.add('w3-light-grey');
+            });
+            document.getElementById('page' + currentPage).classList.remove('w3-light-grey');
+            document.getElementById('page' + currentPage).classList.add('paging-backcolor', 'paging-color');
+
+            // Enable/disable next/prev buttons
+            document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
+            document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
+        }
+
+        // Event listeners for pagination buttons
+        document.getElementById('prevPage').addEventListener('click', function(e) {
             e.preventDefault();
-            currentPage = parseInt(this.textContent);
-            updateTable();
+            if (currentPage > 1) {
+                currentPage--;
+                updateTable();
+            }
         });
-    });
 
-    // Initial update on page load
-    updateTable();
-</script>
+        document.getElementById('nextPage').addEventListener('click', function(e) {
+            e.preventDefault();
+            let totalPages = Math.ceil(totalRows / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTable();
+            }
+        });
+
+        // Event listeners for individual page buttons
+        document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = parseInt(this.textContent);
+                updateTable();
+            });
+        });
+
+        // Initial update on page load
+        updateTable();
+
+        function openFeedbackModal(studentId, labNumber, loginTime, logoutTime) {
+            document.getElementById('modalLabNumber').value = labNumber;
+            document.getElementById('modalLoginTime').value = loginTime;
+            document.getElementById('modalLogoutTime').value = logoutTime;
+            document.getElementById('feedbackModal').style.display = 'block';
+        }
+    </script>
+</div>
 {% endblock %}
