@@ -1,0 +1,177 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<div class="w3-container w3-animate-bottom" style="padding-bottom: 32px;">
+    <div class="w3-card w3-round w3-white" style="max-width: 900px; margin: auto;">
+        <!-- Header Section -->
+        <div class="w3-container w3-padding" style="border-bottom: 4px solid lightgrey;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+            </div>
+            <p class="w3-text-grey">Manage computer availability in CCS laboratory rooms</p>
+        </div>
+
+        <!-- Room Selection -->
+        <div class="w3-container w3-padding">
+            <h4 class="w3-text-dark-grey">Select Laboratory Room</h4>
+            <div class="w3-row-padding w3-margin-bottom">
+                {% for room in ['524', '526', '528', '530', '542', '544'] %}
+                <div class="w3-col m4 w3-margin-bottom" style="padding: 8px;">
+                    <button class="w3-button w3-block w3-round-large w3-padding" 
+                            onclick="loadLab('{{ room }}')"
+                            style="background-color: {% if selectedLab == room %}var(--secondary-color){% else %}#f5f5f5{% endif %}; 
+                                   color: {% if selectedLab == room %}var(--primary-color){% else %}#555{% endif %};">
+                        <i class="material-icons" style="vertical-align: middle;">meeting_room</i>
+                        Room {{ room }}
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Computer Grid -->
+        <div class="w3-container w3-padding">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h4 class="w3-text-dark-grey"><i class="material-icons" style="vertical-align: middle;">desktop_windows</i> Computers</h4>
+                <div>
+                    <span id="selected-count" class="w3-tag w3-round" style="background-color: #f5f5f5;">0 selected</span>
+                </div>
+            </div>
+            
+            <div id="pc-container" class="w3-row-padding" style="margin: 0 -8px;">
+                <!-- Computers will load here dynamically -->
+                <div class="w3-center w3-padding-32" style="width: 100%;">
+                    <i class="material-icons w3-text-grey" style="font-size: 48px;">desktop_mac</i>
+                    <p class="w3-text-grey">Please select a laboratory room to view computers</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="w3-container w3-padding w3-light-grey w3-round-large" style="margin-top: 16px;">
+            <div class="w3-bar">
+                <button class="w3-button w3-round w3-bar-item" 
+                        onclick="updateStatus('available')"
+                        style="background-color: #FFDE91; color: var(--primary-color); margin-right: 8px;">
+                    <i class="material-icons" style="vertical-align: middle;">check_circle</i>
+                    Mark as Available
+                </button>
+                <button class="w3-button w3-round w3-bar-item" 
+                        onclick="updateStatus('used')"
+                        style="background-color: #D3BAFA; color: var(--primary-color);">
+                    <i class="material-icons" style="vertical-align: middle;">block</i>
+                    Mark as Used
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedLab = '';
+    let selectedPCs = [];
+
+    // Load PCs for the selected lab
+    function loadLab(labNumber) {
+        selectedLab = labNumber;
+        // Update active room button
+        document.querySelectorAll('.w3-container button').forEach(btn => {
+            btn.style.backgroundColor = '#f5f5f5';
+            btn.style.color = '#555';
+            if (btn.textContent.includes(labNumber)) {
+                btn.style.backgroundColor = 'var(--primary-color)';
+                btn.style.color = 'white';
+            }
+        });
+
+        fetch(`/get_pc_status/${labNumber}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const pcContainer = document.getElementById('pc-container');
+                    pcContainer.innerHTML = '';
+                    
+                    if (data.pcs.length === 0) {
+                        pcContainer.innerHTML = `
+                            <div class="w3-center w3-padding-32" style="width: 100%;">
+                                <i class="material-icons w3-text-grey" style="font-size: 48px;">desktop_mac</i>
+                                <p class="w3-text-grey">No computers found in this room</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    data.pcs.forEach(pc => {
+                        const pcDiv = document.createElement('div');
+                        pcDiv.className = 'w3-col s4 m3 l2 w3-margin-bottom';
+                        pcDiv.innerHTML = `
+                            <div class="w3-card w3-round w3-white w3-padding-small" 
+                                 style="border-left: 4px solid ${pc.status === 'available' ? '#4CAF50' : '#f44336'};">
+                                <label class="w3-container" style="display: flex; align-items: center; cursor: pointer;">
+                                    <input class="w3-check" type="checkbox" id="pc${pc.pc_number}" 
+                                           onchange="updateSelection()">
+                                    <div style="margin-left: 8px;">
+                                        <div style="font-weight: 500;">PC ${pc.pc_number}</div>
+                                        <small class="w3-text-grey">
+                                            <i class="material-icons" style="font-size: 12px; vertical-align: middle;">
+                                                ${pc.status === 'available' ? 'check_circle' : 'block'}
+                                            </i>
+                                            ${pc.status === 'available' ? 'Available' : 'Used'}
+                                        </small>
+                                    </div>
+                                </label>
+                            </div>
+                        `;
+                        pcContainer.appendChild(pcDiv);
+                    });
+                    updateSelection(); // Initialize selection count
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+
+    // Update selected PCs count
+    function updateSelection() {
+        const checkboxes = document.querySelectorAll('#pc-container input[type="checkbox"]');
+        selectedPCs = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => parseInt(cb.id.replace('pc', '')));
+        
+        document.getElementById('selected-count').textContent = `${selectedPCs.length} selected`;
+    }
+
+    // Update the status of selected PCs
+    function updateStatus(status) {
+        if (selectedLab === '') {
+            alert('Please select a laboratory room first.');
+            return;
+        }
+
+        if (selectedPCs.length === 0) {
+            alert('Please select at least one computer.');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to mark ${selectedPCs.length} computer(s) as ${status}?`)) {
+            fetch('/update_pc_status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    lab_number: selectedLab, 
+                    pc_numbers: selectedPCs, 
+                    status: status 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Successfully updated ${selectedPCs.length} computer(s)`);
+                    loadLab(selectedLab); // Reload the lab to reflect changes
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}

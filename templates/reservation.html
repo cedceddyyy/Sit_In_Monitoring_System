@@ -12,25 +12,31 @@
                     <div class="w3-half w3-margin-bottom">
                         <label class="w3-text-dark-grey"><b>Student ID</b></label>
                         <input class="w3-input w3-border w3-round w3-margin-bottom" 
-                               type="text" name="student_id" required>
+                               type="text" name="student_id" value="{{ user.idno }}" readonly>
                     </div>
                     <div class="w3-half w3-margin-bottom">
                         <label class="w3-text-dark-grey"><b>Full Name</b></label>
                         <input class="w3-input w3-border w3-round" 
-                               type="text" name="full_name" required>
+                               type="text" name="full_name" value="{{ user.firstname }} {{ user.lastname }}" readonly>
                     </div>
                 </div>
-                
-                <label class="w3-text-dark-grey"><b>Course</b></label>
-                <input class="w3-input w3-border w3-round w3-margin-bottom" 
-                       type="text" name="course" required>
 
                 <label class="w3-text-dark-grey"><b>Purpose</b></label>
                 <select class="w3-select w3-border w3-round w3-margin-bottom" name="subject" required>
-                    <option value="" disabled selected>Select a Purpose</option>
-                    <option value="Room 101">C#</option>
-                    <option value="Room 202">Java</option>
-                    <option value="Room 303">Python</option>
+                    <option value="" disabled selected>Select a purpose</option>
+                    <option value="C Programming">C Programming</option>
+                    <option value="Java Programming">Java Programming</option>
+                    <option value="Python">Python</option>
+                    <option value="C#">C#</option>
+                    <option value="Database">Database</option>
+                    <option value="Digital Logic & Design">Digital Logic & Design</option>
+                    <option value="Embedded Systems & IoT">Embedded Systems & IoT</option>
+                    <option value="System Integration & Architecture">System Integration & Architecture</option>
+                    <option value="Computer Application">Computer Application</option>
+                    <option value="Project Management">Project Management</option>
+                    <option value="IT Trends">IT Trends</option>
+                    <option value="Technopreneurship">Technopreneurship</option>
+                    <option value="Capstone">Capstone</option>
                 </select>
                 
                 <div class="w3-row-padding" style="margin: 0 -16px;">
@@ -40,40 +46,84 @@
                                type="date" name="date" required>
                     </div>
                     <div class="w3-half w3-margin-bottom">
-                        <label class="w3-text-dark-grey"><b>Time Slot</b></label>
+                        <label class="w3-text-dark-grey"><b>Time-in</b></label>
                         <input class="w3-input w3-border w3-round" 
-                               type="time" name="time" required>
+                               type="time" name="time_in" required>
                     </div>
                 </div>
                 
                 <label class="w3-text-dark-grey"><b>Lab</b></label>
-                <select class="w3-select w3-border w3-round w3-margin-bottom" name="room" required>
-                    <option value="" disabled selected>Select a room</option>
-                    <option value="Room 101">101</option>
-                    <option value="Room 202">202</option>
-                    <option value="Room 303">303</option>
+                <select class="w3-select w3-border w3-round w3-margin-bottom" name="room" id="lab-select" required onchange="loadAvailablePCs()">
+                    <option value="" disabled selected>Select a lab</option>
+                    <option value="524">524</option>
+                    <option value="526">526</option>
+                    <option value="528">528</option>
+                    <option value="530">530</option>
+                    <option value="542">542</option>
+                    <option value="544">544</option>
+                    <option value="517">517</option>
                 </select>
 
-                <div class="w3-row-padding" style="margin: 0 -16px;">
-                    <div class="w3-half w3-margin-bottom">
-                        <label class="w3-text-dark-grey"><b>Available PC</b></label>
-                        <input class="w3-input w3-border w3-round" 
-                               type="number" name="num_pc" value="10" required>
-                    </div>
-                    <div class="w3-half w3-margin-bottom">
-                        <label class="w3-text-dark-grey"><b>Remaining Session</b></label>
-                        <input class="w3-input w3-border w3-round" 
-                               type="number" name="session" value="30">
-                    </div>
+                <!-- Dropdown for Available PCs -->
+                <div id="pc-dropdown-container" style="display: none;">
+                    <label class="w3-text-dark-grey"><b>Available PCs</b></label>
+                    <select class="w3-select w3-border w3-round w3-margin-bottom" name="pc" id="pc-select" required>
+                        <option value="" disabled selected>Select a PC</option>
+                        <!-- Options will be dynamically populated -->
+                    </select>
                 </div>
                 
-                <button class="w3-button w3-round w3-margin-top" 
-                        style="background-color: #FFDE91; color: #2C1038;" 
-                        type="submit">
-                    <i class="material-icons" style="vertical-align: middle;">event_available</i> Reserve
-                </button>
+                <div class="w3-half w3-margin-bottom">
+                    <label class="w3-text-dark-grey"><b>Remaining Session</b></label>
+                    <input class="w3-input w3-border w3-round" 
+                           type="number" name="session" value="{{ user.session }}" readonly>
+                </div>
+                
+                <button class="w3-button w3-round w3-margin-top w3-block" 
+                    style="background-color: #FFDE91; color: #2C1038;" 
+                    type="submit">
+                <i class="material-icons" style="vertical-align: middle;">event_available</i> Reserve
+            </button>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    // Function to load available PCs based on the selected lab
+    function loadAvailablePCs() {
+        const labSelect = document.getElementById("lab-select");
+        const pcDropdownContainer = document.getElementById("pc-dropdown-container");
+        const pcSelect = document.getElementById("pc-select");
+
+        const selectedLab = labSelect.value;
+
+        if (selectedLab) {
+            fetch(`/get_pc_status/${selectedLab}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        pcSelect.innerHTML = '<option value="" disabled selected>Select a PC</option>';
+                        data.pcs.forEach(pc => {
+                            if (pc.status === "available") {
+                                const option = document.createElement("option");
+                                option.value = pc.pc_number;
+                                option.textContent = `PC ${pc.pc_number}`;
+                                pcSelect.appendChild(option);
+                            }
+                        });
+                        pcDropdownContainer.style.display = "block";
+                    } else {
+                        alert("Failed to load PCs. Please try again.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching PCs:", error);
+                    alert("An error occurred while loading PCs.");
+                });
+        } else {
+            pcDropdownContainer.style.display = "none";
+        }
+    }
+</script>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends "admin_base.html" %}
 
 {% block content %}
-<div class="w3-container" style="padding-bottom: 32px;">
+<div class="w3-container w3-animate-bottom" style="padding-bottom: 32px;">
     <!-- Stats Section -->
     <div class="w3-row-padding w3-margin-top">
         <div class="w3-quarter">
@@ -93,95 +93,55 @@
                 </div>
                 <div class="w3-panel" style="overflow-y: auto; height: calc(100% - 80px);">
                     {% if leaderboard %}
-                        <!-- First Place -->
-                        {% if leaderboard|length >= 1 %}
-                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #fff9e6; border-left: 4px solid gold;">
+                        <!-- Top 3 Students (Always Visible) -->
+                        {% for student in leaderboard[:3] %}
+                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #f5f5f5; border-left: 4px solid var(--secondary-color);">
                             <div class="w3-col" style="width: 50px;">
-                                <div class="w3-circle" style="width: 40px; height: 40px; background-color: gold; color: white; display: flex; align-items: center; justify-content: center;">
-                                    <span style="font-weight: bold;">1</span>
+                                <div class="w3-circle" style="width: 40px; height: 40px; 
+                                    {% if student.rank == 1 %}background-color: #FFD700;{% endif %}
+                                    {% if student.rank == 2 %}background-color: #C0C0C0;{% endif %}
+                                    {% if student.rank == 3 %}background-color: #CD7F32;{% endif %}
+                                    color: white; display: flex; align-items: center; justify-content: center;">
+                                    <span style="font-weight: bold;">{{ student.rank }}</span>
                                 </div>
                             </div>
                             <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
-                                <h4 style="margin: 0; color: var(--primary-color);">{{ leaderboard[0].full_name }}</h4>
-                                <small class="w3-text-grey">{{ leaderboard[0].idno }}</small>
+                                <h4 style="margin: 0; color: var(--primary-color);">{{ student.full_name }}</h4>
+                                <small class="w3-text-grey">{{ student.idno }}</small>
                             </div>
                             <div class="w3-col" style="width: 130px; text-align: right;">
                                 <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
-                                    {{ leaderboard[0].total_hours }} hrs
+                                    {{ student.points }} points
                                 </div>
-                                <div class="w3-small w3-text-grey">{{ leaderboard[0].total_sit_ins }} sessions</div>
+                                <div class="w3-small w3-text-grey">{{ student.total_sit_ins }} sit-ins</div>
                             </div>
                         </div>
-                        {% endif %}
+                        {% endfor %}
 
-                        <!-- Second Place -->
-                        {% if leaderboard|length >= 2 %}
-                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #f5f5f5; border-left: 4px solid silver;">
-                            <div class="w3-col" style="width: 50px;">
-                                <div class="w3-circle" style="width: 40px; height: 40px; background-color: silver; color: white; display: flex; align-items: center; justify-content: center;">
-                                    <span style="font-weight: bold;">2</span>
-                                </div>
-                            </div>
-                            <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
-                                <h4 style="margin: 0; color: var(--primary-color);">{{ leaderboard[1].full_name }}</h4>
-                                <small class="w3-text-grey">{{ leaderboard[1].idno }}</small>
-                            </div>
-                            <div class="w3-col" style="width: 130px; text-align: right;">
-                                <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
-                                    {{ leaderboard[1].total_hours }} hrs
-                                </div>
-                                <div class="w3-small w3-text-grey">{{ leaderboard[1].total_sit_ins }} sessions</div>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- Third Place -->
-                        {% if leaderboard|length >= 3 %}
-                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #f9f5f0; border-left: 4px solid #cd7f32;">
-                            <div class="w3-col" style="width: 50px;">
-                                <div class="w3-circle" style="width: 40px; height: 40px; background-color: #cd7f32; color: white; display: flex; align-items: center; justify-content: center;">
-                                    <span style="font-weight: bold;">3</span>
-                                </div>
-                            </div>
-                            <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
-                                <h4 style="margin: 0; color: var(--primary-color);">{{ leaderboard[2].full_name }}</h4>
-                                <small class="w3-text-grey">{{ leaderboard[2].idno }}</small>
-                            </div>
-                            <div class="w3-col" style="width: 130px; text-align: right;">
-                                <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
-                                    {{ leaderboard[2].total_hours }} hrs
-                                </div>
-                                <div class="w3-small w3-text-grey">{{ leaderboard[2].total_sit_ins }} sessions</div>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <!-- Other Students -->
-                        {% if leaderboard|length > 3 %}
+                        <!-- Rest of the Students (Hidden by Default) -->
                         <div id="moreStudents" class="w3-hide">
-                            <div class="w3-container w3-padding-16">
-                                <h4 class="w3-text-grey" style="margin-top: 0; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;">
-                                    <i class="material-icons" style="vertical-align: middle;">star_outline</i>
-                                    Other Top Students
-                                </h4>
-                                {% for student in leaderboard[3:10] %}
-                                <div class="w3-row w3-padding-small w3-hover-light-grey w3-round" style="margin-bottom: 8px;">
-                                    <div class="w3-col" style="width: 50px;">
-                                        <span class="w3-badge w3-padding" style="background-color: var(--secondary-color); color: var(--primary-color);">{{ loop.index + 3 }}</span>
-                                    </div>
-                                    <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
-                                        <span style="color: var(--primary-color);">{{ student.full_name }}</span>
-                                        <small class="w3-text-grey">{{ student.idno }}</small>
-                                    </div>
-                                    <div class="w3-col" style="width: 130px; text-align: right;">
-                                        <small class="w3-text-grey">{{ student.total_hours }} hrs • {{ student.total_sit_ins }} sessions</small>
+                            {% for student in leaderboard[3:10] %}
+                            <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #f5f5f5; border-left: 4px solid var(--secondary-color);">
+                                <div class="w3-col" style="width: 50px;">
+                                    <div class="w3-circle" style="width: 40px; height: 40px; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-weight: bold;">{{ student.rank }}</span>
                                     </div>
                                 </div>
-                                {% endfor %}
+                                <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
+                                    <h4 style="margin: 0; color: var(--primary-color);">{{ student.full_name }}</h4>
+                                    <small class="w3-text-grey">{{ student.idno }}</small>
+                                </div>
+                                <div class="w3-col" style="width: 130px; text-align: right;">
+                                    <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                        {{ student.points }} points
+                                    </div>
+                                    <div class="w3-small w3-text-grey">{{ student.total_sit_ins }} sit-ins</div>
+                                </div>
                             </div>
+                            {% endfor %}
                         </div>
-                        {% endif %}
 
+                        <!-- Show More/Less Button -->
                         {% if leaderboard|length > 3 %}
                         <div class="w3-center w3-margin-top">
                             <button id="showMoreBtn" class="w3-button w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">

@@ -36,6 +36,9 @@
                         <td>{{ sit_in.lab }}</td>
                         <td>{{ sit_in.remaining_session }}</td>
                         <td>
+                            <form method="POST" action="{{ url_for('add_points_and_logout', idno=sit_in.idno) }}" style="display: inline;">
+                                <button class="w3-button w3-round" type="submit" style="background-color: var(--primary-color); color: white;">Points</button>
+                            </form>
                             <form method="POST" action="{{ url_for('logout_sit_in', idno=sit_in.idno) }}" style="display: inline;">
                                 <button class="w3-button w3-round" type="submit" style="background-color: var(--secondary-color); color: var(--primary-color);">Time out</button>
                             </form>

@@ -49,6 +49,7 @@
                     <th>Login Time</th>
                     <th>Logout Time</th>
                     <th>Date</th>
+                    <th>Points</th> <!-- New column for points -->
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -61,6 +62,7 @@
                     <td>{{ record.login_time }}</td>
                     <td>{{ record.logout_time if record.logout_time else "N/A" }}</td>
                     <td>{{ record.date }}</td>
+                    <td>{{ record.points }}</td> <!-- Display points -->
                 </tr>
                 {% endfor %}
             </tbody>
@@ -126,12 +128,16 @@ function updatePagination() {
     });
 
     // Highlight the current page
-    pageButtons.forEach(button => button.classList.remove('w3-light-grey'));
-    document.getElementById('page' + currentPage).classList.add('paging-backcolor','paging-color');
+    pageButtons.forEach(button => {
+        button.classList.remove('paging-backcolor', 'paging-color'); // Remove highlight classes
+        if (parseInt(button.textContent) === currentPage) {
+            button.classList.add('paging-backcolor', 'paging-color'); // Add highlight classes
+        }
+    });
 
     // Enable/disable next/prev buttons
-    document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
-    document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = currentPage === totalPages;
 }
 
 // Event listeners for pagination buttons

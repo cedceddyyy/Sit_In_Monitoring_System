@@ -24,7 +24,8 @@ def create_database():
                       username INTEGER NOT NULL,
                       password TEXT NOT NULL,
                       profile_image TEXT,
-                      session INTEGER DEFAULT 30
+                      session INTEGER DEFAULT 30,
+                      points INTEGER DEFAULT 0
                  )''')
 
     conn.execute('''CREATE TABLE IF NOT EXISTS admin (
@@ -69,6 +70,37 @@ def create_database():
                       status TEXT DEFAULT 'active',
                       FOREIGN KEY (idno) REFERENCES users(idno) ON DELETE CASCADE,
                       FOREIGN KEY (remaining_session) REFERENCES users(session)
+                 )''')
+
+    conn.execute('''CREATE TABLE IF NOT EXISTS laboratory_pcs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    lab_number TEXT NOT NULL,
+                    pc_number INTEGER NOT NULL,
+                    status TEXT CHECK(status IN ('available', 'used')) DEFAULT 'available'
+                )''')
+
+    conn.execute('''CREATE TABLE IF NOT EXISTS reservation (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      student_id INTEGER NOT NULL,
+                      full_name TEXT NOT NULL,
+                      purpose TEXT NOT NULL,
+                      lab_number TEXT NOT NULL,
+                      pc_number INTEGER NOT NULL,
+                      date DATE NOT NULL,
+                      time_in TIME NOT NULL,
+                      status TEXT null,
+                      FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
+                 )''')
+                 
+    conn.execute('''CREATE TABLE IF NOT EXISTS logs (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      reservation_id INTEGER NOT NULL,
+                      admin_id INTEGER NOT NULL,
+                      status TEXT NOT NULL,
+                      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                      FOREIGN KEY (status) REFERENCES reservation(status) ON DELETE CASCADE,
+                      FOREIGN KEY (reservation_id) REFERENCES reservation(id) ON DELETE CASCADE,
+                      FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
                  )''')
 
     conn.commit()
@@ -354,7 +386,8 @@ def get_all_sit_in_records(search=''):
                sit_in.lab, 
                sit_in.login_time, 
                sit_in.logout_time, 
-               date(sit_in.login_time) as date
+               date(sit_in.login_time) as date,
+               users.points
         FROM sit_in
         JOIN users ON sit_in.idno = users.idno
         WHERE sit_in.idno LIKE ? OR sit_in.purpose LIKE ? OR users.lastname LIKE ? OR users.firstname LIKE ?
@@ -365,7 +398,8 @@ def get_all_sit_in_records(search=''):
     return [{"idno": row[0], "full_name": row[1], "purpose": row[2], "lab": row[3], 
              "login_time": format_datetime(row[4]) if row[4] else None, 
              "logout_time": format_datetime(row[5]) if row[5] else None, 
-             "date": row[6]} for row in records]
+             "date": row[6],
+             "points": row[7]} for row in records]
 
 def get_all_sit_in_records_by_date(date_filter):
     conn = connect_db()
@@ -499,18 +533,18 @@ def get_leaderboard():
             users.idno, 
             users.lastname || ' ' || users.firstname || ' ' || IFNULL(users.middlename, '') AS full_name,
             COUNT(sit_in.id) AS total_sit_ins,
-            SUM((julianday(sit_in.logout_time) - julianday(sit_in.login_time)) * 24) AS total_hours
+            users.points
         FROM sit_in
         JOIN users ON sit_in.idno = users.idno
-        WHERE sit_in.logout_time IS NOT NULL
+        WHERE sit_in.status = 'inactive'
         GROUP BY users.idno
-        ORDER BY total_sit_ins DESC, total_hours DESC
-        LIMIT 5
+        ORDER BY users.points DESC, total_sit_ins DESC
+        LIMIT 10
     ''')
     leaderboard = cursor.fetchall()
     conn.close()
 
-    return [{"idno": row[0], "full_name": row[1], "total_sit_ins": row[2], "total_hours": round(row[3], 2) if row[3] else 0} for row in leaderboard]
+    return [{"idno": row[0], "full_name": row[1], "total_sit_ins": row[2], "points": row[3]} for row in leaderboard]
 
 def reset_session(idno):
     conn = connect_db()
@@ -524,6 +558,131 @@ def reset_session(idno):
         return False
     finally:
         conn.close()
+
+def add_points_and_logout(idno):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        # Increment points by 1
+        cursor.execute("UPDATE users SET points = points + 1 WHERE idno = ?", (idno,))
+        # Check if points are a multiple of 3
+        cursor.execute("SELECT points FROM users WHERE idno = ?", (idno,))
+        points = cursor.fetchone()[0]
+        if points % 3 == 0:
+            # Add 1 session
+            cursor.execute("UPDATE users SET session = session + 1 WHERE idno = ?", (idno,))
+        # Set status to inactive
+        cursor.execute("UPDATE sit_in SET logout_time = CURRENT_TIMESTAMP, status = 'inactive' WHERE idno = ?", (idno,))
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Error updating points and status: {e}")
+    finally:
+        conn.close()
+
+def get_pc_statuses(lab_number):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT pc_number, status FROM laboratory_pcs WHERE lab_number = ?", (lab_number,))
+    pcs = cursor.fetchall()
+    conn.close()
+    return [{"pc_number": row[0], "status": row[1]} for row in pcs]
+
+def update_pc_statuses(lab_number, pc_numbers, status):
+    conn = connect_db()
+    cursor = conn.cursor()
+    placeholders = ', '.join(['?'] * len(pc_numbers))
+    query = f"UPDATE laboratory_pcs SET status = ? WHERE lab_number = ? AND pc_number IN ({placeholders})"
+    params = [status, lab_number] + pc_numbers
+    try:
+        cursor.execute(query, params)
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def insert_reservation(student_id, full_name, purpose, lab_number, pc_number, date, time_in):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('''INSERT INTO reservation (student_id, full_name, purpose, lab_number, pc_number, date, time_in)
+                          VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                       (student_id, full_name, purpose, lab_number, pc_number, date, time_in))
+        conn.commit()
+        return True
+    except sqlite3.Error as e:
+        print(f"Error inserting reservation: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_reservations():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''SELECT r.id, r.student_id, r.full_name, r.purpose, r.lab_number, r.pc_number, r.date, r.time_in, r.status
+                      FROM reservation r
+                      WHERE r.status IS NULL
+                      ORDER BY r.date, r.time_in''')
+    reservations = cursor.fetchall()
+    conn.close()
+    return [{"id": row[0], "student_id": row[1], "full_name": row[2], "purpose": row[3], "lab_number": row[4],
+             "pc_number": row[5], "date": row[6], "time_in": row[7], "status": row[8]} for row in reservations]
+
+def update_reservation_status(reservation_id, status, admin_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        # Update reservation status
+        cursor.execute('''UPDATE reservation SET status = ? WHERE id = ?''', (status, reservation_id))
+
+        # If approved, update the PC status to 'used'
+        if status == "approved":
+            cursor.execute('''SELECT lab_number, pc_number FROM reservation WHERE id = ?''', (reservation_id,))
+            reservation = cursor.fetchone()
+            if reservation:
+                lab_number, pc_number = reservation
+                cursor.execute('''UPDATE laboratory_pcs SET status = 'used' 
+                                  WHERE lab_number = ? AND pc_number = ?''', (lab_number, pc_number))
+            else:
+                print(f"Reservation with ID {reservation_id} not found.")  # Debug log
+
+        # Log the action
+        cursor.execute('''INSERT INTO logs (reservation_id, admin_id, status)
+                          VALUES (?, ?, ?)''', (reservation_id, admin_id, status))
+        conn.commit()
+        return True
+    except sqlite3.Error as e:
+        print(f"Error updating reservation status: {e}")  # Debug log
+        conn.rollback()  # Rollback in case of error
+        return False
+    finally:
+        conn.close()
+
+def get_logs():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''SELECT l.id, r.full_name, r.purpose, r.lab_number, r.pc_number, r.status, l.timestamp
+                      FROM logs l
+                      JOIN reservation r ON l.reservation_id = r.id
+                      ORDER BY l.timestamp DESC''')
+    logs = cursor.fetchall()
+    conn.close()
+    return [{"id": row[0], "full_name": row[1], "purpose": row[2], "lab_number": row[3],
+             "pc_number": row[4], "status": row[5], "timestamp": row[6]} for row in logs]
+
+def get_total_reservations():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM reservation")
+    total = cursor.fetchone()[0]
+    conn.close()
+
+    return total
 
 if __name__ == "__main__":
     create_database()

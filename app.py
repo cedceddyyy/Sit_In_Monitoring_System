@@ -257,13 +257,47 @@ def history_feedback():
 
     return render_template("history.html", pagetitle="Sit-in History", sit_in_records=sit_in_records, student_id=student_id)
 
-@app.route("/reservation")
+@app.route("/reservation", methods=["GET", "POST"])
 def reservation():
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
 
-    return render_template("reservation.html", pagetitle="Reservation")
+    user_info = dbhelper.get_user_info(session["user"])
+    if request.method == "POST":
+        student_id = request.form["student_id"]
+        full_name = request.form["full_name"]
+        purpose = request.form["subject"]
+        lab_number = request.form["room"]
+        pc_number = request.form["pc"]
+        date = request.form["date"]
+        time_in = request.form["time_in"]
+
+        # Insert reservation into the database
+        success = dbhelper.insert_reservation(student_id, full_name, purpose, lab_number, pc_number, date, time_in)
+        if success:
+            flash("Reservation successful!", "success")
+        else:
+            flash("Failed to make a reservation. Please try again.", "danger")
+
+        return redirect(url_for("reservation"))
+
+    if user_info:
+        user_data = {
+            "idno": user_info[0],
+            "lastname": user_info[1],
+            "firstname": user_info[2],
+            "middlename": user_info[3] if user_info[3] else "",
+            "course": user_info[4],
+            "year_level": user_info[5],
+            "email": user_info[6],
+            "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+            "session": user_info[8]
+        }
+        return render_template("reservation.html", pagetitle="Reservation", user=user_data)
+
+    flash("User not found!", "danger")
+    return redirect(url_for("dashboard"))
 
 @app.route("/view_feedback")
 def view_feedback():
@@ -329,6 +363,7 @@ def admin_dashboard():
     total_students = dbhelper.total_students()
     total_feedback = dbhelper.total_feedback()
     total_sit_in = dbhelper.total_sit_in()
+    total_reservations = dbhelper.get_total_reservations()  # Add this line
     announcements = dbhelper.get_announcements(include_inactive=True)
     purpose_counts = dbhelper.get_purpose_counts()
     leaderboard = dbhelper.get_leaderboard()
@@ -337,7 +372,17 @@ def admin_dashboard():
     for rank, student in enumerate(leaderboard, start=1):
         student["rank"] = rank
 
-    return render_template("admin_dashboard.html", pagetitle="Admin Dashboard", total_students=total_students, announcements=announcements, total_feedback=total_feedback, purpose_counts=purpose_counts, total_sit_in=total_sit_in, leaderboard=leaderboard)
+    return render_template(
+        "admin_dashboard.html",
+        pagetitle="Admin Dashboard",
+        total_students=total_students,
+        announcements=announcements,
+        total_feedback=total_feedback,
+        purpose_counts=purpose_counts,
+        total_sit_in=total_sit_in,
+        total_reservations=total_reservations,  # Pass it to the template
+        leaderboard=leaderboard
+    )
 
 @app.route("/view_students", methods=['GET', 'POST'])
 def view_students():
@@ -460,6 +505,76 @@ def reset_session(idno):
         return jsonify({"success": True})
     else:
         return jsonify({"success": False, "message": "Failed to reset session."})
+
+@app.route('/laboratory')
+def laboratory():
+    return render_template('laboratory.html', pagetitle="Computer Control")
+
+@app.route('/get_pc_status/<lab_number>', methods=['GET'])
+def get_pc_status(lab_number):
+    pcs = dbhelper.get_pc_statuses(lab_number)  # Fetch PC statuses from the database
+    return jsonify({"success": True, "pcs": pcs})
+
+@app.route('/update_pc_status', methods=['POST'])
+def update_pc_status():
+    data = request.json
+    lab_number = data.get('lab_number')
+    pc_numbers = data.get('pc_numbers')
+    status = data.get('status')
+
+    if not lab_number or not pc_numbers or not status:
+        return jsonify({"success": False, "message": "Invalid data!"})
+
+    success = dbhelper.update_pc_statuses(lab_number, pc_numbers, status)  # Update PC statuses in the database
+    if success:
+        return jsonify({"success": True, "message": "PC statuses updated successfully!"})
+    else:
+        return jsonify({"success": False, "message": "Failed to update PC statuses!"})
+
+@app.route('/add_points_and_logout/<int:idno>', methods=['POST'])
+def add_points_and_logout(idno):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    # Update points and set status to inactive
+    dbhelper.add_points_and_logout(idno)
+    flash("Points added and logged out!", "success")
+    return redirect(url_for('sit_in'))
+
+@app.route("/reservations", methods=["GET", "POST"])
+def reservations():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    reservations = dbhelper.get_reservations()
+
+    if request.method == "POST":
+        reservation_id = request.form["reservation_id"]
+        action = request.form["action"]
+        admin_id = dbhelper.get_admin_id(session["user"])
+
+        if dbhelper.update_reservation_status(reservation_id, action, admin_id):
+            if action == "approved":
+                flash("Reservation approved and PC status updated to 'used'!", "success")
+            else:
+                flash("Reservation disapproved!", "success")
+        else:
+            flash("Failed to update reservation status. Try again.", "danger")
+
+        return redirect(url_for("reservations"))
+
+    return render_template("admin_reservation.html", pagetitle="Reservations", reservations=reservations)
+
+@app.route("/logs")
+def logs():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    logs = dbhelper.get_logs()
+    return render_template("logs.html", pagetitle="Logs", logs=logs)
 
 if __name__ == "__main__":
     app.run(debug=True)

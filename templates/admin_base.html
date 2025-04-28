@@ -140,7 +140,6 @@
         background-color: #2C1038;
         color: white;
         }
-
         
     </style>
 </head>
@@ -162,10 +161,6 @@
             <span class="material-icons">visibility</span> 
             <span class="text">View Sit-in Records</span>
         </a>
-        <a href="" class="{% if request.endpoint == 'view_sit_in_reservation' %}active{% endif %}">
-            <span class="material-icons">visibility</span> 
-            <span class="text">View Sit-in Reservation</span>
-        </a>
         <a href="{{ url_for('sit_in_reports') }}" class="{% if request.endpoint == 'sit_in_reports' %}active{% endif %}">
             <span class="material-icons">report_problem</span> 
             <span class="text">Sit-in Reports</span>
@@ -174,9 +169,17 @@
             <span class="material-icons">feedback</span> 
             <span class="text">Feedback Reports</span>
         </a>
-        <a href="" class="{% if request.endpoint == 'reservations' %}active{% endif %}">
+        <a href="{{ url_for('laboratory') }}" class="{% if request.endpoint == 'laboratory' %}active{% endif %}">
+            <span class="material-icons">desktop_windows</span> 
+            <span class="text">Laboratory</span>
+        </a>
+        <a href="{{ url_for('reservations') }}" class="{% if request.endpoint == 'reservations' %}active{% endif %}">
             <span class="material-icons">book</span> 
             <span class="text">Reservations</span>
+        </a>
+        <a href="{{ url_for('logs') }}" class="{% if request.endpoint == 'logs' %}active{% endif %}">
+            <span class="material-icons">history</span> 
+            <span class="text">Logs</span>
         </a>
         <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
             <span class="material-icons">logout</span> 
