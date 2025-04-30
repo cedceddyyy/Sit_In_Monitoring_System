@@ -159,7 +159,7 @@
         </a>
         <a href="{{ url_for('view_sit_in') }}" class="{% if request.endpoint == 'view_sit_in' %}active{% endif %}">
             <span class="material-icons">visibility</span> 
-            <span class="text">View Sit-in Records</span>
+            <span class="text">Sit-in Records</span>
         </a>
         <a href="{{ url_for('sit_in_reports') }}" class="{% if request.endpoint == 'sit_in_reports' %}active{% endif %}">
             <span class="material-icons">report_problem</span> 
@@ -180,6 +180,14 @@
         <a href="{{ url_for('logs') }}" class="{% if request.endpoint == 'logs' %}active{% endif %}">
             <span class="material-icons">history</span> 
             <span class="text">Logs</span>
+        </a>
+        <a href="{{ url_for('resources') }}" class="{% if request.endpoint == 'resources' %}active{% endif %}">
+            <span class="material-icons">folder</span> 
+            <span class="text">Resources</span>
+        </a>
+        <a href="{{ url_for('admin_schedule') }}" class="{% if request.endpoint == 'admin_schedule' %}active{% endif %}">
+            <span class="material-icons">edit_calendar</span> 
+            <span class="text">Manage Schedule</span>
         </a>
         <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
             <span class="material-icons">logout</span> 

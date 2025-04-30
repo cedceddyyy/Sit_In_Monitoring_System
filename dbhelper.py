@@ -103,6 +103,23 @@ def create_database():
                       FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
                  )''')
 
+    conn.execute('''CREATE TABLE IF NOT EXISTS resources (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      title TEXT NOT NULL,
+                      description TEXT,
+                      filename TEXT NOT NULL,
+                      uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                 )''')
+
+    conn.execute('''CREATE TABLE IF NOT EXISTS lab_schedule (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      lab_number TEXT NOT NULL,
+                      date DATE NOT NULL,
+                      time_start TIME NOT NULL,
+                      time_end TIME NOT NULL,
+                      purpose TEXT NOT NULL
+                 )''')
+
     conn.commit()
     conn.close()
 
@@ -683,6 +700,102 @@ def get_total_reservations():
     conn.close()
 
     return total
+
+def insert_resource(title, description, filename):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("INSERT INTO resources (title, description, filename) VALUES (?, ?, ?)", 
+                       (title, description, filename))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def get_resources():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, title, description, filename, uploaded_at FROM resources")
+    resources = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "id": row[0],
+            "title": row[1],
+            "description": row[2],
+            "filename": row[3],
+            "uploaded_at": datetime.strptime(row[4], "%Y-%m-%d %H:%M:%S") if row[4] else None
+        }
+        for row in resources
+    ]
+
+def update_resource(resource_id, title, description):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("UPDATE resources SET title = ?, description = ? WHERE id = ?", 
+                       (title, description, resource_id))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def delete_resource(resource_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM resources WHERE id = ?", (resource_id,))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def get_lab_schedules():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT lab_number, date, time_start, time_end, purpose FROM lab_schedule ORDER BY date, time_start")
+    schedules = cursor.fetchall()
+    conn.close()
+    return [{"lab_number": row[0], "date": row[1], "time_start": row[2], "time_end": row[3], "purpose": row[4]} for row in schedules]
+
+def add_lab_schedule(lab_number, date, time_start, time_end, purpose):
+    conn = connect_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO lab_schedule (lab_number, date, time_start, time_end, purpose) VALUES (?, ?, ?, ?, ?)",
+                       (lab_number, date, time_start, time_end, purpose))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def update_lab_schedule(schedule_id, lab_number, date, time_start, time_end, purpose):
+    conn = connect_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''UPDATE lab_schedule 
+                          SET lab_number = ?, date = ?, time_start = ?, time_end = ?, purpose = ? 
+                          WHERE id = ?''',
+                       (lab_number, date, time_start, time_end, purpose, schedule_id))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     create_database()

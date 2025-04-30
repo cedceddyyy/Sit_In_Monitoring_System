@@ -1,0 +1,511 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="w3-container" style="padding-bottom: 32px;">
+    <div class="w3-row">
+        <!-- Calendar Section -->
+        <div class="w3-col m8">
+            <div class="w3-card w3-round w3-white">
+                <!-- Header Section -->
+                <div class="w3-container w3-padding" style="border-bottom: 1px solid #f0f0f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0;">
+                            <i class="material-icons" style="vertical-align: middle; color: var(--primary-color);">event_available</i>
+                            Lab Schedule Calendar
+                        </h2>
+                        <span class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+                            <i class="material-icons" style="font-size: 16px; vertical-align: middle;">calendar_today</i>
+                            Admin View
+                        </span>
+                    </div>
+                </div>
+
+                <div class="w3-container w3-padding">
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button class="w3-button w3-round prev-month" 
+                                    style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                <i class="material-icons">chevron_left</i>
+                            </button>
+                            <h3 class="calendar-month w3-center" style="color: var(--primary-color);"></h3>
+                            <button class="w3-button w3-round next-month"
+                                    style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                <i class="material-icons">chevron_right</i>
+                            </button>
+                        </div>
+                        
+                        <div class="calendar-weekdays w3-text-dark-grey">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        
+                        <div class="calendar-days"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Details Section -->
+        <div class="w3-col m4">
+            <div class="w3-card w3-round w3-white" style="margin-left: 16px; height: 100%;">
+                <div class="w3-container w3-padding" style="border-bottom: 1px solid #f0f0f0;">
+                    <h3 style="margin: 0;">
+                        <i class="material-icons" style="vertical-align: middle; color: var(--primary-color);">schedule</i>
+                        Schedule Details
+                    </h3>
+                    <p class="w3-text-grey" id="selected-date">Select a date to view schedules</p>
+                </div>
+                
+                <div class="w3-container w3-padding" id="schedule-details">
+                    <div class="w3-center w3-padding-32">
+                        <i class="material-icons w3-text-grey" style="font-size: 48px;">event_available</i>
+                        <p class="w3-text-grey">No date selected</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Schedule Modal -->
+<div id="addScheduleModal" class="w3-modal">
+    <div class="w3-modal-content w3-animate-top w3-card-4 w3-round" style="max-width: 500px;">
+        <header class="w3-container w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+            <span onclick="document.getElementById('addScheduleModal').style.display='none'" 
+                  class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
+            <h2>Add New Schedule</h2>
+        </header>
+        <form method="POST" action="{{ url_for('add_lab_schedule') }}" class="w3-container" id="scheduleForm">
+            <input type="hidden" id="selected-date" name="date">
+            
+            <div class="w3-section">
+                <label class="w3-text-grey">Lab Number</label>
+                    <select class="w3-select w3-border w3-round" name="lab_number" required style="border-color: var(--secondary-color);">
+                        <option value="" disabled selected>Select a lab</option>
+                        <option value="524">524</option>
+                        <option value="526">526</option>
+                        <option value="528">528</option>
+                        <option value="530">530</option>
+                        <option value="542">542</option>
+                        <option value="544">544</option>
+                        <option value="517">517</option>
+                    </select>
+                
+                <label class="w3-text-grey">Start Time</label>
+                <input type="time" name="time_start" class="w3-input w3-border w3-round" required
+                       style="border-color: var(--secondary-color);">
+                
+                <label class="w3-text-grey">End Time</label>
+                <input type="time" name="time_end" class="w3-input w3-border w3-round" required
+                       style="border-color: var(--secondary-color);">
+                
+                <label class="w3-text-grey">Purpose</label>
+                <textarea name="purpose" class="w3-input w3-border w3-round" required
+                          style="border-color: var(--secondary-color); resize: vertical;"></textarea>
+            </div>
+            <div class="w3-container w3-padding w3-center">
+                <button type="submit" class="w3-button w3-round" 
+                        style="background-color: var(--secondary-color); color: var(--primary-color); margin-right: 8px;">
+                    <i class="material-icons" style="vertical-align: middle;">save</i>
+                    Save Schedule
+                </button>
+                <button type="button" onclick="document.getElementById('addScheduleModal').style.display='none'" 
+                        class="w3-button w3-round w3-light-grey">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Schedule Modal -->
+<div id="editScheduleModal" class="w3-modal">
+    <div class="w3-modal-content w3-animate-top w3-card-4 w3-round" style="max-width: 500px;">
+        <header class="w3-container w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+            <span onclick="document.getElementById('editScheduleModal').style.display='none'" 
+                  class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
+            <h2>Edit Schedule</h2>
+        </header>
+        <form method="POST" action="{{ url_for('update_lab_schedule') }}" class="w3-container" id="editScheduleForm">
+            <input type="hidden" name="schedule_id" id="edit-schedule-id">
+            <input type="hidden" name="date" id="edit-date">
+            
+            <div class="w3-section">
+                <label class="w3-text-grey">Lab Number</label>
+                       <select class="w3-select w3-border w3-round" name="lab_number" id="edit-lab-number" required style="border-color: var(--secondary-color);">
+                        <option value="" disabled selected>Select a lab</option>
+                        <option value="524">524</option>
+                        <option value="526">526</option>
+                        <option value="528">528</option>
+                        <option value="530">530</option>
+                        <option value="542">542</option>
+                        <option value="544">544</option>
+                        <option value="517">517</option>
+                    </select>
+                
+                <label class="w3-text-grey">Start Time</label>
+                <input type="time" name="time_start" id="edit-time-start" class="w3-input w3-border w3-round" required
+                       style="border-color: var(--secondary-color);">
+                
+                <label class="w3-text-grey">End Time</label>
+                <input type="time" name="time_end" id="edit-time-end" class="w3-input w3-border w3-round" required
+                       style="border-color: var(--secondary-color);">
+                
+                <label class="w3-text-grey">Purpose</label>
+                <textarea name="purpose" id="edit-purpose" class="w3-input w3-border w3-round" required
+                          style="border-color: var(--secondary-color); resize: vertical;"></textarea>
+            </div>
+            <div class="w3-container w3-padding w3-center">
+                <button type="submit" class="w3-button w3-round" 
+                        style="background-color: var(--secondary-color); color: var(--primary-color); margin-right: 8px;">
+                    <i class="material-icons" style="vertical-align: middle;">save</i>
+                    Update Schedule
+                </button>
+                <button type="button" onclick="document.getElementById('editScheduleModal').style.display='none'" 
+                        class="w3-button w3-round w3-light-grey">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .calendar-container {
+        font-family: 'Work Sans', sans-serif;
+        width: 100%;
+        margin: 0 auto;
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+    
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+    }
+    
+    .calendar-day {
+        height: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        background-color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 1px solid #f0f0f0;
+        padding: 4px;
+        position: relative;
+    }
+    
+    .calendar-day:hover {
+        background-color: #f5f5f5;
+        transform: translateY(-2px);
+    }
+    
+    .calendar-day.empty {
+        background-color: transparent;
+        border: none;
+        cursor: default;
+    }
+    
+    .calendar-day.today {
+        background-color: var(--secondary-color);
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+    
+    .calendar-day.has-schedule {
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .calendar-day .day-number {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+    
+    .calendar-day .schedule-indicator {
+        width: 8px;
+        height: 8px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .schedule-item {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-left: 4px solid var(--primary-color);
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .schedule-item:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .schedule-time {
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .schedule-purpose {
+        font-weight: 500;
+        margin-top: 4px;
+    }
+</style>
+
+<script>
+// Global variables to track current month/year being viewed
+let currentMonth;
+let currentYear;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get current date
+    const currentDate = new Date();
+    currentMonth = currentDate.getMonth();
+    currentYear = currentDate.getFullYear();
+    const today = {
+        date: currentDate.getDate(),
+        month: currentMonth,
+        year: currentYear
+    };
+
+    // Render calendar
+    renderCalendar(currentMonth, currentYear, today);
+
+    // Navigation buttons
+    document.querySelector('.prev-month').addEventListener('click', function() {
+        const currentMonthElement = document.querySelector('.calendar-month');
+        const [monthName, year] = currentMonthElement.textContent.split(' ');
+        const monthIndex = new Date(`${monthName} 1, ${year}`).getMonth();
+        let newMonth = monthIndex - 1;
+        let newYear = parseInt(year);
+
+        if (newMonth < 0) {
+            newMonth = 11;
+            newYear -= 1;
+        }
+
+        currentMonth = newMonth;
+        currentYear = newYear;
+        renderCalendar(newMonth, newYear, today);
+    });
+
+    document.querySelector('.next-month').addEventListener('click', function() {
+        const currentMonthElement = document.querySelector('.calendar-month');
+        const [monthName, year] = currentMonthElement.textContent.split(' ');
+        const monthIndex = new Date(`${monthName} 1, ${year}`).getMonth();
+        let newMonth = monthIndex + 1;
+        let newYear = parseInt(year);
+
+        if (newMonth > 11) {
+            newMonth = 0;
+            newYear += 1;
+        }
+
+        currentMonth = newMonth;
+        currentYear = newYear;
+        renderCalendar(newMonth, newYear, today);
+    });
+});
+
+function renderCalendar(month, year, today) {
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"];
+    
+    // Set month and year header
+    document.querySelector('.calendar-month').textContent = `${monthNames[month]} ${year}`;
+    
+    // Get first day of month and total days in month
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Clear previous days
+    const daysContainer = document.querySelector('.calendar-days');
+    daysContainer.innerHTML = '';
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        daysContainer.appendChild(emptyDay);
+    }
+    
+    // Add cells for each day of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.innerHTML = `<span class="day-number">${day}</span>`;
+        
+        // Highlight current day
+        if (day === today.date && month === today.month && year === today.year) {
+            dayElement.classList.add('today');
+        }
+        
+        // Format date as YYYY-MM-DD for API calls
+        const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        // Add click event to open day details
+        dayElement.addEventListener('click', function() {
+            openDayDetails(day, month, year, formattedDate);
+        });
+        
+        // Check if day has schedules from database
+        checkDayForSchedules(formattedDate, dayElement);
+        
+        daysContainer.appendChild(dayElement);
+    }
+}
+
+function checkDayForSchedules(date, dayElement) {
+    // Fetch schedules for this date from the server
+    fetch(`/get_schedules_by_date?date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.schedules.length > 0) {
+                dayElement.classList.add('has-schedule');
+                const indicator = document.createElement('div');
+                indicator.className = 'schedule-indicator';
+                dayElement.appendChild(indicator);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking for schedules:', error);
+        });
+}
+
+function openDayDetails(day, month, year, formattedDate) {
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"];
+    
+    // Set the selected date in the details panel
+    document.getElementById('selected-date').textContent = `${monthNames[month]} ${day}, ${year}`;
+    document.getElementById('selected-date').dataset.date = formattedDate;
+    
+    // Fetch schedules for this date from the server
+    fetch(`/get_schedules_by_date?date=${formattedDate}`)
+        .then(response => response.json())
+        .then(data => {
+            const detailsContainer = document.getElementById('schedule-details');
+            
+            if (data.success && data.schedules.length > 0) {
+                let html = '';
+                data.schedules.forEach(schedule => {
+                    html += `
+                        <div class="schedule-item" onclick="openEditModal(
+                            ${schedule.id}, 
+                            '${schedule.lab_number}', 
+                            '${schedule.time_start}', 
+                            '${schedule.time_end}', 
+                            \`${schedule.purpose.replace(/`/g, '\\`')}\`,
+                            '${schedule.date}'
+                        )">
+                            <div class="schedule-time">${schedule.time_start} - ${schedule.time_end}</div>
+                            <div class="schedule-purpose">${schedule.purpose}</div>
+                            <div class="w3-small w3-text-grey">Lab ${schedule.lab_number}</div>
+                        </div>
+                    `;
+                });
+                
+                // Add button to add new schedule
+                html += `
+                    <button class="w3-button w3-round w3-block w3-margin-top" 
+                            style="background-color: var(--secondary-color); color: var(--primary-color);"
+                            onclick="openAddModal('${formattedDate}')">
+                        <i class="material-icons" style="vertical-align: middle;">add</i>
+                        Add Schedule
+                    </button>
+                `;
+                
+                detailsContainer.innerHTML = html;
+            } else {
+                // No schedules for this day
+                detailsContainer.innerHTML = `
+                    <div class="w3-center w3-padding-16">
+                        <i class="material-icons w3-text-grey" style="font-size: 48px;">event_busy</i>
+                        <p class="w3-text-grey">No schedules for this day</p>
+                        <button class="w3-button w3-round w3-margin-top" 
+                                style="background-color: var(--secondary-color); color: var(--primary-color);"
+                                onclick="openAddModal('${formattedDate}')">
+                            <i class="material-icons" style="vertical-align: middle;">add</i>
+                            Add Schedule
+                        </button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching schedules:', error);
+            const detailsContainer = document.getElementById('schedule-details');
+            detailsContainer.innerHTML = `
+                <div class="w3-center w3-padding-16">
+                    <i class="material-icons w3-text-grey" style="font-size: 48px;">error</i>
+                    <p class="w3-text-grey">Error loading schedules</p>
+                </div>
+            `;
+        });
+}
+
+function openAddModal(formattedDate) {
+    document.querySelector('#scheduleForm input[name="date"]').value = formattedDate;
+    document.getElementById('addScheduleModal').style.display = 'block';
+}
+
+function openEditModal(id, lab_number, time_start, time_end, purpose, date) {
+    document.getElementById('edit-schedule-id').value = id;
+    document.getElementById('edit-lab-number').value = lab_number;
+    document.getElementById('edit-time-start').value = time_start;
+    document.getElementById('edit-time-end').value = time_end;
+    document.getElementById('edit-purpose').value = purpose;
+    document.getElementById('edit-date').value = date;
+    document.getElementById('editScheduleModal').style.display = 'block';
+}
+
+// Refresh calendar after form submission
+document.getElementById('scheduleForm').addEventListener('submit', function() {
+    setTimeout(() => {
+        renderCalendar(currentMonth, currentYear, {
+            date: new Date().getDate(),
+            month: new Date().getMonth(),
+            year: new Date().getFullYear()
+        });
+    }, 500);
+});
+
+document.getElementById('editScheduleForm').addEventListener('submit', function() {
+    setTimeout(() => {
+        renderCalendar(currentMonth, currentYear, {
+            date: new Date().getDate(),
+            month: new Date().getMonth(),
+            year: new Date().getFullYear()
+        });
+    }, 500);
+});
+</script>
+{% endblock %}

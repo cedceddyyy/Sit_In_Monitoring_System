@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+    <script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
 	<title>Dashboard</title>
     <style>
         :root {
@@ -143,39 +144,37 @@
         }
 
         .w3-badge {
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-    }
-    
-    .w3-card {
-        height: 100%;
-        box-shadow: none;
-    }
-    
-    .w3-card li {
-        transition: background-color 0.3s;
-    }
-    
-    .w3-card li:hover {
-        background-color: #f5f5f5;
-    }
-    
-    @media screen and (max-width: 992px) {
-        .w3-half {
-            width: 100%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
         }
-    }
+        
+        .w3-card {
+            height: 100%;
+            box-shadow: none;
+        }
+        
+        .w3-card li {
+            transition: background-color 0.3s;
+        }
+        
+        .w3-card li:hover {
+            background-color: #f5f5f5;
+        }
+        
+        @media screen and (max-width: 992px) {
+            .w3-half {
+                width: 100%;
+            }
+        }
 
-    .paging-backcolor {
-        background-color: #2C1038;
-        color: white;
-    }
-
-
+        .paging-backcolor {
+            background-color: #2C1038;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -252,4 +251,3 @@
     </script>
 </body>
 </html>
-

@@ -280,7 +280,7 @@ def reservation():
         else:
             flash("Failed to make a reservation. Please try again.", "danger")
 
-        return redirect(url_for("reservation"))
+        return redirect(url_for("schedule"))
 
     if user_info:
         user_data = {
@@ -575,6 +575,197 @@ def logs():
 
     logs = dbhelper.get_logs()
     return render_template("logs.html", pagetitle="Logs", logs=logs)
+
+@app.route("/resources", methods=["GET", "POST"])
+def resources():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        if "file" not in request.files:
+            flash("No file selected!", "danger")
+            return redirect(url_for("resources"))
+
+        file = request.files["file"]
+        title = request.form["title"]
+        description = request.form["description"]
+
+        if file.filename == "":
+            flash("No file selected!", "danger")
+            return redirect(url_for("resources"))
+
+        if file:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(filepath)
+
+            if dbhelper.insert_resource(title, description, filename):
+                flash("Resource uploaded successfully!", "success")
+            else:
+                flash("Failed to upload resource.", "danger")
+
+    resources = dbhelper.get_resources()
+    return render_template("resources.html", pagetitle="Resources", resources=resources)
+
+@app.route("/edit_resource/<int:resource_id>", methods=["POST"])
+def edit_resource(resource_id):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    title = request.form["title"]
+    description = request.form["description"]
+
+    if dbhelper.update_resource(resource_id, title, description):
+        flash("Resource updated successfully!", "success")
+    else:
+        flash("Failed to update resource.", "danger")
+
+    return redirect(url_for("resources"))
+
+@app.route("/delete_resource/<int:resource_id>", methods=["POST"])
+def delete_resource(resource_id):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    if dbhelper.delete_resource(resource_id):
+        flash("Resource deleted successfully!", "success")
+    else:
+        flash("Failed to delete resource.", "danger")
+
+    return redirect(url_for("resources"))
+
+@app.route("/schedule", methods=["GET", "POST"])
+def schedule():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    # Get user info
+    user_info = dbhelper.get_user_info(session["user"])
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for("dashboard"))
+
+    user_data = {
+        "idno": user_info[0],
+        "lastname": user_info[1],
+        "firstname": user_info[2],
+        "middlename": user_info[3] if user_info[3] else "",
+        "course": user_info[4],
+        "year_level": user_info[5],
+        "email": user_info[6],
+        "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+        "session": user_info[8]
+    }
+
+    if request.method == "POST":
+        lab_number = request.form["lab_number"]
+        date = request.form["date"]
+        time_start = request.form["time_start"]
+        time_end = request.form["time_end"]
+        purpose = request.form["purpose"]
+
+        if dbhelper.add_lab_schedule(lab_number, date, time_start, time_end, purpose):
+            flash("Reservation request submitted successfully!", "success")
+        else:
+            flash("Failed to submit reservation request. Try again.", "danger")
+
+    schedules = dbhelper.get_lab_schedules()
+    return render_template("schedule.html", pagetitle="Schedule", schedules=schedules, user=user_data)
+
+
+@app.route("/admin_schedule", methods=["GET", "POST"])
+def admin_schedule():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        schedule_id = request.form["schedule_id"]
+        lab_number = request.form["lab_number"]
+        date = request.form["date"]
+        time_start = request.form["time_start"]
+        time_end = request.form["time_end"]
+        purpose = request.form["purpose"]
+
+        if dbhelper.update_lab_schedule(schedule_id, lab_number, date, time_start, time_end, purpose):
+            flash("Schedule updated successfully!", "success")
+        else:
+            flash("Failed to update schedule. Try again.", "danger")
+
+    schedules = dbhelper.get_lab_schedules()
+    return render_template("admin_schedule.html", pagetitle="Manage Schedule", schedules=schedules)
+
+@app.route("/get_schedules_by_date", methods=["GET"])
+def get_schedules_by_date():
+    date = request.args.get('date')
+    if not date:
+        return jsonify({"success": False, "message": "Date parameter is required"})
+    
+    conn = dbhelper.connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, lab_number, time_start, time_end, purpose, date FROM lab_schedule WHERE date = ? ORDER BY time_start", (date,))
+    schedules = cursor.fetchall()
+    conn.close()
+    
+    return jsonify({
+        "success": True,
+        "schedules": [{
+            "id": row[0],
+            "lab_number": row[1],
+            "time_start": row[2],
+            "time_end": row[3],
+            "purpose": row[4],
+            "date": row[5]  # Add this line
+        } for row in schedules]
+    })
+
+@app.route("/add_lab_schedule", methods=["POST"])
+def add_lab_schedule():
+    if "user" not in session:
+        return jsonify({"success": False, "message": "You need to log in first!"})
+    
+    lab_number = request.form.get("lab_number")
+    date = request.form.get("date")
+    time_start = request.form.get("time_start")
+    time_end = request.form.get("time_end")
+    purpose = request.form.get("purpose")
+    
+    if not all([lab_number, date, time_start, time_end, purpose]):
+        flash("Please fill out all fields!", "danger")
+        return redirect(url_for("admin_schedule"))
+    
+    if dbhelper.add_lab_schedule(lab_number, date, time_start, time_end, purpose):
+        flash("Schedule added successfully!", "success")
+    else:
+        flash("Failed to add schedule. Try again.", "danger")
+    
+    return redirect(url_for("admin_schedule"))
+
+@app.route("/update_lab_schedule", methods=["POST"])
+def update_lab_schedule():
+    if "user" not in session:
+        return jsonify({"success": False, "message": "You need to log in first!"})
+    
+    schedule_id = request.form.get("schedule_id")
+    lab_number = request.form.get("lab_number")
+    time_start = request.form.get("time_start")
+    time_end = request.form.get("time_end")
+    purpose = request.form.get("purpose")
+    
+    if not all([schedule_id, lab_number, time_start, time_end, purpose]):
+        flash("Please fill out all fields!", "danger")
+        return redirect(url_for("admin_schedule"))
+    
+    if dbhelper.update_lab_schedule(schedule_id, lab_number, None, time_start, time_end, purpose):
+        flash("Schedule updated successfully!", "success")
+    else:
+        flash("Failed to update schedule. Try again.", "danger")
+    
+    return redirect(url_for("admin_schedule"))
 
 if __name__ == "__main__":
     app.run(debug=True)

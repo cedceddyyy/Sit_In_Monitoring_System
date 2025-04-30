@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="icon" type="image/x-icon" href="../static/favicon/csslogo.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-	<title>Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="../static/js/calendar.js"></script>
+	<title>Admin Dashboard</title>
     <style>
         :root {
             --primary-color: #2C1038;
@@ -39,7 +41,7 @@
         }
 
         .sidebar:hover {
-            width: 220px;
+            width: 300px;
         }
 
         .sidebar a {
@@ -89,7 +91,7 @@
         }
 
         .sidebar:hover + #main {
-            margin-left: 230px;
+            margin-left: 310px;
         }
 
         .flash-message {
@@ -135,82 +137,58 @@
             }
         }
 
-        .color {
-            background-color: #D3BAFA;
-        }
-        .font-color {
-            color: #2C1038;
-        }
-
-        .w3-badge {
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-    }
-    
-    .w3-card {
-        height: 100%;
-        box-shadow: none;
-    }
-    
-    .w3-card li {
-        transition: background-color 0.3s;
-    }
-    
-    .w3-card li:hover {
-        background-color: #f5f5f5;
-    }
-    
-    @media screen and (max-width: 992px) {
-        .w3-half {
-            width: 100%;
-        }
-    }
-
-    .paging-backcolor {
+        .paging-backcolor {
         background-color: #2C1038;
         color: white;
-    }
-
-
+        }
+        
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
-            <span class="material-icons">dashboard</span> 
-            <span class="text">Dashboard</span>
+        <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+            <span class="material-icons">home</span> 
+            <span class="text">Home</span>
         </a>
-        <a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}">
-            <span class="material-icons">person</span> 
-            <span class="text">Profile</span>
+        <a href="{{ url_for('view_students') }}" class="{% if request.endpoint == 'view_students' %}active{% endif %}">
+            <span class="material-icons">school</span> 
+            <span class="text">Student</span>
         </a>
-        <a href="{{ url_for('edit') }}" class="{% if request.endpoint == 'edit' %}active{% endif %}">
-            <span class="material-icons">edit</span> 
-            <span class="text">Edit</span>
+        <a href="{{ url_for('sit_in') }}" class="{% if request.endpoint == 'sit_in' %}active{% endif %}">
+            <span class="material-icons">event_seat</span> 
+            <span class="text">Sit-in</span>
         </a>
-        <a href="{{ url_for('announcement') }}" class="{% if request.endpoint == 'announcement' %}active{% endif %}">
-            <span class="material-icons">announcement</span> 
-            <span class="text">Announcement</span>
+        <a href="{{ url_for('view_sit_in') }}" class="{% if request.endpoint == 'view_sit_in' %}active{% endif %}">
+            <span class="material-icons">visibility</span> 
+            <span class="text">Sit-in Records</span>
         </a>
-        <a href="{{ url_for('rules') }}" class="{% if request.endpoint == 'rules' %}active{% endif %}">
-            <span class="material-icons">rules</span> 
-            <span class="text">Rules</span>
+        <a href="{{ url_for('sit_in_reports') }}" class="{% if request.endpoint == 'sit_in_reports' %}active{% endif %}">
+            <span class="material-icons">report_problem</span> 
+            <span class="text">Sit-in Reports</span>
         </a>
-        <a href="{{ url_for('history_feedback') }}" class="{% if request.endpoint == 'history_feedback' %}active{% endif %}">
+        <a href="{{ url_for('view_feedback') }}" class="{% if request.endpoint == 'view_feedback' %}active{% endif %}">
+            <span class="material-icons">feedback</span> 
+            <span class="text">Feedback Reports</span>
+        </a>
+        <a href="{{ url_for('laboratory') }}" class="{% if request.endpoint == 'laboratory' %}active{% endif %}">
+            <span class="material-icons">desktop_windows</span> 
+            <span class="text">Laboratory</span>
+        </a>
+        <a href="{{ url_for('reservations') }}" class="{% if request.endpoint == 'reservations' %}active{% endif %}">
+            <span class="material-icons">book</span> 
+            <span class="text">Reservations</span>
+        </a>
+        <a href="{{ url_for('logs') }}" class="{% if request.endpoint == 'logs' %}active{% endif %}">
             <span class="material-icons">history</span> 
-            <span class="text">History</span>
+            <span class="text">Logs</span>
         </a>
-        <a href="{{ url_for('reservation') }}" class="{% if request.endpoint == 'reservation' %}active{% endif %}">
-            <span class="material-icons">event_note</span> 
-            <span class="text">Reservation</span>
+        <a href="{{ url_for('resources') }}" class="{% if request.endpoint == 'resources' %}active{% endif %}">
+            <span class="material-icons">folder</span> 
+            <span class="text">Resources</span>
         </a>
-        <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}active{% endif %}">
-            <span class="material-icons">calendar_today</span> 
-            <span class="text">Schedule</span>
+        <a href="{{ url_for('admin_schedule') }}" class="{% if request.endpoint == 'admin_schedule' %}active{% endif %}">
+            <span class="material-icons">edit_calendar</span> 
+            <span class="text">Manage Schedule</span>
         </a>
         <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
             <span class="material-icons">logout</span> 
@@ -219,7 +197,7 @@
     </div>
 
     <div id="main">
-        <div class="w3-margin font-color">
+        <div class="w3-margin">
             <h1>{{ pagetitle }}</h1>
         </div>  
 
@@ -252,4 +230,3 @@
     </script>
 </body>
 </html>
-
