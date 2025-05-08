@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="w3-container w3-animate-bottom" style="padding-bottom: 32px;">
+    <div class="w3-card w3-round w3-white">
+        <!-- Header Section -->
+        <div class="w3-container w3-padding" style="border-bottom: 4px solid lightgrey;">
+            <p class="w3-text-grey">View all your system notifications</p>
+        </div>
+
+        <!-- Rows per page selector -->
+        <div class="w3-bar w3-padding">
+            <label for="rowsPerPage" class="w3-text-grey">Rows per page: </label>
+            <select id="rowsPerPage" class="w3-select w3-border w3-round" style="max-width: 70px; display: inline-block;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <div class="w3-container w3-padding">
+            {% if notifications %}
+            <div id="notificationsContainer">
+                {% for notification in notifications %}
+                <div class="notification-item w3-padding w3-round" 
+                     style="margin-bottom: 10px; background-color: {% if notification.is_read == 0 %}#f9f9f9{% else %}white{% endif %}; 
+                            border-left: 4px solid {% if notification.type == 'success' %}#4CAF50{% elif notification.type == 'danger' %}#f44336{% else %}#2196F3{% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-weight: {% if notification.is_read == 0 %}500{% else %}400{% endif %};">
+                            {{ notification.message }}
+                        </div>
+                        <div style="font-size: 12px; color: #999;">
+                            {{ notification.created_at }}
+                        </div>
+                    </div>
+                    {% if notification.is_read == 0 %}
+                    <button class="w3-button w3-round" 
+                            onclick="markAsRead({{ notification.id }})"
+                            style="background-color: #6A0DAD; color: white; margin-top: 5px;">
+                        <i class="material-icons" style="vertical-align: middle; font-size: 14px;">check</i>
+                        Mark as read
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            <div class="w3-bar w3-center w3-padding">
+                <a href="#" class="w3-button" id="prevPage">«</a>
+                <span id="paginationNumbers"></span>
+                <a href="#" class="w3-button" id="nextPage">»</a>
+            </div>
+            {% else %}
+            <div class="w3-center w3-padding-32">
+                <i class="material-icons w3-text-grey" style="font-size: 48px;">notifications_none</i>
+                <p class="w3-text-grey">No notifications found</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function markAsRead(notificationId) {
+        fetch(`/mark_notification_read/${notificationId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
+
+    // Pagination Script
+    let currentPage = 1;
+    let rowsPerPage = 10;
+    const notificationItems = document.querySelectorAll('.notification-item');
+    let totalPages = Math.ceil(notificationItems.length / rowsPerPage);
+    const paginationNumbers = document.getElementById('paginationNumbers');
+
+    // Function to handle rows per page change
+    document.getElementById('rowsPerPage').addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value);
+        currentPage = 1;
+        totalPages = Math.ceil(notificationItems.length / rowsPerPage);
+        updateTable();
+    });
+
+    // Function to update the table based on the current page and rows per page
+    function updateTable() {
+        const startRow = (currentPage - 1) * rowsPerPage;
+        const endRow = startRow + rowsPerPage;
+
+        notificationItems.forEach((item, index) => {
+            item.style.display = (index >= startRow && index < endRow) ? '' : 'none';
+        });
+
+        updatePagination();
+    }
+
+    // Function to update pagination buttons
+    function updatePagination() {
+        paginationNumbers.innerHTML = '';
+        totalPages = Math.ceil(notificationItems.length / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('a');
+            pageButton.href = "#";
+            pageButton.classList.add("w3-button");
+            if (i === currentPage) {
+                pageButton.classList.add("paging-backcolor", "paging-color");
+            }
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = i;
+                updateTable();
+            });
+            paginationNumbers.appendChild(pageButton);
+        }
+
+        // Enable/disable next/prev buttons
+        document.getElementById('prevPage').style.display = currentPage === 1 ? 'none' : '';
+        document.getElementById('nextPage').style.display = currentPage === totalPages ? 'none' : '';
+    }
+
+    // Event listeners for pagination buttons
+    document.getElementById('prevPage').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            updateTable();
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTable();
+        }
+    });
+
+    // Initial update on page load
+    updateTable();
+</script>
+{% endblock %}

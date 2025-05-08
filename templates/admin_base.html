@@ -141,6 +141,79 @@
         color: white;
         }
         
+        /* Notification styles */
+        .notification-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .notification-icon .material-icons {
+            font-size: 28px;
+            color: var(--primary-color);
+            background-color: var(--secondary-color);
+            padding: 8px;
+            border-radius: 50%;
+        }
+        
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 45px;
+            background-color: white;
+            min-width: 280px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            z-index: 1002;
+        }
+        
+        .notification-dropdown .notification-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .notification-dropdown .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s;
+        }
+        
+        .notification-dropdown .notification-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .notification-dropdown .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-dropdown .notification-footer {
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--primary-color);
+            background-color: #f9f9f9;
+            border-radius: 0 0 8px 8px;
+        }
     </style>
 </head>
 <body>
@@ -148,6 +221,13 @@
         <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
             <span class="material-icons">home</span> 
             <span class="text">Home</span>
+        </a>
+        <a href="{{ url_for('admin_notifications') }}" class="{% if request.endpoint == 'admin_notifications' %}active{% endif %}">
+            <span class="material-icons">notifications</span> 
+            <span class="text">Notifications</span>
+            {% if pending_count and pending_count > 0 %}
+            <span class="w3-badge w3-right" style="background-color: #f44336;">{{ pending_count }}</span>
+            {% endif %}
         </a>
         <a href="{{ url_for('view_students') }}" class="{% if request.endpoint == 'view_students' %}active{% endif %}">
             <span class="material-icons">school</span> 
@@ -161,6 +241,18 @@
             <span class="material-icons">visibility</span> 
             <span class="text">Sit-in Records</span>
         </a>
+        <a href="{{ url_for('laboratory') }}" class="{% if request.endpoint == 'laboratory' %}active{% endif %}">
+            <span class="material-icons">desktop_windows</span> 
+            <span class="text">Laboratory</span>
+        </a>
+        <a href="{{ url_for('admin_schedule') }}" class="{% if request.endpoint == 'admin_schedule' %}active{% endif %}">
+            <span class="material-icons">edit_calendar</span> 
+            <span class="text">Manage Schedule</span>
+        </a>
+        <a href="{{ url_for('resources') }}" class="{% if request.endpoint == 'resources' %}active{% endif %}">
+            <span class="material-icons">folder</span> 
+            <span class="text">Resources</span>
+        </a>
         <a href="{{ url_for('sit_in_reports') }}" class="{% if request.endpoint == 'sit_in_reports' %}active{% endif %}">
             <span class="material-icons">report_problem</span> 
             <span class="text">Sit-in Reports</span>
@@ -168,26 +260,6 @@
         <a href="{{ url_for('view_feedback') }}" class="{% if request.endpoint == 'view_feedback' %}active{% endif %}">
             <span class="material-icons">feedback</span> 
             <span class="text">Feedback Reports</span>
-        </a>
-        <a href="{{ url_for('laboratory') }}" class="{% if request.endpoint == 'laboratory' %}active{% endif %}">
-            <span class="material-icons">desktop_windows</span> 
-            <span class="text">Laboratory</span>
-        </a>
-        <a href="{{ url_for('reservations') }}" class="{% if request.endpoint == 'reservations' %}active{% endif %}">
-            <span class="material-icons">book</span> 
-            <span class="text">Reservations</span>
-        </a>
-        <a href="{{ url_for('logs') }}" class="{% if request.endpoint == 'logs' %}active{% endif %}">
-            <span class="material-icons">history</span> 
-            <span class="text">Logs</span>
-        </a>
-        <a href="{{ url_for('resources') }}" class="{% if request.endpoint == 'resources' %}active{% endif %}">
-            <span class="material-icons">folder</span> 
-            <span class="text">Resources</span>
-        </a>
-        <a href="{{ url_for('admin_schedule') }}" class="{% if request.endpoint == 'admin_schedule' %}active{% endif %}">
-            <span class="material-icons">edit_calendar</span> 
-            <span class="text">Manage Schedule</span>
         </a>
         <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
             <span class="material-icons">logout</span> 
@@ -226,6 +298,27 @@
                 });
             }, 3000);
         });
+        
+        // Notification toggle function
+        function toggleNotifications() {
+            var dropdown = document.getElementById("notificationDropdown");
+            if (dropdown.style.display === "block") {
+                dropdown.style.display = "none";
+            } else {
+                dropdown.style.display = "block";
+            }
+        }
+        
+        // Close notifications when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.notification-icon') && 
+                !event.target.matches('.notification-icon *')) {
+                var dropdown = document.getElementById("notificationDropdown");
+                if (dropdown.style.display === "block") {
+                    dropdown.style.display = "none";
+                }
+            }
+        }
     </script>
 </body>
 </html>

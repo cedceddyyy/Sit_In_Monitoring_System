@@ -176,6 +176,79 @@
     }
 
 
+        /* Notification icon styles */
+        .notification-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .notification-icon .material-icons {
+            font-size: 28px;
+            color: var(--primary-color);
+            background-color: var(--secondary-color);
+            padding: 8px;
+            border-radius: 50%;
+        }
+        
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 45px;
+            background-color: white;
+            min-width: 280px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            z-index: 1002;
+        }
+        
+        .notification-dropdown .notification-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .notification-dropdown .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s;
+        }
+        
+        .notification-dropdown .notification-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .notification-dropdown .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-dropdown .notification-footer {
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--primary-color);
+            background-color: #f9f9f9;
+            border-radius: 0 0 8px 8px;
+        }
     </style>
 </head>
 <body>
@@ -188,6 +261,14 @@
             <span class="material-icons">person</span> 
             <span class="text">Profile</span>
         </a>
+        <!-- Add notification link with badge -->
+        <a href="{{ url_for('notifications') }}" class="{% if request.endpoint == 'notifications' %}active{% endif %}">
+            <span class="material-icons">notifications</span> 
+            <span class="text">Notifications</span>
+            {% if user.notification_count and user.notification_count > 0 %}
+            <span class="w3-badge w3-right" style="background-color: #f44336;">{{ user.notification_count }}</span>
+            {% endif %}
+        </a>
         <a href="{{ url_for('edit') }}" class="{% if request.endpoint == 'edit' %}active{% endif %}">
             <span class="material-icons">edit</span> 
             <span class="text">Edit</span>
@@ -196,21 +277,29 @@
             <span class="material-icons">announcement</span> 
             <span class="text">Announcement</span>
         </a>
-        <a href="{{ url_for('rules') }}" class="{% if request.endpoint == 'rules' %}active{% endif %}">
-            <span class="material-icons">rules</span> 
-            <span class="text">Rules</span>
-        </a>
-        <a href="{{ url_for('history_feedback') }}" class="{% if request.endpoint == 'history_feedback' %}active{% endif %}">
-            <span class="material-icons">history</span> 
-            <span class="text">History</span>
+        <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}active{% endif %}">
+            <span class="material-icons">calendar_today</span> 
+            <span class="text">Schedule</span>
         </a>
         <a href="{{ url_for('reservation') }}" class="{% if request.endpoint == 'reservation' %}active{% endif %}">
             <span class="material-icons">event_note</span> 
             <span class="text">Reservation</span>
         </a>
-        <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}active{% endif %}">
-            <span class="material-icons">calendar_today</span> 
-            <span class="text">Schedule</span>
+        <a href="{{ url_for('student_resources') }}" class="{% if request.endpoint == 'student_resources' %}active{% endif %}">
+            <i class="material-icons">collections_bookmark</i>
+            <span class="text">Resources</span>
+        </a>
+        <a href="{{ url_for('rules') }}" class="{% if request.endpoint == 'rules' %}active{% endif %}">
+            <span class="material-icons">rules</span> 
+            <span class="text">Rules</span>
+        </a>
+        <a href="{{ url_for('reservation_history') }}" class="{% if request.endpoint == 'reservation_history' %}active{% endif %}">
+            <span class="material-icons">book_online</span>
+            <span class="text">Reservation History</span>
+        </a>
+        <a href="{{ url_for('history_feedback') }}" class="{% if request.endpoint == 'history_feedback' %}active{% endif %}">
+            <span class="material-icons">history</span> 
+            <span class="text">History</span>
         </a>
         <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
             <span class="material-icons">logout</span> 
@@ -249,6 +338,27 @@
                 });
             }, 3000);
         });
+        
+        // Notification toggle function
+        function toggleNotifications() {
+            var dropdown = document.getElementById("notificationDropdown");
+            if (dropdown.style.display === "block") {
+                dropdown.style.display = "none";
+            } else {
+                dropdown.style.display = "block";
+            }
+        }
+        
+        // Close notifications when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.notification-icon') && 
+                !event.target.matches('.notification-icon *')) {
+                var dropdown = document.getElementById("notificationDropdown");
+                if (dropdown.style.display === "block") {
+                    dropdown.style.display = "none";
+                }
+            }
+        }
     </script>
 </body>
 </html>

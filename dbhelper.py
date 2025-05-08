@@ -95,12 +95,9 @@ def create_database():
     conn.execute('''CREATE TABLE IF NOT EXISTS logs (
                       id INTEGER PRIMARY KEY AUTOINCREMENT,
                       reservation_id INTEGER NOT NULL,
-                      admin_id INTEGER NOT NULL,
                       status TEXT NOT NULL,
                       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                      FOREIGN KEY (status) REFERENCES reservation(status) ON DELETE CASCADE,
-                      FOREIGN KEY (reservation_id) REFERENCES reservation(id) ON DELETE CASCADE,
-                      FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
+                      FOREIGN KEY (reservation_id) REFERENCES reservation(id) ON DELETE CASCADE
                  )''')
 
     conn.execute('''CREATE TABLE IF NOT EXISTS resources (
@@ -117,11 +114,24 @@ def create_database():
                       date DATE NOT NULL,
                       time_start TIME NOT NULL,
                       time_end TIME NOT NULL,
-                      purpose TEXT NOT NULL
+                      subject TEXT NOT NULL,
+                      instructor TEXT NOT NULL
                  )''')
 
+    conn.execute('''CREATE TABLE IF NOT EXISTS notifications (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      student_id INTEGER NOT NULL,
+                      message TEXT NOT NULL,
+                      type TEXT NOT NULL,
+                      is_read INTEGER DEFAULT 0,
+                      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                      FOREIGN KEY (student_id) REFERENCES users(idno) ON DELETE CASCADE
+                 )''')
+    
     conn.commit()
     conn.close()
+    
+
 
 def register_user(idno, lastname, firstname, middlename, course, year_level, email, username, password):
     conn = connect_db()
@@ -160,11 +170,34 @@ def get_user_info(username):
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, profile_image, session FROM users WHERE username = ? ", (username,))
+    cursor.execute("SELECT idno, lastname, firstname, middlename, course, year_level, email, profile_image, session, points FROM users WHERE username = ? ", (username,))
     user_info = cursor.fetchone()
     conn.close()
 
     return user_info
+
+def get_user_type(username):
+    """Determine if a user is an admin or regular user"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    # Check if user is in admin table
+    cursor.execute("SELECT id FROM admin WHERE username = ?", (username,))
+    admin = cursor.fetchone()
+    
+    # Check if user is in users table
+    cursor.execute("SELECT idno FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+    
+    conn.close()
+    
+    if admin:
+        return "admin"
+    elif user:
+        return "user"
+    else:
+        return None
+
 
 def get_students():
     conn = connect_db()
@@ -556,7 +589,7 @@ def get_leaderboard():
         WHERE sit_in.status = 'inactive'
         GROUP BY users.idno
         ORDER BY users.points DESC, total_sit_ins DESC
-        LIMIT 10
+        LIMIT 5
     ''')
     leaderboard = cursor.fetchall()
     conn.close()
@@ -648,7 +681,7 @@ def get_reservations():
     return [{"id": row[0], "student_id": row[1], "full_name": row[2], "purpose": row[3], "lab_number": row[4],
              "pc_number": row[5], "date": row[6], "time_in": row[7], "status": row[8]} for row in reservations]
 
-def update_reservation_status(reservation_id, status, admin_id):
+def update_reservation_status(reservation_id, status):
     conn = connect_db()
     cursor = conn.cursor()
 
@@ -658,18 +691,22 @@ def update_reservation_status(reservation_id, status, admin_id):
 
         # If approved, update the PC status to 'used'
         if status == "approved":
-            cursor.execute('''SELECT lab_number, pc_number FROM reservation WHERE id = ?''', (reservation_id,))
+            cursor.execute('''SELECT student_id, purpose, lab_number, pc_number FROM reservation WHERE id = ?''', (reservation_id,))
             reservation = cursor.fetchone()
             if reservation:
-                lab_number, pc_number = reservation
+                student_id, purpose, lab_number, pc_number = reservation
                 cursor.execute('''UPDATE laboratory_pcs SET status = 'used' 
                                   WHERE lab_number = ? AND pc_number = ?''', (lab_number, pc_number))
+                # Insert into sit_in table
+                cursor.execute('''INSERT INTO sit_in (idno, purpose, lab, remaining_session)
+                                  VALUES (?, ?, ?, (SELECT session FROM users WHERE idno = ?))''',
+                               (student_id, purpose, lab_number, student_id))
             else:
                 print(f"Reservation with ID {reservation_id} not found.")  # Debug log
 
         # Log the action
-        cursor.execute('''INSERT INTO logs (reservation_id, admin_id, status)
-                          VALUES (?, ?, ?)''', (reservation_id, admin_id, status))
+        cursor.execute('''INSERT INTO logs (reservation_id, status)
+                          VALUES (?, ?)''', (reservation_id, status))
         conn.commit()
         return True
     except sqlite3.Error as e:
@@ -761,20 +798,39 @@ def delete_resource(resource_id):
     finally:
         conn.close()
 
-def get_lab_schedules():
+def get_resource_by_id(resource_id):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT lab_number, date, time_start, time_end, purpose FROM lab_schedule ORDER BY date, time_start")
+    
+    cursor.execute("SELECT * FROM resources WHERE id = ?", (resource_id,))
+    resource = cursor.fetchone()
+    conn.close()
+    
+    return resource
+
+def get_all_schedules():
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT lab_number, date, time_start, time_end, subject, instructor FROM lab_schedule ORDER BY date, time_start")
     schedules = cursor.fetchall()
     conn.close()
-    return [{"lab_number": row[0], "date": row[1], "time_start": row[2], "time_end": row[3], "purpose": row[4]} for row in schedules]
+    
+    return [{
+        "lab_number": row[0],
+        "date": row[1],
+        "time_start": row[2],
+        "time_end": row[3],
+        "subject": row[4],
+        "instructor": row[5]
+    } for row in schedules]
 
-def add_lab_schedule(lab_number, date, time_start, time_end, purpose):
+def add_lab_schedule(lab_number, date, time_start, time_end, subject, instructor):
     conn = connect_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO lab_schedule (lab_number, date, time_start, time_end, purpose) VALUES (?, ?, ?, ?, ?)",
-                       (lab_number, date, time_start, time_end, purpose))
+        cursor.execute("INSERT INTO lab_schedule (lab_number, date, time_start, time_end, subject, instructor) VALUES (?, ?, ?, ?, ?, ?)",
+                       (lab_number, date, time_start, time_end, subject, instructor))
         conn.commit()
         return True
     except sqlite3.Error:
@@ -782,17 +838,344 @@ def add_lab_schedule(lab_number, date, time_start, time_end, purpose):
     finally:
         conn.close()
 
-def update_lab_schedule(schedule_id, lab_number, date, time_start, time_end, purpose):
+def update_lab_schedule(schedule_id, lab_number, date, time_start, time_end, subject, instructor):
     conn = connect_db()
     cursor = conn.cursor()
     try:
         cursor.execute('''UPDATE lab_schedule 
-                          SET lab_number = ?, date = ?, time_start = ?, time_end = ?, purpose = ? 
+                          SET lab_number = ?, date = ?, time_start = ?, time_end = ?, subject = ?, instructor = ? 
                           WHERE id = ?''',
-                       (lab_number, date, time_start, time_end, purpose, schedule_id))
+                       (lab_number, date, time_start, time_end, subject, instructor, schedule_id))
         conn.commit()
         return True
     except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def get_reservation_history_by_username(username):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT idno FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+    if not user:
+        conn.close()
+        return []
+    idno = user[0]
+    cursor.execute("""
+        SELECT r.full_name, r.purpose, r.lab_number, r.pc_number, r.date, r.time_in, r.status, l.timestamp
+        FROM reservation r
+        LEFT JOIN logs l ON r.id = l.reservation_id
+        WHERE r.student_id = ?
+        ORDER BY l.timestamp DESC, r.date DESC, r.time_in DESC
+    """, (idno,))
+    reservations = cursor.fetchall()
+    conn.close()
+    return [
+        {
+            "full_name": row[0],
+            "purpose": row[1],
+            "lab_number": row[2],
+            "pc_number": row[3],
+            "date": row[4],
+            "time_in": row[5],
+            "status": row[6],
+            "timestamp": datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S") if row[7] else None
+        }
+        for row in reservations
+    ]
+
+def check_schedule_conflict(lab_number, date, time_in):
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT * FROM lab_schedule 
+        WHERE lab_number = ? 
+        AND date = ? 
+        AND time_start <= ? 
+        AND time_end >= ?
+    ''', (lab_number, date, time_in, time_in))
+    
+    conflict = cursor.fetchone()
+    conn.close()
+    
+    return conflict is not None
+
+
+def get_lab_logs():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT r.full_name, r.purpose, r.lab_number, r.pc_number, r.status, l.timestamp
+        FROM reservation r
+        LEFT JOIN logs l ON r.id = l.reservation_id
+        ORDER BY l.timestamp DESC
+    """)
+    logs = cursor.fetchall()
+    conn.close()
+    # Convert to list of dicts for template
+    return [
+        {
+            "full_name": row[0],
+            "purpose": row[1],
+            "lab_number": row[2],
+            "pc_number": row[3],
+            "status": row[4],
+            "timestamp": row[5]
+        }
+        for row in logs
+    ]
+
+def get_pending_reservations():
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT r.id, r.student_id, r.full_name, r.purpose, 
+               r.lab_number, r.pc_number, r.date, r.time_in, r.status
+        FROM reservation r
+        WHERE r.status IS NULL OR r.status = 'pending'
+        ORDER BY r.date, r.time_in
+    """)
+    reservations = cursor.fetchall()
+    conn.close()
+    
+    return [{
+        "id": row[0],
+        "student_id": row[1],
+        "full_name": row[2],
+        "purpose": row[3],
+        "lab_number": row[4],
+        "pc_number": row[5],
+        "date": row[6],
+        "time_in": row[7],
+        "status": row[8]
+    } for row in reservations]
+
+def get_lab_pc_availability(lab_number):
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Get current date and time
+        cursor.execute("SELECT datetime('now', 'localtime')")
+        current_datetime = cursor.fetchone()[0]
+        current_date = current_datetime.split()[0]
+        current_time = current_datetime.split()[1]
+        
+        # Check if there's an active schedule for this lab
+        cursor.execute('''
+            SELECT * FROM lab_schedule 
+            WHERE lab_number = ? 
+            AND date = ? 
+            AND time_start <= ? 
+            AND time_end >= ?
+        ''', (lab_number, current_date, current_time, current_time))
+        
+        schedule = cursor.fetchone()
+        
+        # Get PC statuses
+        cursor.execute("SELECT pc_number, status FROM laboratory_pcs WHERE lab_number = ? ORDER BY pc_number", (lab_number,))
+        pcs = cursor.fetchall()
+        
+        # If there's an active schedule, mark all PCs as used
+        if schedule:
+            return [{"pc_number": row[0], "status": "used"} for row in pcs]
+        else:
+            return [{"pc_number": row[0], "status": row[1]} for row in pcs]
+            
+    except sqlite3.Error as e:
+        print(f"Error getting PC availability: {e}")
+        return []
+    finally:
+        conn.close()
+
+def delete_lab_schedule(schedule_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("DELETE FROM lab_schedule WHERE id = ?", (schedule_id,))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def create_notification(student_id, message, type):
+    """Create a notification for a student"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("INSERT INTO notifications (student_id, message, type) VALUES (?, ?, ?)", 
+                      (student_id, message, type))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error creating notification: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_user_notifications(student_id):
+    """Get all notifications for a student"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT id, message, type, is_read, created_at FROM notifications WHERE student_id = ? ORDER BY created_at DESC", 
+                  (student_id,))
+    notifications = cursor.fetchall()
+    
+    result = []
+    for notification in notifications:
+        result.append({
+            "id": notification[0],
+            "message": notification[1],
+            "type": notification[2],
+            "is_read": notification[3],
+            "created_at": notification[4]
+        })
+    
+    conn.close()
+    return result
+
+def mark_notification_as_read(notification_id):
+    """Mark a notification as read"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("UPDATE notifications SET is_read = 1 WHERE id = ?", (notification_id,))
+        conn.commit()
+        return True
+    except:
+        return False
+    finally:
+        conn.close()
+
+def get_unread_notification_count(student_id):
+    """Get count of unread notifications for a student"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) FROM notifications WHERE student_id = ? AND is_read = 0", (student_id,))
+    count = cursor.fetchone()[0]
+    
+    conn.close()
+    return count
+
+def get_reservation_by_id(reservation_id):
+    """Get reservation details by ID"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT id, student_id, full_name, purpose, lab_number, pc_number, date, time_in, status
+        FROM reservation 
+        WHERE id = ?
+    """, (reservation_id,))
+    
+    reservation = cursor.fetchone()
+    conn.close()
+    
+    if reservation:
+        return {
+            "id": reservation[0],
+            "student_id": reservation[1],
+            "full_name": reservation[2],
+            "purpose": reservation[3],
+            "lab_number": reservation[4],
+            "pc_number": reservation[5],
+            "date": reservation[6],
+            "time_in": reservation[7],
+            "status": reservation[8]
+        }
+    return None
+
+def get_admin_notifications():
+    """Get all notifications for admin about pending reservations"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT r.id, r.full_name, r.purpose, r.lab_number, r.pc_number, r.date, r.time_in, r.status
+        FROM reservation r
+        WHERE r.status IS NULL
+        ORDER BY r.date DESC, r.time_in DESC
+    """)
+    notifications = cursor.fetchall()
+    
+    result = []
+    for notification in notifications:
+        result.append({
+            "id": notification[0],
+            "full_name": notification[1],
+            "purpose": notification[2],
+            "lab_number": notification[3],
+            "pc_number": notification[4],
+            "date": notification[5],
+            "time_in": notification[6],
+            "status": notification[7]
+        })
+    
+    conn.close()
+    return result
+
+def get_pending_reservation_count():
+    """Get count of pending reservations"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) FROM reservation WHERE status IS NULL")
+    count = cursor.fetchone()[0]
+    
+    conn.close()
+    return count
+
+def check_and_update_pc_status(lab_number, pc_number):
+    """Check if a PC is currently scheduled and update its status"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Get current date and time
+        cursor.execute("SELECT datetime('now', 'localtime')")
+        current_datetime = cursor.fetchone()[0]
+        current_date = current_datetime.split()[0]
+        current_time = current_datetime.split()[1]
+        
+        # Check if there's an active schedule for this lab
+        cursor.execute('''
+            SELECT * FROM lab_schedule 
+            WHERE lab_number = ? 
+            AND date = ? 
+            AND time_start <= ? 
+            AND time_end >= ?
+        ''', (lab_number, current_date, current_time, current_time))
+        
+        schedule = cursor.fetchone()
+        
+        # Update PC status based on schedule
+        if schedule:
+            cursor.execute('''
+                UPDATE laboratory_pcs 
+                SET status = 'used' 
+                WHERE lab_number = ? AND pc_number = ?
+            ''', (lab_number, pc_number))
+        else:
+            cursor.execute('''
+                UPDATE laboratory_pcs 
+                SET status = 'available' 
+                WHERE lab_number = ? AND pc_number = ?
+            ''', (lab_number, pc_number))
+        
+        conn.commit()
+        return True
+    except sqlite3.Error as e:
+        print(f"Error updating PC status: {e}")
         return False
     finally:
         conn.close()
@@ -800,4 +1183,3 @@ def update_lab_schedule(schedule_id, lab_number, date, time_start, time_end, pur
 if __name__ == "__main__":
     create_database()
     print("Database Initialize Successful!")
-

@@ -64,16 +64,15 @@
                     <option value="517">517</option>
                 </select>
 
-                <!-- Dropdown for Available PCs -->
+                <!-- PC Selection Grid -->
                 <div id="pc-dropdown-container" style="display: none;">
                     <label class="w3-text-dark-grey"><b>Available PCs</b></label>
-                    <select class="w3-select w3-border w3-round w3-margin-bottom" name="pc" id="pc-select" required>
-                        <option value="" disabled selected>Select a PC</option>
-                        <!-- Options will be dynamically populated -->
-                    </select>
+                    <div class="w3-row-padding w3-margin-top" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
+                        <!-- PCs will be dynamically populated here -->
+                    </div>
                 </div>
-                
-                <div class="w3-half w3-margin-bottom">
+
+                <div class="w3-half w3-margin-bottom w3-margin-top">
                     <label class="w3-text-dark-grey"><b>Remaining Session</b></label>
                     <input class="w3-input w3-border w3-round" 
                            type="number" name="session" value="{{ user.session }}" readonly>
@@ -94,7 +93,7 @@
     function loadAvailablePCs() {
         const labSelect = document.getElementById("lab-select");
         const pcDropdownContainer = document.getElementById("pc-dropdown-container");
-        const pcSelect = document.getElementById("pc-select");
+        const pcContainer = pcDropdownContainer.querySelector(".w3-row-padding");
 
         const selectedLab = labSelect.value;
 
@@ -103,14 +102,45 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        pcSelect.innerHTML = '<option value="" disabled selected>Select a PC</option>';
+                        pcContainer.innerHTML = ''; // Clear existing PCs
                         data.pcs.forEach(pc => {
+                            const pcCard = document.createElement("div");
+                            pcCard.className = "w3-card w3-white w3-round-large w3-padding-small w3-center";
+                            pcCard.style.border = "1px solid #ccc";
+                            
+                            const pcLabel = document.createElement("label");
+                            pcLabel.style.cursor = "pointer";
+                            pcLabel.style.width = "100%";
+                            pcLabel.style.display = "block";
+                            
+                            const pcRadio = document.createElement("input");
+                            pcRadio.type = "radio";
+                            pcRadio.name = "pc";
+                            pcRadio.value = pc.pc_number;
+                            pcRadio.required = true;
+                            pcRadio.style.marginBottom = "5px";
+                            
+                            const pcText = document.createElement("div");
+                            pcText.textContent = `PC ${pc.pc_number}`;
+                            
+                            const statusText = document.createElement("div");
+                            statusText.textContent = pc.status;
+                            statusText.className = "w3-text-grey";
+                            statusText.style.fontSize = "12px";
+                            
                             if (pc.status === "available") {
-                                const option = document.createElement("option");
-                                option.value = pc.pc_number;
-                                option.textContent = `PC ${pc.pc_number}`;
-                                pcSelect.appendChild(option);
+                                pcCard.style.opacity = "1";
+                                pcRadio.disabled = false;
+                            } else {
+                                pcCard.style.opacity = "0.5";
+                                pcRadio.disabled = true;
                             }
+                            
+                            pcLabel.appendChild(pcRadio);
+                            pcLabel.appendChild(pcText);
+                            pcLabel.appendChild(statusText);
+                            pcCard.appendChild(pcLabel);
+                            pcContainer.appendChild(pcCard);
                         });
                         pcDropdownContainer.style.display = "block";
                     } else {
@@ -125,5 +155,38 @@
             pcDropdownContainer.style.display = "none";
         }
     }
+
+    // Function to check for schedule conflicts
+    function checkScheduleConflict() {
+        const labSelect = document.getElementById("lab-select");
+        const dateInput = document.querySelector('input[name="date"]');
+        const timeInput = document.querySelector('input[name="time_in"]');
+        const submitButton = document.querySelector('button[type="submit"]');
+
+        if (labSelect.value && dateInput.value && timeInput.value) {
+            fetch(`/check_schedule_conflict?lab_number=${labSelect.value}&date=${dateInput.value}&time_in=${timeInput.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.has_conflict) {
+                            alert("This time slot conflicts with an existing schedule. Please choose a different time.");
+                            submitButton.disabled = true;
+                            submitButton.style.opacity = "0.5";
+                        } else {
+                            submitButton.disabled = false;
+                            submitButton.style.opacity = "1";
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Error checking schedule conflict:", error);
+                });
+        }
+    }
+
+    // Add event listeners for date, time, and lab selection changes
+    document.querySelector('input[name="date"]').addEventListener('change', checkScheduleConflict);
+    document.querySelector('input[name="time_in"]').addEventListener('change', checkScheduleConflict);
+    document.getElementById("lab-select").addEventListener('change', checkScheduleConflict);
 </script>
 {% endblock %}

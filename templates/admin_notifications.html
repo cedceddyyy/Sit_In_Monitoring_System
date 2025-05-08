@@ -1,13 +1,11 @@
-{% extends 'admin_base.html' %}
+{% extends "admin_base.html" %}
 
 {% block content %}
 <div class="w3-container w3-animate-bottom" style="padding-bottom: 32px;">
     <div class="w3-card w3-round w3-white">
         <!-- Header Section -->
-        <div class="w3-container w3-padding" style="border-bottom: 1px solid #f0f0f0;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-            </div>
-            <p class="w3-text-grey">View all student activities in the computer laboratories</p>
+        <div class="w3-container w3-padding" style="border-bottom: 4px solid lightgrey;">
+            <p class="w3-text-grey">Review and manage pending laboratory reservations</p>
         </div>
 
         <!-- Rows per page selector -->
@@ -21,51 +19,36 @@
             </select>
         </div>
 
-        <!-- Logs Table -->
+        {% if notifications %}
         <div class="w3-responsive w3-padding">
             <table class="w3-table-all w3-hoverable">
                 <thead>
                     <tr class="w3-light-grey">
-                        <th>Student</th>
+                        <th>Student Name</th>
+                        <th>Lab Number</th>
+                        <th>PC Number</th>
+                        <th>Date</th>
+                        <th>Time</th>
                         <th>Purpose</th>
-                        <th>Lab</th>
-                        <th>PC</th>
-                        <th>Status</th>
-                        <th>Timestamp</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="logsTableBody">
-                    {% for log in logs %}
+                <tbody id="notificationsTableBody">
+                    {% for notification in notifications %}
                     <tr>
-                        <td>{{ log.full_name }}</td>
-                        <td>{{ log.purpose }}</td>
-                        <td>Room {{ log.lab_number }}</td>
-                        <td>PC {{ log.pc_number }}</td>
+                        <td>{{ notification.full_name }}</td>
+                        <td>Room {{ notification.lab_number }}</td>
+                        <td>PC {{ notification.pc_number }}</td>
+                        <td>{{ notification.date }}</td>
+                        <td>{{ notification.time_in }}</td>
+                        <td>{{ notification.purpose }}</td>
                         <td>
-                            {% if log.status == 'approved' %}
-                                <span class="w3-tag w3-round" style="background-color: green; color: white;">
-                                    <i class="material-icons" style="vertical-align: middle; font-size: 14px;">check_circle</i>
-                                    Approved
-                                </span>
-                            {% elif log.status == 'disapproved' %}
-                                <span class="w3-tag w3-round" style="background-color: red; color: white;">
-                                    <i class="material-icons" style="vertical-align: middle; font-size: 14px;">cancel</i>
-                                    Disapproved
-                                </span>
-                            {% else %}
-                                <span class="w3-tag w3-round" style="background-color: #FFDE91; color: var(--primary-color);">
-                                    <i class="material-icons" style="vertical-align: middle; font-size: 14px;">pending</i>
-                                    Pending
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>{{ log.timestamp }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="w3-center w3-padding-32">
-                            <i class="material-icons w3-text-grey" style="font-size: 48px;">find_in_page</i>
-                            <p class="w3-text-grey">No activity logs found</p>
+                            <a href="{{ url_for('laboratory', reservation_id=notification.id) }}" 
+                               class="w3-button w3-round" 
+                               style="background-color: #6A0DAD; color: white; padding: 4px 8px;">
+                                <i class="material-icons" style="vertical-align: middle; font-size: 14px;">visibility</i>
+                                View
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -79,22 +62,29 @@
             <span id="paginationNumbers"></span>
             <a href="#" class="w3-button" id="nextPage">»</a>
         </div>
+        {% else %}
+        <div class="w3-center w3-padding-32">
+            <i class="material-icons w3-text-grey" style="font-size: 48px;">notifications_off</i>
+            <p class="w3-text-grey">No pending reservations at the moment</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <script>
-    let currentPage = 1; // Default page
-    let rowsPerPage = 10; // Default rows per page
-    const rows = document.querySelectorAll('#logsTableBody tr'); // All rows in the table body
-    let totalPages = Math.ceil(rows.length / rowsPerPage); // Calculate total pages initially
+    // Pagination Script
+    let currentPage = 1;
+    let rowsPerPage = 10;
+    const rows = document.querySelectorAll('#notificationsTableBody tr');
+    let totalPages = Math.ceil(rows.length / rowsPerPage);
     const paginationNumbers = document.getElementById('paginationNumbers');
 
     // Function to handle rows per page change
     document.getElementById('rowsPerPage').addEventListener('change', function() {
-        rowsPerPage = parseInt(this.value); // Get the selected value
-        currentPage = 1; // Reset to the first page
-        totalPages = Math.ceil(rows.length / rowsPerPage); // Update total pages
-        updateTable(); // Update table display
+        rowsPerPage = parseInt(this.value);
+        currentPage = 1;
+        totalPages = Math.ceil(rows.length / rowsPerPage);
+        updateTable();
     });
 
     // Function to update the table based on the current page and rows per page
@@ -112,7 +102,7 @@
     // Function to update pagination buttons
     function updatePagination() {
         paginationNumbers.innerHTML = '';
-        totalPages = Math.ceil(rows.length / rowsPerPage); // Ensure totalPages is updated
+        totalPages = Math.ceil(rows.length / rowsPerPage);
 
         for (let i = 1; i <= totalPages; i++) {
             const pageButton = document.createElement('a');
@@ -155,4 +145,4 @@
     // Initial update on page load
     updateTable();
 </script>
-{% endblock %}
+{% endblock %} 

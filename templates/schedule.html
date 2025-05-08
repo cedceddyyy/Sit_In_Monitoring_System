@@ -2,125 +2,49 @@
 
 {% block content %}
 <div class="w3-container">
-    <!-- Calendar Section -->
-    <div class="w3-card w3-padding" style="max-width: 1000px; margin: auto; margin-bottom: 20px;">
-        <h2 class="w3-center font-color">Monthly Schedule</h2>
-        
-        <div class="calendar-container">
-            <div class="calendar-header">
-                <button class="w3-button w3-round-large prev-month color font-color">&lt;</button>
-                <h3 class="calendar-month w3-center font-color"></h3>
-                <button class="w3-button w3-round-large next-month color font-color">&gt;</button>
+    <div class="w3-row">
+        <!-- Calendar Section (Left Side) -->
+        <div class="w3-col m8">
+            <div class="w3-card w3-padding" style="margin-bottom: 20px;">
+                <h2 class="w3-center font-color">Monthly Schedule</h2>
+                
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="w3-button w3-round-large prev-month color font-color">&lt;</button>
+                        <h3 class="calendar-month w3-center font-color"></h3>
+                        <button class="w3-button w3-round-large next-month color font-color">&gt;</button>
+                    </div>
+                    
+                    <div class="calendar-weekdays">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    
+                    <div class="calendar-days"></div>
+                </div>
             </div>
-            
-            <div class="calendar-weekdays">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
-            </div>
-            
-            <div class="calendar-days"></div>
         </div>
-    </div>
 
-    <!-- Schedule Details Modal -->
-    <div id="scheduleModal" class="w3-modal">
-        <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
-            <div class="w3-center">
-                <span onclick="document.getElementById('scheduleModal').style.display='none'" 
-                      class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
-                <h3 id="modalDate" class="w3-padding w3-text-dark-grey"></h3>
-            </div>
-
-            <div class="w3-container w3-padding">
-                <div id="scheduleList" class="w3-margin-bottom">
+        <!-- Schedule Details Section (Right Side) -->
+        <div class="w3-col m4">
+            <div class="w3-card w3-padding" style="margin-bottom: 20px;">
+                <h3 id="selectedDate" class="w3-center w3-text-dark-grey">Select a Date</h3>
+                <div id="scheduleList" class="schedule-list">
                     <!-- Schedules will be displayed here -->
                 </div>
-                
-                <hr>
-                
-                <!-- Reservation Form -->
-                <h4 class="w3-text-dark-grey">Make a Reservation</h4>
-                <form id="reservationForm" method="POST" action="{{ url_for('reservation') }}" class="w3-container">
-                    <input type="hidden" name="date" id="reservationDate">
-                    
-                    <div class="w3-row-padding" style="margin: 0 -16px;">
-                        <div class="w3-half w3-margin-bottom">
-                            <label class="w3-text-dark-grey"><b>Student ID</b></label>
-                            <input class="w3-input w3-border w3-round w3-margin-bottom" 
-                                   type="text" name="student_id" value="{{ user.idno }}" readonly>
-                        </div>
-                        <div class="w3-half w3-margin-bottom">
-                            <label class="w3-text-dark-grey"><b>Full Name</b></label>
-                            <input class="w3-input w3-border w3-round" 
-                                   type="text" name="full_name" value="{{ user.firstname }} {{ user.lastname }}" readonly>
-                        </div>
-                    </div>
-
-                    <label class="w3-text-dark-grey"><b>Purpose</b></label>
-                    <select class="w3-select w3-border w3-round w3-margin-bottom" name="subject" required>
-                        <option value="" disabled selected>Select a purpose</option>
-                        <option value="C Programming">C Programming</option>
-                        <option value="Java Programming">Java Programming</option>
-                        <option value="Python">Python</option>
-                        <option value="C#">C#</option>
-                        <option value="Database">Database</option>
-                        <option value="Digital Logic & Design">Digital Logic & Design</option>
-                        <option value="Embedded Systems & IoT">Embedded Systems & IoT</option>
-                        <option value="System Integration & Architecture">System Integration & Architecture</option>
-                        <option value="Computer Application">Computer Application</option>
-                        <option value="Project Management">Project Management</option>
-                        <option value="IT Trends">IT Trends</option>
-                        <option value="Technopreneurship">Technopreneurship</option>
-                        <option value="Capstone">Capstone</option>
-                    </select>
-                    
-                    <div class="w3-row-padding" style="margin: 0 -16px;">
-                        <div class="w3-half w3-margin-bottom">
-                            <label class="w3-text-dark-grey"><b>Time-in</b></label>
-                            <input class="w3-input w3-border w3-round" 
-                                   type="time" name="time_in" required>
-                        </div>
-                        <div class="w3-half w3-margin-bottom">
-                            <label class="w3-text-dark-grey"><b>Lab</b></label>
-                            <select class="w3-select w3-border w3-round" name="room" id="lab-select" required onchange="loadAvailablePCs()">
-                                <option value="" disabled selected>Select a lab</option>
-                                <option value="524">524</option>
-                                <option value="526">526</option>
-                                <option value="528">528</option>
-                                <option value="530">530</option>
-                                <option value="542">542</option>
-                                <option value="544">544</option>
-                                <option value="517">517</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Dropdown for Available PCs -->
-                    <div id="pc-dropdown-container" style="display: none;">
-                        <label class="w3-text-dark-grey"><b>Available PCs</b></label>
-                        <select class="w3-select w3-border w3-round w3-margin-bottom" name="pc" id="pc-select" required>
-                            <option value="" disabled selected>Select a PC</option>
-                            <!-- Options will be dynamically populated -->
-                        </select>
-                    </div>
-                    
-                    <div class="w3-half w3-margin-bottom">
-                        <label class="w3-text-dark-grey"><b>Remaining Session</b></label>
-                        <input class="w3-input w3-border w3-round" 
-                               type="number" name="session" value="{{ user.session }}" readonly>
-                    </div>
-                    
-                    <button class="w3-button w3-round w3-margin-top w3-block" 
-                        style="background-color: #FFDE91; color: #2C1038;" 
-                        type="submit">
-                        <i class="material-icons" style="vertical-align: middle;">event_available</i> Reserve
-                    </button>
-                </form>
+                <button id="downloadPdfBtn" class="w3-button w3-round color w3-block" style="margin-top: 16px;" onclick="window.location.href='/download_schedules_pdf'">
+                    <i class="material-icons" style="vertical-align: middle;">download</i>
+                    Download All Schedules (PDF)
+                </button>
+                <!-- Hidden table for PDF export -->
+                <div id="pdfTableContainer" style="display:none;">
+                    <!-- Render your full schedule table here (styled like your image) via JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -191,6 +115,13 @@
         border-radius: 3px;
         width: calc(100% - 8px);
         text-align: center;
+    }
+    
+    /* New styles for schedule list */
+    .schedule-list {
+        max-height: 500px;
+        overflow-y: auto;
+        padding: 10px;
     }
     
     .schedule-item {
@@ -363,13 +294,10 @@
     function showSchedulesForDate(year, month, day) {
         // Format date as YYYY-MM-DD
         const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        const formattedDate = `${month}/${day}/${year}`;
+        const formattedDate = `${monthNames[month-1]} ${day}, ${year}`;
         
-        // Set the modal title
-        document.getElementById('modalDate').textContent = `Schedules for ${formattedDate}`;
-        
-        // Set the hidden date field in the reservation form
-        document.getElementById('reservationDate').value = dateStr;
+        // Set the title
+        document.getElementById('selectedDate').textContent = `Schedules for ${formattedDate}`;
         
         // Fetch schedules for this date
         fetch(`/get_schedules_by_date?date=${dateStr}`)
@@ -385,17 +313,37 @@
                         scheduleItem.innerHTML = `
                             <div class="schedule-time">${schedule.time_start} - ${schedule.time_end}</div>
                             <div class="schedule-lab">Lab ${schedule.lab_number}</div>
-                            <div>${schedule.purpose}</div>
+                            <div class="schedule-subject"><strong>Subject:</strong> ${schedule.subject}</div>
+                            <div class="schedule-instructor"><strong>Instructor:</strong> ${schedule.instructor}</div>
                         `;
                         scheduleList.appendChild(scheduleItem);
                     });
                 } else {
-                    scheduleList.innerHTML = '<p>No schedules for this day.</p>';
+                    scheduleList.innerHTML = '<div class="w3-center w3-text-grey">No schedules for this date.</div>';
                 }
-                
-                // Show the modal
-                document.getElementById('scheduleModal').style.display = 'block';
             });
     }
 </script>
 {% endblock %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+    // TODO: Render all schedules in #pdfTableContainer as a table styled like your image
+    // For now, just export the container as PDF
+    const pdfTable = document.getElementById('pdfTableContainer');
+    pdfTable.style.display = 'block'; // Show for rendering
+
+    html2canvas(pdfTable).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new window.jspdf.jsPDF('l', 'pt', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('lab_schedules.pdf');
+        pdfTable.style.display = 'none'; // Hide again
+    });
+});
+</script>

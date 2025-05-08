@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify, send_file
 import dbhelper
 import os
 from werkzeug.utils import secure_filename
 import pytz
+from fpdf import FPDF
+import io
 
 app = Flask(__name__)
 app.secret_key = "Cedric@#123"
@@ -98,6 +100,10 @@ def dashboard():
     user_info = dbhelper.get_user_info(session["user"])
     announcements = dbhelper.get_announcements()
     if user_info:
+
+        # Get notification count
+        notification_count = dbhelper.get_unread_notification_count(user_info[0])
+
         user_data = {
             "idno": user_info[0],
             "lastname": user_info[1],
@@ -107,7 +113,9 @@ def dashboard():
             "year_level": user_info[5],
             "email": user_info[6],
             "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
-            "session": user_info[8]
+            "session": user_info[8],
+            "points": user_info[9],
+            "notification_count": notification_count
         }
         return render_template("dashboard.html", pagetitle="Dashboard", user=user_data, announcements=announcements)
 
@@ -123,6 +131,9 @@ def profile():
     user_info = dbhelper.get_user_info(session["user"])
     
     if user_info:
+        # Get notification count
+        notification_count = dbhelper.get_unread_notification_count(user_info[0])
+        
         user_data = {
             "idno": user_info[0],
             "lastname": user_info[1],
@@ -132,7 +143,9 @@ def profile():
             "year_level": user_info[5],
             "email": user_info[6],
             "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
-            "session": user_info[8]
+            "session": user_info[8],
+            "points": user_info[9],
+            "notification_count": notification_count
         }
         return render_template("profile.html", pagetitle="Profile" , user=user_data)
     
@@ -145,8 +158,31 @@ def announcement():
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
 
+    user_info = dbhelper.get_user_info(session["user"])
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for("dashboard"))
+        
+    # Get notification count
+    notification_count = dbhelper.get_unread_notification_count(user_info[0])
+    
+    # Create user data dictionary for template
+    user_data = {
+        "idno": user_info[0],
+        "lastname": user_info[1],
+        "firstname": user_info[2],
+        "middlename": user_info[3] if user_info[3] else "",
+        "course": user_info[4],
+        "year_level": user_info[5],
+        "email": user_info[6],
+        "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+        "session": user_info[8],
+        "points": user_info[9],
+        "notification_count": notification_count
+    }
+
     announcements = dbhelper.get_announcements()
-    return render_template("announcement.html", pagetitle="Announcement", announcements=announcements)
+    return render_template("announcement.html", pagetitle="Announcement", announcements=announcements, user=user_data)
 
 @app.route("/announcement", methods=["POST"])
 def post_announcement():
@@ -215,8 +251,31 @@ def rules():
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
-
-    return render_template("rules.html", pagetitle="Rules")
+    
+    user_info = dbhelper.get_user_info(session["user"])
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for("dashboard"))
+        
+    # Get notification count
+    notification_count = dbhelper.get_unread_notification_count(user_info[0])
+    
+    # Create user data dictionary for template
+    user_data = {
+        "idno": user_info[0],
+        "lastname": user_info[1],
+        "firstname": user_info[2],
+        "middlename": user_info[3] if user_info[3] else "",
+        "course": user_info[4],
+        "year_level": user_info[5],
+        "email": user_info[6],
+        "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+        "session": user_info[8],
+        "points": user_info[9],
+        "notification_count": notification_count
+    }
+    
+    return render_template("rules.html", pagetitle="Rules and Regulations", user=user_data)
 
 @app.route("/history", methods=["GET", "POST"])
 def history_feedback():
@@ -229,6 +288,24 @@ def history_feedback():
     if user_info:
         student_id = user_info[0]
         sit_in_records = dbhelper.get_sit_in_history(student_id)
+
+        # Get notification count
+        notification_count = dbhelper.get_unread_notification_count(student_id)
+        
+        # Create user data dictionary for template
+        user_data = {
+            "idno": user_info[0],
+            "lastname": user_info[1],
+            "firstname": user_info[2],
+            "middlename": user_info[3] if user_info[3] else "",
+            "course": user_info[4],
+            "year_level": user_info[5],
+            "email": user_info[6],
+            "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+            "session": user_info[8],
+            "points": user_info[9],
+            "notification_count": notification_count
+        }
 
         # Fetch login_time and logout_time for each sit_in record
         for record in sit_in_records:
@@ -255,7 +332,7 @@ def history_feedback():
             else:
                 flash("Failed to submit feedback. Try again.", "danger")
 
-    return render_template("history.html", pagetitle="Sit-in History", sit_in_records=sit_in_records, student_id=student_id)
+    return render_template("history.html", pagetitle="Sit-in History", sit_in_records=sit_in_records, student_id=student_id, user=user_data)
 
 @app.route("/reservation", methods=["GET", "POST"])
 def reservation():
@@ -264,6 +341,28 @@ def reservation():
         return redirect(url_for("login"))
 
     user_info = dbhelper.get_user_info(session["user"])
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for("dashboard"))
+        
+    # Get notification count
+    notification_count = dbhelper.get_unread_notification_count(user_info[0])
+    
+    # Create user data dictionary for template
+    user_data = {
+        "idno": user_info[0],
+        "lastname": user_info[1],
+        "firstname": user_info[2],
+        "middlename": user_info[3] if user_info[3] else "",
+        "course": user_info[4],
+        "year_level": user_info[5],
+        "email": user_info[6],
+        "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+        "session": user_info[8],
+        "points": user_info[9],
+        "notification_count": notification_count
+    }
+
     if request.method == "POST":
         student_id = request.form["student_id"]
         full_name = request.form["full_name"]
@@ -273,6 +372,11 @@ def reservation():
         date = request.form["date"]
         time_in = request.form["time_in"]
 
+        # Check for schedule conflict
+        if dbhelper.check_schedule_conflict(lab_number, date, time_in):
+            flash("Reservation conflict: The selected lab is already scheduled for another session at this time.", "danger")
+            return redirect(url_for("reservation"))
+
         # Insert reservation into the database
         success = dbhelper.insert_reservation(student_id, full_name, purpose, lab_number, pc_number, date, time_in)
         if success:
@@ -280,24 +384,9 @@ def reservation():
         else:
             flash("Failed to make a reservation. Please try again.", "danger")
 
-        return redirect(url_for("schedule"))
+        return redirect(url_for("reservation"))
 
-    if user_info:
-        user_data = {
-            "idno": user_info[0],
-            "lastname": user_info[1],
-            "firstname": user_info[2],
-            "middlename": user_info[3] if user_info[3] else "",
-            "course": user_info[4],
-            "year_level": user_info[5],
-            "email": user_info[6],
-            "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
-            "session": user_info[8]
-        }
-        return render_template("reservation.html", pagetitle="Reservation", user=user_data)
-
-    flash("User not found!", "danger")
-    return redirect(url_for("dashboard"))
+    return render_template("reservation.html", pagetitle="Reservation", user=user_data)
 
 @app.route("/view_feedback")
 def view_feedback():
@@ -306,45 +395,40 @@ def view_feedback():
         return redirect(url_for("login"))
     
     feedbacks = dbhelper.get_feedbacks()
-    return render_template("feedback_report.html", pagetitle="Feedback Reports", feedbacks=feedbacks)
+    pending_count = dbhelper.get_pending_reservation_count()
+    return render_template("feedback_report.html", pagetitle="Feedback Reports", feedbacks=feedbacks, pending_count=pending_count)
   
 
-@app.route("/edit", methods=["GET", "POST"])
+@app.route("/edit")
 def edit():
     if "user" not in session:
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
-
-    if request.method == "POST":
-        lastname = request.form["lastname"]
-        firstname = request.form["firstname"]
-        middlename = request.form["middlename"]
-        course = request.form["course"]
-        year_level = request.form["year_level"]
-        email = request.form["email"]
-
-        dbhelper.update_user_info(session["user"], lastname, firstname, middlename, course, year_level, email)
-        flash("Your information has been updated successfully!", "success")
-        return redirect(url_for("profile"))
-
+    
     user_info = dbhelper.get_user_info(session["user"])
-
-    if user_info:
-        user_data = {
-            "idno": user_info[0],
-            "lastname": user_info[1],
-            "firstname": user_info[2],
-            "middlename": user_info[3] if user_info[3] else "",
-            "course": user_info[4],
-            "year_level": user_info[5],
-            "email": user_info[6],
-            "profile_image": user_info[7] if len(user_info) > 7 else "default.png",  
-            "session": user_info[8] 
-        }
-        return render_template("edit.html", pagetitle="Edit Information", user=user_data)
-
-    flash("User not found!", "danger")
-    return redirect(url_for("dashboard"))
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for("dashboard"))
+        
+    # Get notification count
+    notification_count = dbhelper.get_unread_notification_count(user_info[0])
+    
+    # Create user data dictionary for template
+    user_data = {
+        "idno": user_info[0],
+        "lastname": user_info[1],
+        "firstname": user_info[2],
+        "middlename": user_info[3] if user_info[3] else "",
+        "course": user_info[4],
+        "year_level": user_info[5],
+        "email": user_info[6],
+        "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+        "session": user_info[8],
+        "points": user_info[9],
+        "notification_count": notification_count
+    }
+    
+    return render_template("edit.html", pagetitle="Edit Profile", user=user_data)
 
 @app.route("/logout")
 def logout():
@@ -363,10 +447,11 @@ def admin_dashboard():
     total_students = dbhelper.total_students()
     total_feedback = dbhelper.total_feedback()
     total_sit_in = dbhelper.total_sit_in()
-    total_reservations = dbhelper.get_total_reservations()  # Add this line
+    total_reservations = dbhelper.get_total_reservations()
     announcements = dbhelper.get_announcements(include_inactive=True)
     purpose_counts = dbhelper.get_purpose_counts()
     leaderboard = dbhelper.get_leaderboard()
+    pending_count = dbhelper.get_pending_reservation_count()
 
     # Add rank to leaderboard data
     for rank, student in enumerate(leaderboard, start=1):
@@ -380,8 +465,9 @@ def admin_dashboard():
         total_feedback=total_feedback,
         purpose_counts=purpose_counts,
         total_sit_in=total_sit_in,
-        total_reservations=total_reservations,  # Pass it to the template
-        leaderboard=leaderboard
+        total_reservations=total_reservations,
+        leaderboard=leaderboard,
+        pending_count=pending_count
     )
 
 @app.route("/view_students", methods=['GET', 'POST'])
@@ -397,7 +483,9 @@ def view_students():
         student = dbhelper.search_student_by_id(idno)
         if not student:
             flash('Student not found', 'danger')
-    return render_template("students.html", pagetitle="View Students", students=students, student=student)
+    
+    pending_count = dbhelper.get_pending_reservation_count()
+    return render_template("students.html", pagetitle="View Students", students=students, student=student, pending_count=pending_count)
 
 @app.route("/view_sit_in")
 def view_sit_in():
@@ -409,7 +497,8 @@ def view_sit_in():
     sit_in_records = dbhelper.get_all_sit_in_records(search)
     purpose_counts = dbhelper.get_purpose_counts()
     lab_counts = dbhelper.get_lab_counts()
-    return render_template("view_sit_in.html", pagetitle="View Sit-in Records", sit_in_records=sit_in_records, purpose_counts=purpose_counts, lab_counts=lab_counts)
+    pending_count = dbhelper.get_pending_reservation_count()
+    return render_template("view_sit_in.html", pagetitle="View Sit-in Records", sit_in_records=sit_in_records, purpose_counts=purpose_counts, lab_counts=lab_counts, pending_count=pending_count)
 
 @app.route('/submit_sit_in', methods=['POST'])
 def submit_sit_in():
@@ -440,8 +529,9 @@ def sit_in():
     per_page = 10
 
     sit_ins, total_pages = dbhelper.get_sit_ins(search, page, per_page)
+    pending_count = dbhelper.get_pending_reservation_count()
 
-    return render_template('sit_in.html', sit_ins=sit_ins, page=page, total_pages=total_pages, pagetitle="Current Sit-in")
+    return render_template('sit_in.html', sit_ins=sit_ins, page=page, total_pages=total_pages, pagetitle="Current Sit-in", pending_count=pending_count)
 
 @app.route('/reset_sessions', methods=['POST'])
 def reset_sessions():
@@ -493,8 +583,9 @@ def sit_in_reports():
     date_filter = request.args.get('date', '')
     search_filter = request.args.get('search', '')
     sit_in_records = dbhelper.get_all_sit_in_records_by_date_and_purpose(date_filter, search_filter)
+    pending_count = dbhelper.get_pending_reservation_count()
 
-    return render_template("sit_in_reports.html", pagetitle="Generate Reports", sit_in_records=sit_in_records)
+    return render_template("sit_in_reports.html", pagetitle="Generate Reports", sit_in_records=sit_in_records, pending_count=pending_count)
 
 @app.route('/reset_session/<int:idno>', methods=['POST'])
 def reset_session(idno):
@@ -506,30 +597,111 @@ def reset_session(idno):
     else:
         return jsonify({"success": False, "message": "Failed to reset session."})
 
-@app.route('/laboratory')
+@app.route('/laboratory', methods=["GET", "POST"])
 def laboratory():
-    return render_template('laboratory.html', pagetitle="Computer Control")
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+    
+    # Check if user is admin
+    user_type = dbhelper.get_user_type(session["user"])
+    if user_type != "admin":
+        flash("You don't have permission to access this page!", "danger")
+        return redirect(url_for("dashboard"))
+    
+    if request.method == "POST":
+        reservation_id = request.form.get("reservation_id")
+        action = request.form.get("action")
+        
+        if reservation_id and action:
+            # Get admin ID
+            admin_id = dbhelper.get_admin_id(session["user"])
+            
+            # Update reservation status
+            if dbhelper.update_reservation_status(reservation_id, action):
+                
+                # Get reservation details for notification
+                reservation = dbhelper.get_reservation_by_id(reservation_id)
+                if reservation:
+                    # Create notification for the student
+                    lab_info = f"Room {reservation['lab_number']}, PC {reservation['pc_number']}"
+                    if action == 'approved':
+                        message = f"Your reservation for {lab_info} on {reservation['date']} at {reservation['time_in']} has been approved."
+                        dbhelper.create_notification(reservation['student_id'], message, 'success')
+                    else:
+                        message = f"Your reservation for {lab_info} on {reservation['date']} at {reservation['time_in']} has been disapproved."
+                        dbhelper.create_notification(reservation['student_id'], message, 'danger')
+                
+                flash(f"Reservation {action} successfully!", "success")
+            else:
+                flash("Failed to update reservation status!", "danger")
+    
+    # Get all reservations
+    reservations = dbhelper.get_reservations()
+    selected_lab = request.args.get('lab', '524')  # Default to lab 524
+    pending_count = dbhelper.get_pending_reservation_count()
+    
+    # Get logs data
+    logs = dbhelper.get_logs()
+    
+    return render_template('laboratory.html', pagetitle="Laboratory Management", 
+                          reservations=reservations, selectedLab=selected_lab, 
+                          pending_count=pending_count, logs=logs)
+
+# Add a new route to get user notifications
+@app.route('/notifications')
+def notifications():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+    
+    user_info = dbhelper.get_user_info(session["user"])
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for('login'))
+    
+    student_id = user_info[0]  # Get the student ID
+    notifications = dbhelper.get_user_notifications(student_id)
+    
+    return render_template('notifications.html', pagetitle="Notifications", 
+                          notifications=notifications, user=user_info)
+
+# Add a route to mark notifications as read
+@app.route('/mark_notification_read/<int:notification_id>')
+def mark_notification_read(notification_id):
+    if "user" not in session:
+        return jsonify({"success": False})
+    
+    success = dbhelper.mark_notification_as_read(notification_id)
+    return jsonify({"success": success})
+
 
 @app.route('/get_pc_status/<lab_number>', methods=['GET'])
 def get_pc_status(lab_number):
-    pcs = dbhelper.get_pc_statuses(lab_number)  # Fetch PC statuses from the database
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Unauthorized"})
+    
+    pcs = dbhelper.get_lab_pc_availability(lab_number)
     return jsonify({"success": True, "pcs": pcs})
 
 @app.route('/update_pc_status', methods=['POST'])
 def update_pc_status():
-    data = request.json
+    if 'user' not in session:
+        return jsonify({'success': False, 'message': 'Not logged in'})
+    
+    data = request.get_json()
     lab_number = data.get('lab_number')
     pc_numbers = data.get('pc_numbers')
     status = data.get('status')
-
+    
     if not lab_number or not pc_numbers or not status:
-        return jsonify({"success": False, "message": "Invalid data!"})
-
-    success = dbhelper.update_pc_statuses(lab_number, pc_numbers, status)  # Update PC statuses in the database
-    if success:
-        return jsonify({"success": True, "message": "PC statuses updated successfully!"})
-    else:
-        return jsonify({"success": False, "message": "Failed to update PC statuses!"})
+        return jsonify({'success': False, 'message': 'Missing parameters'})
+    
+    for pc_number in pc_numbers:
+        if not dbhelper.update_pc_status(lab_number, pc_number, status):
+            return jsonify({'success': False, 'message': 'Failed to update status'})
+    
+    return jsonify({'success': True, 'message': 'Status updated successfully'})
 
 @app.route('/add_points_and_logout/<int:idno>', methods=['POST'])
 def add_points_and_logout(idno):
@@ -541,31 +713,6 @@ def add_points_and_logout(idno):
     dbhelper.add_points_and_logout(idno)
     flash("Points added and logged out!", "success")
     return redirect(url_for('sit_in'))
-
-@app.route("/reservations", methods=["GET", "POST"])
-def reservations():
-    if "user" not in session:
-        flash("You need to log in first!", "danger")
-        return redirect(url_for("login"))
-
-    reservations = dbhelper.get_reservations()
-
-    if request.method == "POST":
-        reservation_id = request.form["reservation_id"]
-        action = request.form["action"]
-        admin_id = dbhelper.get_admin_id(session["user"])
-
-        if dbhelper.update_reservation_status(reservation_id, action, admin_id):
-            if action == "approved":
-                flash("Reservation approved and PC status updated to 'used'!", "success")
-            else:
-                flash("Reservation disapproved!", "success")
-        else:
-            flash("Failed to update reservation status. Try again.", "danger")
-
-        return redirect(url_for("reservations"))
-
-    return render_template("admin_reservation.html", pagetitle="Reservations", reservations=reservations)
 
 @app.route("/logs")
 def logs():
@@ -582,6 +729,11 @@ def resources():
         flash("You need to log in first!", "danger")
         return redirect(url_for("login"))
 
+    # Create resources directory if it doesn't exist
+    resources_dir = os.path.join(app.config["UPLOAD_FOLDER"], "resources")
+    if not os.path.exists(resources_dir):
+        os.makedirs(resources_dir)
+
     if request.method == "POST":
         if "file" not in request.files:
             flash("No file selected!", "danger")
@@ -597,7 +749,7 @@ def resources():
 
         if file:
             filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            filepath = os.path.join(resources_dir, filename)  # Save to resources subfolder
             file.save(filepath)
 
             if dbhelper.insert_resource(title, description, filename):
@@ -606,7 +758,8 @@ def resources():
                 flash("Failed to upload resource.", "danger")
 
     resources = dbhelper.get_resources()
-    return render_template("resources.html", pagetitle="Resources", resources=resources)
+    pending_count = dbhelper.get_pending_reservation_count()
+    return render_template("resources.html", pagetitle="Resources", resources=resources, pending_count=pending_count)
 
 @app.route("/edit_resource/<int:resource_id>", methods=["POST"])
 def edit_resource(resource_id):
@@ -623,6 +776,27 @@ def edit_resource(resource_id):
         flash("Failed to update resource.", "danger")
 
     return redirect(url_for("resources"))
+
+@app.route("/download_resource/<int:resource_id>")
+def download_resource(resource_id):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+    
+    resource = dbhelper.get_resource_by_id(resource_id)
+    if not resource:
+        flash("Resource not found!", "danger")
+        return redirect(url_for("resources"))
+    
+    filename = resource[3]  # Assuming the filename is at index 3 in the resource tuple
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], "resources", filename)
+    
+    # Check if file exists
+    if not os.path.exists(filepath):
+        flash("File not found on server!", "danger")
+        return redirect(url_for("resources"))
+        
+    return send_file(filepath, as_attachment=True, download_name=filename)
 
 @app.route("/delete_resource/<int:resource_id>", methods=["POST"])
 def delete_resource(resource_id):
@@ -648,6 +822,9 @@ def schedule():
     if not user_info:
         flash("User not found!", "danger")
         return redirect(url_for("dashboard"))
+    
+    # Get notification count
+    notification_count = dbhelper.get_unread_notification_count(user_info[0])
 
     user_data = {
         "idno": user_info[0],
@@ -658,7 +835,8 @@ def schedule():
         "year_level": user_info[5],
         "email": user_info[6],
         "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
-        "session": user_info[8]
+        "session": user_info[8],
+        "notification_count": notification_count
     }
 
     if request.method == "POST":
@@ -673,7 +851,7 @@ def schedule():
         else:
             flash("Failed to submit reservation request. Try again.", "danger")
 
-    schedules = dbhelper.get_lab_schedules()
+    schedules = dbhelper.get_all_schedules()
     return render_template("schedule.html", pagetitle="Schedule", schedules=schedules, user=user_data)
 
 
@@ -689,15 +867,19 @@ def admin_schedule():
         date = request.form["date"]
         time_start = request.form["time_start"]
         time_end = request.form["time_end"]
-        purpose = request.form["purpose"]
-
-        if dbhelper.update_lab_schedule(schedule_id, lab_number, date, time_start, time_end, purpose):
-            flash("Schedule updated successfully!", "success")
+        subject = request.form["subject"]
+        instructor = request.form["instructor"]
+        if not all([lab_number, date, time_start, time_end, subject, instructor]):
+            flash("Please fill out all fields!", "danger")
+            return redirect(url_for("admin_schedule"))
+        if dbhelper.add_lab_schedule(lab_number, date, time_start, time_end, subject, instructor):
+            flash("Schedule added successfully!", "success")
         else:
-            flash("Failed to update schedule. Try again.", "danger")
+            flash("Failed to add schedule. Try again.", "danger")
 
-    schedules = dbhelper.get_lab_schedules()
-    return render_template("admin_schedule.html", pagetitle="Manage Schedule", schedules=schedules)
+    schedules = dbhelper.get_all_schedules()
+    pending_count = dbhelper.get_pending_reservation_count()
+    return render_template("admin_schedule.html", pagetitle="Manage Schedule", schedules=schedules, pending_count=pending_count)
 
 @app.route("/get_schedules_by_date", methods=["GET"])
 def get_schedules_by_date():
@@ -707,7 +889,7 @@ def get_schedules_by_date():
     
     conn = dbhelper.connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, lab_number, time_start, time_end, purpose, date FROM lab_schedule WHERE date = ? ORDER BY time_start", (date,))
+    cursor.execute("SELECT id, lab_number, time_start, time_end, subject, instructor, date FROM lab_schedule WHERE date = ? ORDER BY time_start", (date,))
     schedules = cursor.fetchall()
     conn.close()
     
@@ -718,54 +900,229 @@ def get_schedules_by_date():
             "lab_number": row[1],
             "time_start": row[2],
             "time_end": row[3],
-            "purpose": row[4],
-            "date": row[5]  # Add this line
+            "subject": row[4],
+            "instructor": row[5],
+            "date": row[6]
         } for row in schedules]
     })
 
 @app.route("/add_lab_schedule", methods=["POST"])
 def add_lab_schedule():
     if "user" not in session:
-        return jsonify({"success": False, "message": "You need to log in first!"})
-    
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
     lab_number = request.form.get("lab_number")
     date = request.form.get("date")
     time_start = request.form.get("time_start")
     time_end = request.form.get("time_end")
-    purpose = request.form.get("purpose")
-    
-    if not all([lab_number, date, time_start, time_end, purpose]):
+    subject = request.form.get("subject")
+    instructor = request.form.get("instructor")
+
+    if not all([lab_number, date, time_start, time_end, subject, instructor]):
         flash("Please fill out all fields!", "danger")
         return redirect(url_for("admin_schedule"))
-    
-    if dbhelper.add_lab_schedule(lab_number, date, time_start, time_end, purpose):
+
+    if dbhelper.add_lab_schedule(lab_number, date, time_start, time_end, subject, instructor):
         flash("Schedule added successfully!", "success")
     else:
         flash("Failed to add schedule. Try again.", "danger")
-    
+
     return redirect(url_for("admin_schedule"))
 
 @app.route("/update_lab_schedule", methods=["POST"])
 def update_lab_schedule():
     if "user" not in session:
-        return jsonify({"success": False, "message": "You need to log in first!"})
-    
-    schedule_id = request.form.get("schedule_id")
-    lab_number = request.form.get("lab_number")
-    time_start = request.form.get("time_start")
-    time_end = request.form.get("time_end")
-    purpose = request.form.get("purpose")
-    
-    if not all([schedule_id, lab_number, time_start, time_end, purpose]):
-        flash("Please fill out all fields!", "danger")
-        return redirect(url_for("admin_schedule"))
-    
-    if dbhelper.update_lab_schedule(schedule_id, lab_number, None, time_start, time_end, purpose):
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    schedule_id = request.form["schedule_id"]
+    lab_number = request.form["lab_number"]
+    date = request.form["date"]
+    time_start = request.form["time_start"]
+    time_end = request.form["time_end"]
+    subject = request.form["subject"]
+    instructor = request.form["instructor"]
+
+    if dbhelper.update_lab_schedule(schedule_id, lab_number, date, time_start, time_end, subject, instructor):
         flash("Schedule updated successfully!", "success")
     else:
         flash("Failed to update schedule. Try again.", "danger")
     
     return redirect(url_for("admin_schedule"))
 
+@app.route("/delete_lab_schedule", methods=["POST"])
+def delete_lab_schedule():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    schedule_id = request.form.get("schedule_id")
+    if not schedule_id:
+        flash("Schedule ID is required!", "danger")
+        return redirect(url_for("admin_schedule"))
+
+    if dbhelper.delete_lab_schedule(schedule_id):
+        flash("Schedule deleted successfully!", "success")
+    else:
+        flash("Failed to delete schedule. Try again.", "danger")
+
+    return redirect(url_for("admin_schedule"))
+
+@app.route("/download_schedules_pdf")
+def download_schedules_pdf():
+    pdf = FPDF(orientation='L')
+    pdf.add_page()
+
+    # Header 1: University of Cebu - Main Campus
+    pdf.set_font('Arial', 'B', 16)
+    pdf.cell(0, 10, 'University of Cebu - Main Campus', 0, 1, 'C')
+    pdf.ln(2)
+
+    # Header 2: Department of Computer Studies
+    pdf.set_font('Arial', 'B', 14)
+    pdf.cell(0, 10, 'Department of Computer Studies', 0, 1, 'C')
+    pdf.ln(2)
+
+    # Header 3: Laboratory Schedules
+    pdf.set_font('Arial', 'B', 16)
+    pdf.cell(0, 10, 'Laboratory Schedules', 0, 1, 'C')
+    pdf.ln(8)
+
+    # Table header colors
+    pdf.set_fill_color(156, 39, 176)  # #9c27b0
+    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.set_font('Arial', 'B', 12)
+    col_width = pdf.w / 6
+    pdf.cell(col_width, 10, 'Lab Number', 1, 0, 'C', 1)
+    pdf.cell(col_width, 10, 'Date', 1, 0, 'C', 1)
+    pdf.cell(col_width, 10, 'Time Start', 1, 0, 'C', 1)
+    pdf.cell(col_width, 10, 'Time End', 1, 0, 'C', 1)
+    pdf.cell(col_width, 10, 'Subject', 1, 0, 'C', 1)
+    pdf.cell(col_width, 10, 'Instructor', 1, 1, 'C', 1)
+
+    # Table rows
+    pdf.set_font('Arial', '', 12)
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_fill_color(211, 186, 250)  # #D3BAFA
+    schedules = dbhelper.get_all_schedules()
+    for schedule in schedules:
+        pdf.cell(col_width, 10, str(schedule['lab_number']), 1, 0, 'C', 1)
+        pdf.cell(col_width, 10, str(schedule['date']), 1, 0, 'C', 1)
+        pdf.cell(col_width, 10, str(schedule['time_start']), 1, 0, 'C', 1)
+        pdf.cell(col_width, 10, str(schedule['time_end']), 1, 0, 'C', 1)
+        pdf.cell(col_width, 10, str(schedule['subject']), 1, 0, 'C', 1)
+        pdf.cell(col_width, 10, str(schedule['instructor']), 1, 1, 'C', 1)
+
+    pdf_output = pdf.output(dest='S').encode('latin1')
+    return send_file(
+        io.BytesIO(pdf_output),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name='laboratory_schedules.pdf'
+    )
+
+@app.route("/student_resources")
+def student_resources():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+    
+    user_info = dbhelper.get_user_info(session["user"])
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for("dashboard"))
+        
+    # Get notification count
+    notification_count = dbhelper.get_unread_notification_count(user_info[0])
+    
+    # Create user data dictionary for template
+    user_data = {
+        "idno": user_info[0],
+        "lastname": user_info[1],
+        "firstname": user_info[2],
+        "middlename": user_info[3] if user_info[3] else "",
+        "course": user_info[4],
+        "year_level": user_info[5],
+        "email": user_info[6],
+        "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+        "session": user_info[8],
+        "points": user_info[9],
+        "notification_count": notification_count
+    }
+    
+    resources = dbhelper.get_resources()
+    return render_template("student_resources.html", pagetitle="Resources", resources=resources, user=user_data)
+
+@app.route("/reservation_history")
+def reservation_history():
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+        
+    user_info = dbhelper.get_user_info(session["user"])
+    if not user_info:
+        flash("User not found!", "danger")
+        return redirect(url_for("dashboard"))
+        
+    # Get notification count
+    notification_count = dbhelper.get_unread_notification_count(user_info[0])
+    
+    # Create user data dictionary for template
+    user_data = {
+        "idno": user_info[0],
+        "lastname": user_info[1],
+        "firstname": user_info[2],
+        "middlename": user_info[3] if user_info[3] else "",
+        "course": user_info[4],
+        "year_level": user_info[5],
+        "email": user_info[6],
+        "profile_image": user_info[7] if len(user_info) > 7 else "default.png",
+        "session": user_info[8],
+        "points": user_info[9],
+        "notification_count": notification_count
+    }
+    
+    reservations = dbhelper.get_reservation_history_by_username(session["user"])
+    return render_template("reservation_history.html", pagetitle="Reservation History", reservations=reservations, user=user_data)
+
+@app.route("/delete_schedule/<int:schedule_id>", methods=["POST"])
+def delete_schedule(schedule_id):
+    if "user" not in session:
+        flash("You need to log in first!", "danger")
+        return redirect(url_for("login"))
+
+    if dbhelper.delete_lab_schedule(schedule_id):
+        flash("Schedule deleted successfully!", "success")
+    else:
+        flash("Failed to delete schedule. Try again.", "danger")
+
+    return redirect(url_for("admin_schedule"))
+
+@app.route('/admin/notifications')
+def admin_notifications():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    notifications = dbhelper.get_admin_notifications()
+    pending_count = dbhelper.get_pending_reservation_count()
+    return render_template('admin_notifications.html', notifications=notifications, pending_count=pending_count, pagetitle="Notifications")
+
+@app.route("/check_schedule_conflict", methods=["GET"])
+def check_schedule_conflict():
+    if "user" not in session:
+        return jsonify({"success": False, "message": "Not logged in"})
+    
+    lab_number = request.args.get('lab_number')
+    date = request.args.get('date')
+    time_in = request.args.get('time_in')
+    
+    if not all([lab_number, date, time_in]):
+        return jsonify({"success": False, "message": "Missing parameters"})
+    
+    has_conflict = dbhelper.check_schedule_conflict(lab_number, date, time_in)
+    return jsonify({"success": True, "has_conflict": has_conflict})
+
 if __name__ == "__main__":
     app.run(debug=True)
+
