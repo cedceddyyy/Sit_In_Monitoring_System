@@ -1180,6 +1180,17 @@ def check_and_update_pc_status(lab_number, pc_number):
     finally:
         conn.close()
 
+def check_user_active_sit_in(student_id):
+    """Check if a user has an active sit-in status"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) FROM sit_in WHERE idno = ? AND status = 'active'", (student_id,))
+    count = cursor.fetchone()[0]
+    
+    conn.close()
+    return count > 0
+
 if __name__ == "__main__":
     create_database()
     print("Database Initialize Successful!")

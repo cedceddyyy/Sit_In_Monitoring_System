@@ -614,23 +614,30 @@ def laboratory():
         action = request.form.get("action")
         
         if reservation_id and action:
+            # Get reservation details first
+            reservation = dbhelper.get_reservation_by_id(reservation_id)
+            if not reservation:
+                flash("Reservation not found!", "danger")
+                return redirect(url_for("laboratory"))
+            
+            # Check if user has active sit-in
+            if dbhelper.check_user_active_sit_in(reservation['student_id']):
+                flash("Cannot approve/disapprove reservation. User has an active sit-in session.", "danger")
+                return redirect(url_for("laboratory"))
+            
             # Get admin ID
             admin_id = dbhelper.get_admin_id(session["user"])
             
             # Update reservation status
             if dbhelper.update_reservation_status(reservation_id, action):
-                
-                # Get reservation details for notification
-                reservation = dbhelper.get_reservation_by_id(reservation_id)
-                if reservation:
-                    # Create notification for the student
-                    lab_info = f"Room {reservation['lab_number']}, PC {reservation['pc_number']}"
-                    if action == 'approved':
-                        message = f"Your reservation for {lab_info} on {reservation['date']} at {reservation['time_in']} has been approved."
-                        dbhelper.create_notification(reservation['student_id'], message, 'success')
-                    else:
-                        message = f"Your reservation for {lab_info} on {reservation['date']} at {reservation['time_in']} has been disapproved."
-                        dbhelper.create_notification(reservation['student_id'], message, 'danger')
+                # Create notification for the student
+                lab_info = f"Room {reservation['lab_number']}, PC {reservation['pc_number']}"
+                if action == 'approved':
+                    message = f"Your reservation for {lab_info} on {reservation['date']} at {reservation['time_in']} has been approved."
+                    dbhelper.create_notification(reservation['student_id'], message, 'success')
+                else:
+                    message = f"Your reservation for {lab_info} on {reservation['date']} at {reservation['time_in']} has been disapproved."
+                    dbhelper.create_notification(reservation['student_id'], message, 'danger')
                 
                 flash(f"Reservation {action} successfully!", "success")
             else:
