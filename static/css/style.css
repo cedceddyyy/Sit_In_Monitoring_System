@@ -1,0 +1,312 @@
+:root {
+    --primary-color: #2C1038;
+    --secondary-color: #D3BAFA;
+    --text-color: #333;
+    --hover-color: #f5f5f5;
+    --danger-color: #f44336;
+    --success-color: #4CAF50;
+    --info-color: #2196F3;
+    --transition-speed: 0.3s;
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 70px;
+    --bg-color: #fafafa;
+    --card-bg: #ffffff;
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Work Sans', sans-serif;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    margin: 0;
+    padding: 0;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: var(--sidebar-collapsed-width);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-speed);
+    padding-top: 20px;
+    z-index: 1000;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+.sidebar:hover {
+    width: var(--sidebar-width);
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-size: 15px;
+    transition: var(--transition-speed);
+    border-radius: 0 25px 25px 0;
+    margin: 5px 0;
+}
+
+.sidebar a .material-icons {
+    font-size: 24px;
+    margin-right: 20px;
+    min-width: 24px;
+    transition: var(--transition-speed);
+}
+
+.sidebar a span.text {
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: inline-block;
+}
+
+.sidebar:hover a span.text {
+    opacity: 1;
+}
+
+.sidebar a:hover {
+    background-color: var(--hover-color);
+    color: var(--primary-color);
+    padding-left: 30px;
+}
+
+.sidebar a.active {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+}
+
+/* Main Content Area */
+#main {
+    margin-left: var(--sidebar-collapsed-width);
+    padding: 30px;
+    transition: margin-left var(--transition-speed);
+}
+
+.sidebar:hover+#main {
+    margin-left: var(--sidebar-width);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 500;
+    color: var(--primary-color);
+    margin: 10px 0;
+}
+
+/* Flash Messages */
+.flash-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1100;
+}
+
+.flash-message.success {
+    border-color: var(--success-color);
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.flash-message.danger {
+    border-color: var(--danger-color);
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+.flash-message.info {
+    border-color: var(--info-color);
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Utilities */
+.color {
+    background-color: var(--secondary-color) !important;
+}
+
+.font-color {
+    color: var(--primary-color) !important;
+}
+
+.paging-backcolor {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Badges */
+.w3-badge {
+    height: 20px;
+    min-width: 20px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    border-radius: 10px;
+}
+
+/* Modern Cards */
+.modern-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    height: 100%;
+}
+
+.modern-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.modern-card-header {
+    background-color: var(--secondary-color);
+    padding: 15px 20px;
+    border-radius: 12px 12px 0 0;
+}
+
+.modern-card-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.modern-card-body {
+    padding: 20px;
+}
+
+/* Notifications */
+.notification-icon {
+    position: fixed;
+    top: 25px;
+    right: 30px;
+    z-index: 1001;
+    cursor: pointer;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--danger-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.notification-icon .material-icons {
+    font-size: 28px;
+    color: var(--primary-color);
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.3s;
+}
+
+.notification-icon:hover .material-icons {
+    background-color: #c0a0f0;
+}
+
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 55px;
+    background-color: var(--card-bg);
+    min-width: 300px;
+    box-shadow: var(--shadow-md);
+    border-radius: 12px;
+    z-index: 1002;
+    overflow: hidden;
+}
+
+.notification-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+    background: #fdfdfd;
+}
+
+.notification-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background-color: var(--hover-color);
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-footer {
+    padding: 12px;
+    text-align: center;
+    background: #fafafa;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media screen and (max-width: 992px) {
+    .w3-half {
+        width: 100%;
+    }
+
+    #main {
+        margin-left: var(--sidebar-collapsed-width);
+    }
+}

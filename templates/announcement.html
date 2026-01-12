@@ -4,9 +4,11 @@
 <div class="w3-container w3-padding w3-animate-bottom w3-display-container" style="height: 100vh;">
   <div id="announcements-container">
     {% for announcement in announcements %}
-    <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card" style="background-color: #f3e5f5; border-left: 5px solid #6a1b9a;">
+    <div class="modern-card w3-margin-bottom announcement-card" style="border-left: 5px solid var(--primary-color);">
+      <div class="modern-card-body">
         <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
         <p>{{ announcement[1] }}</p>
+      </div>
     </div>
     {% endfor %}
   </div>
@@ -68,7 +70,7 @@
     return Math.ceil(document.getElementsByClassName('announcement-card').length / records_per_page);
   }
 
-  window.onload = function() {
+  window.onload = function () {
     changePage(1);
   };
 </script>

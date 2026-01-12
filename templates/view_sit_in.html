@@ -5,14 +5,20 @@
 
     <!-- Pie Charts -->
     <div class="w3-row-padding w3-margin-top">
-        <div class="w3-half w3-card w3-round" style="height: 400px; display: flex; justify-content: center; align-items: center;">
-            <div class="w3-padding" style="width: 100%; height: 100%;">
-                <canvas id="purposePieChart" style="width: 100%; height: 100%;"></canvas>
+        <div class="w3-half">
+            <div class="modern-card"
+                style="height: 400px; display: flex; justify-content: center; align-items: center;">
+                <div class="modern-card-body" style="width: 100%; height: 100%; padding: 20px;">
+                    <canvas id="purposePieChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
             </div>
         </div>
-        <div class="w3-half w3-card w3-round" style="height: 400px; display: flex; justify-content: center; align-items: center;">
-            <div class="w3-padding" style="width: 100%; height: 100%;">
-                <canvas id="labBarChart" style="width: 100%; height: 100%;"></canvas>
+        <div class="w3-half">
+            <div class="modern-card"
+                style="height: 400px; display: flex; justify-content: center; align-items: center;">
+                <div class="modern-card-body" style="width: 100%; height: 100%; padding: 20px;">
+                    <canvas id="labBarChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -29,44 +35,49 @@
 
     <!-- Search bar -->
     <div class="w3-bar w3-margin-bottom">
-        <form method="GET" action="{{ url_for('view_sit_in') }}" class="w3-row" style="max-width: 600px; margin: 0 auto; display: flex;">
-            <input class="w3-input w3-border w3-round" type="text" name="search" placeholder="Search by ID or Purpose" style="flex: 1;" value="{{ request.args.get('search', '') }}">
-            <button class="w3-button w3-round" type="submit" style="background-color: var(--primary-color); color: white; margin-left: 10px;">
+        <form method="GET" action="{{ url_for('view_sit_in') }}" class="w3-row"
+            style="max-width: 600px; margin: 0 auto; display: flex;">
+            <input class="w3-input w3-border w3-round" type="text" name="search" placeholder="Search by ID or Purpose"
+                style="flex: 1;" value="{{ request.args.get('search', '') }}">
+            <button class="w3-button w3-round" type="submit"
+                style="background-color: var(--primary-color); color: white; margin-left: 10px;">
                 <i class="material-icons">search</i>
             </button>
         </form>
     </div>
 
     <!-- Table -->
-    <div class="w3-card w3-round">
-        <table class="w3-table w3-bordered">
-            <thead>
-                <tr class="w3-light-grey">
-                    <th>ID No</th>
-                    <th>Full Name</th>
-                    <th>Purpose</th>
-                    <th>Lab</th>
-                    <th>Login Time</th>
-                    <th>Logout Time</th>
-                    <th>Date</th>
-                    <th>Points</th> <!-- New column for points -->
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                {% for record in sit_in_records %}
-                <tr>
-                    <td>{{ record.idno }}</td>
-                    <td>{{ record.full_name }}</td>
-                    <td>{{ record.purpose }}</td>
-                    <td>{{ record.lab }}</td>
-                    <td>{{ record.login_time }}</td>
-                    <td>{{ record.logout_time if record.logout_time else "N/A" }}</td>
-                    <td>{{ record.date }}</td>
-                    <td>{{ record.points }}</td> <!-- Display points -->
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="modern-card w3-round">
+        <div class="modern-card-body">
+            <table class="w3-table w3-bordered w3-hoverable">
+                <thead class="w3-light-grey">
+                    <tr style="color: var(--primary-color);">
+                        <th>ID No</th>
+                        <th>Full Name</th>
+                        <th>Purpose</th>
+                        <th>Lab</th>
+                        <th>Login Time</th>
+                        <th>Logout Time</th>
+                        <th>Date</th>
+                        <th>Points</th> <!-- New column for points -->
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for record in sit_in_records %}
+                    <tr>
+                        <td>{{ record.idno }}</td>
+                        <td>{{ record.full_name }}</td>
+                        <td>{{ record.purpose }}</td>
+                        <td>{{ record.lab }}</td>
+                        <td>{{ record.login_time }}</td>
+                        <td>{{ record.logout_time if record.logout_time else "N/A" }}</td>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.points }}</td> <!-- Display points -->
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Pagination -->
@@ -83,193 +94,192 @@
 <!-- JavaScript to handle rows per page and pagination -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-let currentPage = 1; // Default page
-let rowsPerPage = 5; // Default rows per page
-let rows = document.querySelectorAll('#tableBody tr'); // All rows in the table body
-let totalRows = rows.length;
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- Pagination Logic ---
+        let currentPage = 1;
+        let rowsPerPage = 5;
+        const tableBody = document.getElementById('tableBody');
+        const rows = Array.from(tableBody.getElementsByTagName('tr')); // Dynamic collection to array
+        const totalRows = rows.length;
+        const rowsPerPageSelect = document.getElementById('rowsPerPage');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        // Select all numbered page buttons
+        // Note: This relies on the buttons existing in HTML. If dynamic generation is needed, this logic needs change.
+        // For now, we update existing buttons visibility.
 
-// Function to handle rows per page change
-document.getElementById('rowsPerPage').addEventListener('change', function() {
-    rowsPerPage = parseInt(this.value); // Get the selected value
-    currentPage = 1; // Reset to the first page
-    updateTable(); // Update table display
-});
+        function updateTable() {
+            const startRow = (currentPage - 1) * rowsPerPage;
+            const endRow = startRow + rowsPerPage;
 
-// Function to update the table based on the current page and rows per page
-function updateTable() {
-    let startRow = (currentPage - 1) * rowsPerPage;
-    let endRow = startRow + rowsPerPage;
-
-    // Hide all rows initially
-    rows.forEach((row, index) => {
-        if (index >= startRow && index < endRow) {
-            row.style.display = ''; // Show rows for the current page
-        } else {
-            row.style.display = 'none'; // Hide rows for other pages
+            rows.forEach((row, index) => {
+                if (index >= startRow && index < endRow) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            updatePaginationUI();
         }
-    });
 
-    updatePagination(); // Update pagination buttons
-}
+        function updatePaginationUI() {
+            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
 
-// Function to update pagination buttons
-function updatePagination() {
-    let totalPages = Math.ceil(totalRows / rowsPerPage);
-    let pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
-    
-    // Hide all page buttons and display only the relevant ones
-    pageButtons.forEach((button, index) => {
-        if (index + 1 <= totalPages) {
-            button.style.display = ''; // Show valid page buttons
-            button.textContent = index + 1; // Set page number
-        } else {
-            button.style.display = 'none'; // Hide extra page buttons
+            // Update numbered buttons
+            const pageButtons = document.querySelectorAll('.w3-button[id^="page"]');
+            pageButtons.forEach((button, index) => {
+                const pageNum = index + 1;
+                if (pageNum <= totalPages) {
+                    button.style.display = 'inline-block';
+                    // Highlight current page
+                    if (pageNum === currentPage) {
+                        button.classList.add('w3-deep-purple', 'w3-text-white');
+                        button.classList.remove('w3-hover-gray');
+                    } else {
+                        button.classList.remove('w3-deep-purple', 'w3-text-white');
+                        button.classList.add('w3-hover-gray');
+                    }
+                } else {
+                    button.style.display = 'none';
+                }
+            });
+
+            // Update Prev/Next State
+            if (currentPage <= 1) {
+                prevPageBtn.classList.add('w3-disabled');
+                prevPageBtn.style.pointerEvents = 'none';
+            } else {
+                prevPageBtn.classList.remove('w3-disabled');
+                prevPageBtn.style.pointerEvents = 'auto';
+            }
+
+            if (currentPage >= totalPages) {
+                nextPageBtn.classList.add('w3-disabled');
+                nextPageBtn.style.pointerEvents = 'none';
+            } else {
+                nextPageBtn.classList.remove('w3-disabled');
+                nextPageBtn.style.pointerEvents = 'auto';
+            }
         }
-    });
 
-    // Highlight the current page
-    pageButtons.forEach(button => {
-        button.classList.remove('paging-backcolor', 'paging-color'); // Remove highlight classes
-        if (parseInt(button.textContent) === currentPage) {
-            button.classList.add('paging-backcolor', 'paging-color'); // Add highlight classes
-        }
-    });
+        // Event Listeners
+        rowsPerPageSelect.addEventListener('change', function () {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1;
+            updateTable();
+        });
 
-    // Enable/disable next/prev buttons
-    document.getElementById('prevPage').disabled = currentPage === 1;
-    document.getElementById('nextPage').disabled = currentPage === totalPages;
-}
+        prevPageBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                updateTable();
+            }
+        });
 
-// Event listeners for pagination buttons
-document.getElementById('prevPage').addEventListener('click', function(e) {
-    e.preventDefault();
-    if (currentPage > 1) {
-        currentPage--;
+        nextPageBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTable();
+            }
+        });
+
+        // Page Number Clicks
+        document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const pageNum = parseInt(this.textContent);
+                if (!isNaN(pageNum)) {
+                    currentPage = pageNum;
+                    updateTable();
+                }
+            });
+        });
+
+        // Initialize Pagination
         updateTable();
+
+
+        // --- Chart Logic ---
+        try {
+            // Safe data passing using tojson
+            const purposeCounts = {{ purpose_counts | tojson
+        }};
+    const labCounts = {{ lab_counts | tojson }};
+
+    // Prepare Purpose Data
+    let purposeLabels = [];
+    let purposeValues = [];
+    if (purposeCounts && Object.keys(purposeCounts).length > 0) {
+        purposeLabels = Object.keys(purposeCounts);
+        purposeValues = Object.values(purposeCounts);
+    } else {
+        purposeLabels = ['No Data'];
+        purposeValues = [1];
     }
-});
 
-document.getElementById('nextPage').addEventListener('click', function(e) {
-    e.preventDefault();
-    let totalPages = Math.ceil(totalRows / rowsPerPage);
-    if (currentPage < totalPages) {
-        currentPage++;
-        updateTable();
+    // Prepare Lab Data
+    let labLabels = [];
+    let labValues = [];
+    if (labCounts && Object.keys(labCounts).length > 0) {
+        labLabels = Object.keys(labCounts);
+        labValues = Object.values(labCounts);
+    } else {
+        labLabels = ['No Data'];
+        labValues = [1];
     }
-});
 
-// Event listeners for individual page buttons
-document.querySelectorAll('.w3-button[id^="page"]').forEach(button => {
-    button.addEventListener('click', function(e) {
-        e.preventDefault();
-        currentPage = parseInt(this.textContent);
-        updateTable();
-    });
-});
-
-// Initial update on page load
-updateTable();
-
-// Draw the charts and set the chart values
-function drawCharts() {
-    // Purpose Pie Chart
-    var purposeCtx = document.getElementById('purposePieChart').getContext('2d');
-    var purposeData = {
-        labels: [
-            {% if purpose_counts %}
-                {% for purpose, count in purpose_counts.items() %}
-                    '{{ purpose }}',
-                {% endfor %}
-            {% else %}
-                'No Data',
-            {% endif %}
-        ],
-        datasets: [{
-            data: [
-                {% if purpose_counts %}
-                    {% for purpose, count in purpose_counts.items() %}
-                        {{ count }},
-                    {% endfor %}
-                {% else %}
-                    1,
-                {% endif %}
-            ],
-            backgroundColor: ['#6A0DAD', '#8A2BE2', '#9370DB', '#D8BFD8', '#DDA0DD', '#E6E6FA', '#F0E68C', '#FFFACD', '#FFEFD5', '#FFDAB9']
-        }]
-    };
-    var purposeChart = new Chart(purposeCtx, {
+    // Draw Purpose Pie Chart
+    const purposeCtx = document.getElementById('purposePieChart').getContext('2d');
+    new Chart(purposeCtx, {
         type: 'pie',
-        data: purposeData,
+        data: {
+            labels: purposeLabels,
+            datasets: [{
+                data: purposeValues,
+                backgroundColor: ['#6A0DAD', '#8A2BE2', '#9370DB', '#D8BFD8', '#DDA0DD', '#E6E6FA', '#F0E68C', '#FFFACD', '#FFEFD5', '#FFDAB9']
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'bottom',
-                },
-                title: {
-                    display: true,
-                    text: 'Sit-In Purposes Breakdown'
-                }
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Sit-In Purposes Breakdown' }
             }
         }
     });
 
-    // Lab Bar Chart
-    var labCtx = document.getElementById('labBarChart').getContext('2d');
-    var labData = {
-        labels: [
-            {% if lab_counts %}
-                {% for lab, count in lab_counts.items() %}
-                    '{{ lab }}',
-                {% endfor %}
-            {% else %}
-                'No Data',
-            {% endif %}
-        ],
-        datasets: [{
-            data: [
-                {% if lab_counts %}
-                    {% for lab, count in lab_counts.items() %}
-                        {{ count }},
-                    {% endfor %}
-                {% else %}
-                    1,
-                {% endif %}
-            ],
-            backgroundColor: '#FFDE91'
-        }]
-    };
-    var labChart = new Chart(labCtx, {
+    // Draw Lab Bar Chart
+    const labCtx = document.getElementById('labBarChart').getContext('2d');
+    new Chart(labCtx, {
         type: 'bar',
-        data: labData,
+        data: {
+            labels: labLabels,
+            datasets: [{
+                label: 'Sit-ins Count',
+                data: labValues,
+                backgroundColor: '#FFDE91'
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false,
-                },
-                title: {
-                    display: true,
-                    text: 'Sit-In Labs Breakdown'
-                }
+                legend: { display: false },
+                title: { display: true, text: 'Sit-In Labs Breakdown' }
             },
             scales: {
-                y: {
-                    beginAtZero: true
-                }
+                y: { beginAtZero: true }
             }
         }
     });
 
-    window.addEventListener('resize', function() {
-        purposeChart.resize();
-        labChart.resize();
-    });
-}
-
-// Initial chart drawing
-drawCharts();
+    } catch (error) {
+        console.error("Error creating charts:", error);
+    }
+});
 </script>
 {% endblock %}

@@ -1,126 +1,100 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="w3-container w3-padding-large w3-round-large w3-margin w3-row w3-animate-bottom" >
-    
+<div class="w3-container w3-padding-large w3-round-large w3-margin w3-row w3-animate-bottom">
+
     <!-- Profile Picture Section -->
     <div class="w3-col s5 w3-center" style="padding-top: 80px;">
-        <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}" 
-             class="w3-circle w3-border" 
-             alt="Profile Image" 
-             width="150" height="150"
-             style="border-color: var(--secondary-color);">
+        <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}"
+            class="w3-circle w3-border" alt="Profile Image" width="150" height="150"
+            style="border-color: var(--secondary-color);">
         <p class="w3-opacity" style="color: var(--text-color); margin-top: 10px;">Profile Picture</p>
 
         <!-- Upload Form -->
         <div class="w3-padding w3-margin">
             <form action="{{ url_for('upload_profile') }}" method="POST" enctype="multipart/form-data">
-                <input type="file" name="profile_pic" 
-                       class="w3-input w3-border w3-round w3-margin-bottom" 
-                       accept="image/*"
-                       style="border-color: #D3BAFA;">
-                <button type="submit" 
-                        class="w3-button w3-round w3-hover-light-grey" 
-                        style="background-color: #FFDE91; color: var(--text-color);">
+                <input type="file" name="profile_pic" class="w3-input w3-border w3-round w3-margin-bottom"
+                    accept="image/*" style="border-color: #D3BAFA;">
+                <button type="submit" class="w3-button w3-round w3-hover-light-grey"
+                    style="background-color: #FFDE91; color: var(--text-color);">
                     <i class="material-icons" style="vertical-align: middle;">cloud_upload</i> Upload
                 </button>
             </form>
         </div>
     </div>
 
-    
+
     <!-- Edit Form -->
     <div class="w3-col s7 w3-padding">
-        <form method="POST" action="{{ url_for('edit') }}" class="w3-card w3-round-large w3-padding w3-white" style="box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
-            <input type="hidden" name="edit" value="1">
-            
-            <div class="w3-margin-bottom">
-                <label><b>ID Number:</b></label>
-                <input type="text" name="idno" 
-                       class="w3-input w3-border w3-round" 
-                       value="{{ user.idno }}" 
-                       readonly
-                       style="border-color: #D3BAFA;">
-            </div>
-            
-            <div class="w3-margin-bottom">
-                <label><b>Last Name:</b></label>
-                <input type="text" name="lastname" 
-                       class="w3-input w3-border w3-round" 
-                       value="{{ user.lastname }}" 
-                       required
-                       style="border-color: #D3BAFA;">
-            </div>
-            
-            <div class="w3-margin-bottom">
-                <label><b>First Name:</b></label>
-                <input type="text" name="firstname" 
-                       class="w3-input w3-border w3-round" 
-                       value="{{ user.firstname }}" 
-                       required
-                       style="border-color: #D3BAFA;">
-            </div>
-            
-            <div class="w3-margin-bottom">
-                <label><b>Middle Name:</b></label>
-                <input type="text" name="middlename" 
-                       class="w3-input w3-border w3-round" 
-                       value="{{ user.middlename }}"
-                       style="border-color: #D3BAFA;">
-            </div>
-            
-            <div class="w3-row w3-margin-bottom">
-                <div class="w3-col s6" style="padding-right: 5px;">
-                    <label><b>Course:</b></label>
-                    <select name="course" 
-                            class="w3-select w3-border w3-round" 
-                            required
-                            style="border-color: #D3BAFA;">
-                        <option value="BSIT" {% if user.course == 'BSIT' %}selected{% endif %}>BSIT</option>
-                        <option value="BSCS" {% if user.course == 'BSCS' %}selected{% endif %}>BSCS</option>
-                        <option value="BSHM" {% if user.course == 'BSHM' %}selected{% endif %}>BSHM</option>
-                        <option value="BSCRIM" {% if user.course == 'BSCRIM' %}selected{% endif %}>BSCRIM</option>
-                    </select>
-                </div>
-                <div class="w3-col s6" style="padding-left: 5px;">
-                    <label><b>Year Level:</b></label>
-                    <input type="number" name="year_level" 
-                           class="w3-input w3-border w3-round" 
-                           value="{{ user.year_level }}" 
-                           required
-                           style="border-color: #D3BAFA;">
-                </div>
-            </div>
-            
-            <div class="w3-margin-bottom">
-                <label><b>Email:</b></label>
-                <input type="email" name="email" 
-                       class="w3-input w3-border w3-round" 
-                       value="{{ user.email }}" 
-                       required
-                       style="border-color: #D3BAFA;">
-            </div>
+        <form method="POST" action="{{ url_for('edit') }}" class="modern-card w3-round-large w3-padding w3-white"
+            style="box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div class="modern-card-body">
+                <input type="hidden" name="edit" value="1">
 
-            <div class="w3-margin-bottom">
-                <label><b>Session:</b></label>
-                <input type="number" name="session" 
-                       class="w3-input w3-border w3-round" 
-                       value="{{ user.session }}" 
-                       readonly
-                       style="border-color: #D3BAFA;">
-            </div>
-            
-            <div class="w3-center w3-margin-top">
-                <button type="submit" 
-                        class="w3-button w3-round w3-padding"
-                        style="background-color: #FFDE91; color: var(--primary-color);">
-                    <i class="material-icons" style="vertical-align: middle;">save</i> Save Changes
-                </button>
-                <a href="{{ url_for('profile') }}" 
-                   class="w3-button w3-round w3-padding w3-hover-light-grey"
-                   style="background-color: var(--primary-color); color: white; margin-left: 10px;">
-                    <i class="material-icons" style="vertical-align: middle;">cancel</i> Cancel
-                </a>
+                <div class="w3-margin-bottom">
+                    <label><b>ID Number:</b></label>
+                    <input type="text" name="idno" class="w3-input w3-border w3-round" value="{{ user.idno }}" readonly
+                        style="border-color: var(--secondary-color);">
+                </div>
+
+                <div class="w3-margin-bottom">
+                    <label><b>Last Name:</b></label>
+                    <input type="text" name="lastname" class="w3-input w3-border w3-round" value="{{ user.lastname }}"
+                        required style="border-color: var(--secondary-color);">
+                </div>
+
+                <div class="w3-margin-bottom">
+                    <label><b>First Name:</b></label>
+                    <input type="text" name="firstname" class="w3-input w3-border w3-round" value="{{ user.firstname }}"
+                        required style="border-color: var(--secondary-color);">
+                </div>
+
+                <div class="w3-margin-bottom">
+                    <label><b>Middle Name:</b></label>
+                    <input type="text" name="middlename" class="w3-input w3-border w3-round"
+                        value="{{ user.middlename }}" style="border-color: var(--secondary-color);">
+                </div>
+
+                <div class="w3-row w3-margin-bottom">
+                    <div class="w3-col s6" style="padding-right: 5px;">
+                        <label><b>Course:</b></label>
+                        <select name="course" class="w3-select w3-border w3-round" required
+                            style="border-color: var(--secondary-color);">
+                            <option value="BSIT" {% if user.course=='BSIT' %}selected{% endif %}>BSIT</option>
+                            <option value="BSCS" {% if user.course=='BSCS' %}selected{% endif %}>BSCS</option>
+                            <option value="BSHM" {% if user.course=='BSHM' %}selected{% endif %}>BSHM</option>
+                            <option value="BSCRIM" {% if user.course=='BSCRIM' %}selected{% endif %}>BSCRIM</option>
+                        </select>
+                    </div>
+                    <div class="w3-col s6" style="padding-left: 5px;">
+                        <label><b>Year Level:</b></label>
+                        <input type="number" name="year_level" class="w3-input w3-border w3-round"
+                            value="{{ user.year_level }}" required style="border-color: var(--secondary-color);">
+                    </div>
+                </div>
+
+                <div class="w3-margin-bottom">
+                    <label><b>Email:</b></label>
+                    <input type="email" name="email" class="w3-input w3-border w3-round" value="{{ user.email }}"
+                        required style="border-color: var(--secondary-color);">
+                </div>
+
+                <div class="w3-margin-bottom">
+                    <label><b>Session:</b></label>
+                    <input type="number" name="session" class="w3-input w3-border w3-round" value="{{ user.session }}"
+                        readonly style="border-color: var(--secondary-color);">
+                </div>
+
+                <div class="w3-center w3-margin-top">
+                    <button type="submit" class="w3-button w3-round w3-padding"
+                        style="background-color: var(--secondary-color); color: var(--primary-color);">
+                        <i class="material-icons" style="vertical-align: middle;">save</i> Save Changes
+                    </button>
+                    <a href="{{ url_for('profile') }}" class="w3-button w3-round w3-padding w3-hover-light-grey"
+                        style="background-color: var(--primary-color); color: white; margin-left: 10px;">
+                        <i class="material-icons" style="vertical-align: middle;">cancel</i> Cancel
+                    </a>
+                </div>
             </div>
         </form>
     </div>

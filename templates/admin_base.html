@@ -1,286 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="icon" type="image/x-icon" href="../static/favicon/csslogo.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-	<title>Admin Dashboard</title>
-    <style>
-        :root {
-            --primary-color: #2C1038;
-            --secondary-color: #D3BAFA;
-            --text-color: #333;
-            --hover-color: #f5f5f5;
-            --transition-speed: 0.3s;
-        }
-
-        body {
-            font-family: 'Work Sans', sans-serif;
-            color: var(--text-color);
-            background-color: #fafafa;
-        }
-
-        .sidebar {
-            width: 60px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: white;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            transition: var(--transition-speed);
-            padding-top: 20px;
-            z-index: 1000;
-        }
-
-        .sidebar:hover {
-            width: 300px;
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            text-decoration: none;
-            color: var(--primary-color);
-            font-size: 14px;
-            transition: var(--transition-speed);
-            border-radius: 0 25px 25px 0;
-            margin: 5px 0;
-        }
-
-        .sidebar a .material-icons {
-            font-size: 20px;
-            margin-right: 15px;
-            transition: var(--transition-speed);
-        }
-
-        .sidebar a span.text {
-            display: none;
-            opacity: 0;
-            transition: opacity var(--transition-speed);
-        }
-
-        .sidebar:hover a span.text {
-            display: inline-block;
-            opacity: 1;
-        }
-
-        .sidebar a:hover {
-            background-color: var(--hover-color);
-            color: var(--primary-color);
-        }
-
-        .sidebar a.active {
-            background-color: var(--secondary-color);
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        #main {
-            margin-left: 70px;
-            padding: 20px;
-            transition: margin-left var(--transition-speed);
-        }
-
-        .sidebar:hover + #main {
-            margin-left: 310px;
-        }
-
-        .flash-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            text-align: center;
-            animation: slideIn 0.3s ease-out;
-            border-left: 4px solid;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 1000;
-        }
-
-        .flash-message.success { 
-            border-color: #4CAF50;
-            background-color: rgba(76, 175, 80, 0.1);
-        }
-        .flash-message.danger { 
-            border-color: #f44336;
-            background-color: rgba(244, 67, 54, 0.1);
-        }
-        .flash-message.info { 
-            border-color: #2196F3;
-            background-color: rgba(33, 150, 243, 0.1);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .paging-backcolor {
-        background-color: #2C1038;
-        color: white;
-        }
-        
-        /* Notification styles */
-        .notification-icon {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1001;
-            cursor: pointer;
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .notification-icon .material-icons {
-            font-size: 28px;
-            color: var(--primary-color);
-            background-color: var(--secondary-color);
-            padding: 8px;
-            border-radius: 50%;
-        }
-        
-        .notification-dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 45px;
-            background-color: white;
-            min-width: 280px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            z-index: 1002;
-        }
-        
-        .notification-dropdown .notification-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f0f0f0;
-            font-weight: 500;
-            color: var(--primary-color);
-        }
-        
-        .notification-dropdown .notification-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background-color 0.3s;
-        }
-        
-        .notification-dropdown .notification-item:hover {
-            background-color: #f9f9f9;
-        }
-        
-        .notification-dropdown .notification-item:last-child {
-            border-bottom: none;
-        }
-        
-        .notification-dropdown .notification-footer {
-            padding: 8px 16px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--primary-color);
-            background-color: #f9f9f9;
-            border-radius: 0 0 8px 8px;
-        }
-    </style>
+    <title>Admin Dashboard</title>
 </head>
+
 <body>
     <div class="sidebar">
-        <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
-            <span class="material-icons">home</span> 
+        <a href="{{ url_for('admin_dashboard') }}"
+            class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+            <span class="material-icons">home</span>
             <span class="text">Home</span>
         </a>
-        <a href="{{ url_for('admin_notifications') }}" class="{% if request.endpoint == 'admin_notifications' %}active{% endif %}">
-            <span class="material-icons">notifications</span> 
+        <a href="{{ url_for('admin_notifications') }}"
+            class="{% if request.endpoint == 'admin_notifications' %}active{% endif %}">
+            <span class="material-icons">notifications</span>
             <span class="text">Notifications</span>
             {% if pending_count and pending_count > 0 %}
             <span class="w3-badge w3-right" style="background-color: #f44336;">{{ pending_count }}</span>
             {% endif %}
         </a>
         <a href="{{ url_for('view_students') }}" class="{% if request.endpoint == 'view_students' %}active{% endif %}">
-            <span class="material-icons">school</span> 
+            <span class="material-icons">school</span>
             <span class="text">Student</span>
         </a>
         <a href="{{ url_for('sit_in') }}" class="{% if request.endpoint == 'sit_in' %}active{% endif %}">
-            <span class="material-icons">event_seat</span> 
+            <span class="material-icons">event_seat</span>
             <span class="text">Sit-in</span>
         </a>
         <a href="{{ url_for('view_sit_in') }}" class="{% if request.endpoint == 'view_sit_in' %}active{% endif %}">
-            <span class="material-icons">visibility</span> 
+            <span class="material-icons">visibility</span>
             <span class="text">Sit-in Records</span>
         </a>
         <a href="{{ url_for('laboratory') }}" class="{% if request.endpoint == 'laboratory' %}active{% endif %}">
-            <span class="material-icons">desktop_windows</span> 
+            <span class="material-icons">desktop_windows</span>
             <span class="text">Laboratory</span>
         </a>
-        <a href="{{ url_for('admin_schedule') }}" class="{% if request.endpoint == 'admin_schedule' %}active{% endif %}">
-            <span class="material-icons">edit_calendar</span> 
+        <a href="{{ url_for('admin_schedule') }}"
+            class="{% if request.endpoint == 'admin_schedule' %}active{% endif %}">
+            <span class="material-icons">edit_calendar</span>
             <span class="text">Manage Schedule</span>
         </a>
         <a href="{{ url_for('resources') }}" class="{% if request.endpoint == 'resources' %}active{% endif %}">
-            <span class="material-icons">folder</span> 
+            <span class="material-icons">folder</span>
             <span class="text">Resources</span>
         </a>
-        <a href="{{ url_for('sit_in_reports') }}" class="{% if request.endpoint == 'sit_in_reports' %}active{% endif %}">
-            <span class="material-icons">report_problem</span> 
+        <a href="{{ url_for('sit_in_reports') }}"
+            class="{% if request.endpoint == 'sit_in_reports' %}active{% endif %}">
+            <span class="material-icons">report_problem</span>
             <span class="text">Sit-in Reports</span>
         </a>
         <a href="{{ url_for('view_feedback') }}" class="{% if request.endpoint == 'view_feedback' %}active{% endif %}">
-            <span class="material-icons">feedback</span> 
+            <span class="material-icons">feedback</span>
             <span class="text">Feedback Reports</span>
         </a>
         <a href="{{ url_for('logout') }}" style="margin-top: auto; position: absolute; bottom: 20px;">
-            <span class="material-icons">logout</span> 
+            <span class="material-icons">logout</span>
             <span class="text">Logout</span>
-        </a>          
+        </a>
     </div>
 
     <div id="main">
         <div class="w3-margin">
             <h1>{{ pagetitle }}</h1>
-        </div>  
+        </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="flash-message {{ category }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-            {% endwith %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
         <div>
             {% block content %}
@@ -298,7 +101,7 @@
                 });
             }, 3000);
         });
-        
+
         // Notification toggle function
         function toggleNotifications() {
             var dropdown = document.getElementById("notificationDropdown");
@@ -308,10 +111,10 @@
                 dropdown.style.display = "block";
             }
         }
-        
+
         // Close notifications when clicking outside
-        window.onclick = function(event) {
-            if (!event.target.matches('.notification-icon') && 
+        window.onclick = function (event) {
+            if (!event.target.matches('.notification-icon') &&
                 !event.target.matches('.notification-icon *')) {
                 var dropdown = document.getElementById("notificationDropdown");
                 if (dropdown.style.display === "block") {
@@ -321,5 +124,5 @@
         }
     </script>
 </body>
-</html>
 
+</html>

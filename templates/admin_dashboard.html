@@ -5,27 +5,40 @@
     <!-- Stats Section -->
     <div class="w3-row-padding w3-margin-top">
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
-                <h3><i class="material-icons" style="vertical-align: middle;">people</i> Students</h3>
-                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_students }}</p>
+            <div class="modern-card w3-margin-bottom">
+                <div class="modern-card-body w3-border-top w3-border-purple"
+                    style="border-top: 4px solid var(--secondary-color) !important;">
+                    <h3><i class="material-icons" style="vertical-align: middle;">people</i> Students</h3>
+                    <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">
+                        {{ total_students }}</p>
+                </div>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
-                <h3><i class="material-icons" style="vertical-align: middle;">event_seat</i> Sit-ins</h3>
-                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_sit_in }}</p>
+            <div class="modern-card w3-margin-bottom">
+                <div class="modern-card-body" style="border-top: 4px solid var(--secondary-color);">
+                    <h3><i class="material-icons" style="vertical-align: middle;">event_seat</i> Sit-ins</h3>
+                    <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">
+                        {{ total_sit_in }}</p>
+                </div>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
-                <h3><i class="material-icons" style="vertical-align: middle;">book</i> Reservations</h3>
-                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_reservations }}</p>
+            <div class="modern-card w3-margin-bottom">
+                <div class="modern-card-body" style="border-top: 4px solid var(--secondary-color);">
+                    <h3><i class="material-icons" style="vertical-align: middle;">book</i> Reservations</h3>
+                    <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">
+                        {{ total_reservations }}</p>
+                </div>
             </div>
         </div>
         <div class="w3-quarter">
-            <div class="w3-card w3-padding w3-round w3-white" style="border-top: 4px solid var(--secondary-color); height: 120px;">
-                <h3><i class="material-icons" style="vertical-align: middle;">feedback</i> Feedback</h3>
-                <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">{{ total_feedback }}</p>
+            <div class="modern-card w3-margin-bottom">
+                <div class="modern-card-body" style="border-top: 4px solid var(--secondary-color);">
+                    <h3><i class="material-icons" style="vertical-align: middle;">feedback</i> Feedback</h3>
+                    <p class="w3-right" style="font-size: 28px; margin: 8px 0 0; color: var(--primary-color);">
+                        {{ total_feedback }}</p>
+                </div>
             </div>
         </div>
     </div>
@@ -34,43 +47,57 @@
     <div class="w3-row-padding w3-margin-top">
         <!-- Left Column - Announcements -->
         <div class="w3-half">
-            <div class="w3-card w3-round w3-white" style="height: calc(100% - 16px); display: flex; flex-direction: column;">
-                <div class="w3-padding" style="flex: 1; overflow-y: auto;">
+            <div class="modern-card" style="height: calc(100% - 16px); display: flex; flex-direction: column;">
+                <div class="modern-card-body" style="flex: 1; overflow-y: auto;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h2>Posted Announcements</h2>
-                        <button onclick="document.getElementById('announcementModal').style.display='block'" 
-                                class="w3-button w3-round" style="background-color: #FFDE91;">
+                        <button onclick="document.getElementById('announcementModal').style.display='block'"
+                            class="w3-button w3-round" style="background-color: #FFDE91;">
                             Add Announcement
                         </button>
                     </div>
                     <hr>
                     <div id="admin-announcements-container">
                         {% for announcement in announcements %}
-                        <div class="w3-card w3-padding w3-margin-bottom w3-round announcement-card {% if announcement[3] == 'inactive' %}w3-opacity{% endif %}">
-                            <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
-                            <p>{{ announcement[1] }}</p>
-                            <div>
-                                {% if announcement[3] == 'active' %}
-                                <form method="POST" action="{{ url_for('deactivate_announcement', announcement_id=announcement[0]) }}" style="display:inline;">
-                                    <button type="submit" class="w3-button w3-round w3-deep-purple" style="color: white;">Deactivate</button>
-                                </form>
-                                {% else %}
-                                <form method="POST" action="{{ url_for('activate_announcement', announcement_id=announcement[0]) }}" style="display:inline;">
-                                    <button type="submit" class="w3-button w3-round" style="background-color: #FFDE91; color: white;">Activate</button>
-                                </form>
-                                {% endif %}
-                                <form method="POST" action="{{ url_for('delete_announcement', announcement_id=announcement[0]) }}" style="display:inline;">
-                                    <button type="submit" class="w3-button w3-round" style="background-color: #D3BAFA; color: white;">Delete</button>
-                                </form>
+                        <div
+                            class="modern-card w3-margin-bottom announcement-card {% if announcement[3] == 'inactive' %}w3-opacity{% endif %}">
+                            <div class="modern-card-body">
+                                <p><strong>CCS Admin | {{ announcement[2] }}</strong></p>
+                                <p>{{ announcement[1] }}</p>
+                                <div class="w3-margin-top">
+                                    {% if announcement[3] == 'active' %}
+                                    <form method="POST"
+                                        action="{{ url_for('deactivate_announcement', announcement_id=announcement[0]) }}"
+                                        style="display:inline;">
+                                        <button type="submit" class="w3-button w3-round w3-deep-purple"
+                                            style="color: white; padding: 6px 12px; font-size: 12px;">Deactivate</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="POST"
+                                        action="{{ url_for('activate_announcement', announcement_id=announcement[0]) }}"
+                                        style="display:inline;">
+                                        <button type="submit" class="w3-button w3-round"
+                                            style="background-color: #FFDE91; color: white; padding: 6px 12px; font-size: 12px;">Activate</button>
+                                    </form>
+                                    {% endif %}
+                                    <form method="POST"
+                                        action="{{ url_for('delete_announcement', announcement_id=announcement[0]) }}"
+                                        style="display:inline;">
+                                        <button type="submit" class="w3-button w3-round"
+                                            style="background-color: #D3BAFA; color: white; padding: 6px 12px; font-size: 12px;">Delete</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
                 <div class="w3-bar w3-center w3-padding">
-                    <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round">&laquo; Previous</button>
+                    <button onclick="prevPageAdmin()" id="btn_prev_admin" class="w3-button w3-border w3-round">&laquo;
+                        Previous</button>
                     <span>Page: <span id="page_admin"></span></span>
-                    <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round">Next &raquo;</button>
+                    <button onclick="nextPageAdmin()" id="btn_next_admin" class="w3-button w3-border w3-round">Next
+                        &raquo;</button>
                 </div>
             </div>
         </div>
@@ -78,57 +105,62 @@
         <!-- Right Column - Leaderboard and Chart -->
         <div class="w3-half" style="display: flex; flex-direction: column; height: 100%;">
             <!-- Leaderboard -->
-            <div class="w3-card w3-round w3-white w3-margin-bottom" style="flex: 1; min-height: 0;">
-                <div class="w3-container" style="position: relative; padding-top: 16px;">
-                    <h2 class="w3-text-dark-grey" style="display: inline-block; margin: 0;">
-                        <i class="material-icons" style="vertical-align: middle; color: var(--primary-color);">emoji_events</i>
-                        Top Performers
-                    </h2>
-                    <div class="w3-right">
-                        <span class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
+            <div class="modern-card w3-margin-bottom" style="flex: 1; min-height: 0;">
+                <div class="modern-card-header" style="height: 60px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 class="w3-text-dark-grey" style="display: inline-block; margin: 0; font-size: 1.2rem;">
+                            <i class="material-icons"
+                                style="vertical-align: middle; color: var(--primary-color);">emoji_events</i>
+                            Top Performers
+                        </h3>
+                        <span class="w3-tag w3-round" style="background-color: white; color: var(--primary-color);">
                             <i class="material-icons" style="font-size: 16px; vertical-align: middle;">query_stats</i>
                             Leaderboard
                         </span>
                     </div>
                 </div>
-                <div class="w3-panel" style="overflow-y: auto; height: calc(100% - 80px);">
+                <div class="w3-panel" style="overflow-y: auto; height: calc(100% - 60px); padding: 10px;">
                     {% if leaderboard %}
-                        {% for student in leaderboard %}
-                        <div class="w3-row w3-padding w3-round-large w3-margin-bottom" style="background-color: #f5f5f5; border-left: 4px solid var(--secondary-color);">
-                            <div class="w3-col" style="width: 50px;">
-                                <div class="w3-circle" style="width: 40px; height: 40px; 
-                                    {% if student.rank == 1 %}background-color: #FFD700;{% endif %}
-                                    {% if student.rank == 2 %}background-color: #C0C0C0;{% endif %}
-                                    {% if student.rank == 3 %}background-color: #CD7F32;{% endif %}
-                                    {% if student.rank > 3 %}background-color: var(--primary-color);{% endif %}
-                                    color: white; display: flex; align-items: center; justify-content: center;">
-                                    <span style="font-weight: bold;">{{ student.rank }}</span>
-                                </div>
-                            </div>
-                            <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
-                                <h4 style="margin: 0; color: var(--primary-color);">{{ student.full_name }}</h4>
-                                <small class="w3-text-grey">{{ student.idno }}</small>
-                            </div>
-                            <div class="w3-col" style="width: 130px; text-align: right;">
-                                <div class="w3-tag w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">
-                                    {{ student.points }} points
-                                </div>
-                                <div class="w3-small w3-text-grey">{{ student.total_sit_ins }} sit-ins</div>
+                    {% for student in leaderboard %}
+                    <div class="w3-row w3-padding w3-round-large w3-margin-bottom"
+                        style="background-color: #f9f9f9; border-left: 4px solid var(--secondary-color);">
+                        <div class="w3-col" style="width: 50px;">
+                            <div class="w3-circle" style="width: 40px; height: 40px; 
+                                        {% if student.rank == 1 %}background-color: #FFD700;{% endif %}
+                                        {% if student.rank == 2 %}background-color: #C0C0C0;{% endif %}
+                                        {% if student.rank == 3 %}background-color: #CD7F32;{% endif %}
+                                        {% if student.rank > 3 %}background-color: var(--primary-color);{% endif %}
+                                        color: white; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-weight: bold;">{{ student.rank }}</span>
                             </div>
                         </div>
-                        {% endfor %}
+                        <div class="w3-col" style="width: calc(100% - 180px); padding-left: 16px;">
+                            <h4 style="margin: 0; color: var(--primary-color); font-size: 1rem; font-weight: 600;">{{
+                                student.full_name }}
+                            </h4>
+                            <small class="w3-text-grey">{{ student.idno }}</small>
+                        </div>
+                        <div class="w3-col" style="width: 130px; text-align: right;">
+                            <div class="w3-tag w3-round"
+                                style="background-color: var(--secondary-color); color: var(--primary-color);">
+                                {{ student.points }} pts
+                            </div>
+                            <div class="w3-small w3-text-grey">{{ student.total_sit_ins }} sit-ins</div>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <div class="w3-center w3-padding-32">
-                            <i class="material-icons w3-text-grey" style="font-size: 48px;">sentiment_dissatisfied</i>
-                            <p class="w3-text-grey">No leaderboard data available yet</p>
-                        </div>
+                    <div class="w3-center w3-padding-32">
+                        <i class="material-icons w3-text-grey" style="font-size: 48px;">sentiment_dissatisfied</i>
+                        <p class="w3-text-grey">No leaderboard data available yet</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Bar Chart -->
-            <div class="w3-card w3-round w3-white" style="flex: 1; min-height: 0; margin-top: 16px;">
-                <div style="height: 100%; padding: 16px;">
+            <div class="modern-card" style="flex: 1; min-height: 400px; margin-top: 16px;">
+                <div class="modern-card-body" style="height: 100%; padding: 16px;">
                     <canvas id="piechart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
@@ -140,16 +172,17 @@
 <div id="announcementModal" class="w3-modal">
     <div class="w3-modal-content w3-animate-top w3-card-4 w3-round" style="max-width: 600px;">
         <header class="w3-container w3-deep-purple w3-round w3-margin-bottom">
-            <span onclick="document.getElementById('announcementModal').style.display='none'" 
-                  class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
+            <span onclick="document.getElementById('announcementModal').style.display='none'"
+                class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
             <h2>New Announcement</h2>
         </header>
         <div class="w3-container">
             <form method="POST" action="{{ url_for('post_announcement') }}">
                 <label for="new_announcement" class="w3-text-grey">Announcement</label>
-                <textarea id="new_announcement" name="announcement" class="w3-input w3-border w3-round" 
-                          placeholder="Type your announcement here" rows="3" style="resize: vertical;"></textarea>
-                <button type="submit" class="w3-button w3-round w3-margin w3-right" style="background-color: #FFDE91;">Submit</button>
+                <textarea id="new_announcement" name="announcement" class="w3-input w3-border w3-round"
+                    placeholder="Type your announcement here" rows="3" style="resize: vertical;"></textarea>
+                <button type="submit" class="w3-button w3-round w3-margin w3-right"
+                    style="background-color: #FFDE91;">Submit</button>
             </form>
         </div>
     </div>
@@ -158,36 +191,34 @@
 <!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Initialize chart
-function drawChart() {
-    var ctx = document.getElementById('piechart').getContext('2d');
-    var data = {
-        labels: [
-            {% if purpose_counts %}
-                {% for purpose, count in purpose_counts.items() %}
-                    '{{ purpose }}',
-                {% endfor %}
-            {% else %}
-                'No Data',
-            {% endif %}
-        ],
-        datasets: [{
-            label: 'Sit-In Purposes',
-            data: [
-                {% if purpose_counts %}
-                    {% for purpose, count in purpose_counts.items() %}
-                        {{ count }},
-                    {% endfor %}
-                {% else %}
-                    1,
-                {% endif %}
-            ],
-            backgroundColor: ['#6A0DAD', '#8A2BE2', '#9370DB', '#D8BFD8', '#DDA0DD', '#E6E6FA', '#F0E68C', '#FFFACD', '#FFEFD5', '#FFDAB9']
-        }]
-    };
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- Chart Logic ---
+        try {
+            const purposeCounts = {{ purpose_counts | tojson
+        }};
+
+    let labels = [];
+    let values = [];
+
+    if (purposeCounts && Object.keys(purposeCounts).length > 0) {
+        labels = Object.keys(purposeCounts);
+        values = Object.values(purposeCounts);
+    } else {
+        labels = ['No Data'];
+        values = [1];
+    }
+
+    const ctx = document.getElementById('piechart').getContext('2d');
     new Chart(ctx, {
-        type: 'bar',
-        data: data,
+        type: 'bar', // It was a bar chart in the original
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Sit-In Purposes',
+                data: values,
+                backgroundColor: ['#6A0DAD', '#8A2BE2', '#9370DB', '#D8BFD8', '#DDA0DD', '#E6E6FA', '#F0E68C', '#FFFACD', '#FFEFD5', '#FFDAB9']
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -197,59 +228,60 @@ function drawChart() {
             },
             scales: {
                 x: { title: { display: true, text: 'Purpose' } },
-                y: { title: { display: true, text: 'Count' } }
+                y: {
+                    title: { display: true, text: 'Count' },
+                    beginAtZero: true
+                }
             }
         }
     });
-}
-
-// Leaderboard show more/less
-document.addEventListener('DOMContentLoaded', function() {
-    drawChart();
-});
-
-// Announcement pagination functions remain the same
-var current_page_admin = 1;
-var records_per_page_admin = 8;
-
-function prevPageAdmin() {
-    if (current_page_admin > 1) {
-        current_page_admin--;
-        changePageAdmin(current_page_admin);
+        } catch (error) {
+        console.error("Error drawing admin chart:", error);
     }
-}
-
-function nextPageAdmin() {
-    if (current_page_admin < numPagesAdmin()) {
-        current_page_admin++;
-        changePageAdmin(current_page_admin);
-    }
-}
-
-function changePageAdmin(page) {
-    var btn_next = document.getElementById("btn_next_admin");
-    var btn_prev = document.getElementById("btn_prev_admin");
-    var listing_table = document.getElementById("admin-announcements-container");
-    var page_span = document.getElementById("page_admin");
-
-    if (page < 1) page = 1;
-    if (page > numPagesAdmin()) page = numPagesAdmin();
-
-    [...listing_table.getElementsByClassName('announcement-card')].forEach((card, index) => {
-        card.style.display = (index >= (page - 1) * records_per_page_admin && index < page * records_per_page_admin) ? 'block' : 'none';
     });
 
-    page_span.innerHTML = page;
-    btn_prev.style.visibility = (page == 1) ? "hidden" : "visible";
-    btn_next.style.visibility = (page == numPagesAdmin()) ? "hidden" : "visible";
-}
+    // Announcement pagination functions remain the same
+    var current_page_admin = 1;
+    var records_per_page_admin = 8;
 
-function numPagesAdmin() {
-    return Math.ceil(document.getElementsByClassName('announcement-card').length / records_per_page_admin);
-}
+    function prevPageAdmin() {
+        if (current_page_admin > 1) {
+            current_page_admin--;
+            changePageAdmin(current_page_admin);
+        }
+    }
 
-window.onload = function() {
-    changePageAdmin(1);
-};
+    function nextPageAdmin() {
+        if (current_page_admin < numPagesAdmin()) {
+            current_page_admin++;
+            changePageAdmin(current_page_admin);
+        }
+    }
+
+    function changePageAdmin(page) {
+        var btn_next = document.getElementById("btn_next_admin");
+        var btn_prev = document.getElementById("btn_prev_admin");
+        var listing_table = document.getElementById("admin-announcements-container");
+        var page_span = document.getElementById("page_admin");
+
+        if (page < 1) page = 1;
+        if (page > numPagesAdmin()) page = numPagesAdmin();
+
+        [...listing_table.getElementsByClassName('announcement-card')].forEach((card, index) => {
+            card.style.display = (index >= (page - 1) * records_per_page_admin && index < page * records_per_page_admin) ? 'block' : 'none';
+        });
+
+        page_span.innerHTML = page;
+        btn_prev.style.visibility = (page == 1) ? "hidden" : "visible";
+        btn_next.style.visibility = (page == numPagesAdmin()) ? "hidden" : "visible";
+    }
+
+    function numPagesAdmin() {
+        return Math.ceil(document.getElementsByClassName('announcement-card').length / records_per_page_admin);
+    }
+
+    window.onload = function () {
+        changePageAdmin(1);
+    };
 </script>
 {% endblock %}

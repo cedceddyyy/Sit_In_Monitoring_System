@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -153,7 +154,7 @@
             background: white;
             padding: 15px 25px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             text-align: center;
             animation: slideIn 0.3s ease-out;
@@ -165,15 +166,17 @@
             font-weight: 500;
         }
 
-        .flash-message.success { 
+        .flash-message.success {
             border-color: #4CAF50;
             background-color: rgba(76, 175, 80, 0.1);
         }
-        .flash-message.danger { 
+
+        .flash-message.danger {
             border-color: #f44336;
             background-color: rgba(244, 67, 54, 0.1);
         }
-        .flash-message.info { 
+
+        .flash-message.info {
             border-color: #2196F3;
             background-color: rgba(33, 150, 243, 0.1);
         }
@@ -183,6 +186,7 @@
                 transform: translateY(-20px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -197,7 +201,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             overflow-y: auto;
         }
@@ -210,7 +214,7 @@
             width: 90%;
             max-width: 500px;
             border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         .close-button {
@@ -279,7 +283,7 @@
             .w3-half:first-child {
                 display: none;
             }
-            
+
             .w3-half:last-child {
                 width: 100%;
             }
@@ -300,6 +304,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="w3-half w3-container" style="height: 100vh;"></div>
     <div class="w3-half w3-container w3-white">
@@ -319,15 +324,16 @@
             </form>
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                <div class="flash-message {{ category }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
             {% endif %}
             {% endwith %}
             <div class="register-link">
-                Don't have an account? <a href="#" onclick="document.getElementById('registerModal').style.display='block'">Register</a>
+                Don't have an account? <a href="#"
+                    onclick="document.getElementById('registerModal').style.display='block'">Register</a>
             </div>
         </div>
     </div>
@@ -335,13 +341,15 @@
     <!-- Registration Modal -->
     <div id="registerModal" class="w3-modal">
         <div class="w3-modal-content">
-            <span class="close-button" onclick="document.getElementById('registerModal').style.display='none'">&times;</span>
+            <span class="close-button"
+                onclick="document.getElementById('registerModal').style.display='none'">&times;</span>
             <div class="register-form">
                 <h1>Register</h1>
                 <form method="POST">
                     <input type="hidden" name="register" value="1">
                     <div class="form-group">
-                        <input type="text" id="idno" name="idno" placeholder="ID Number" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <input type="text" id="idno" name="idno" placeholder="ID Number" required
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                     <div class="form-group">
                         <input type="text" name="lastname" placeholder="Last Name" required>
@@ -370,7 +378,8 @@
                         <input type="email" name="email" placeholder="Email" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" id="username" name="username" placeholder="Username (Auto-filled)" required readonly>
+                        <input type="text" id="username" name="username" placeholder="Username (Auto-filled)" required
+                            readonly>
                     </div>
                     <div class="form-group">
                         <input type="password" name="password" placeholder="Password" required>
@@ -382,7 +391,7 @@
     </div>
 
     <script>
-        document.getElementById("idno").addEventListener("input", function() {
+        document.getElementById("idno").addEventListener("input", function () {
             document.getElementById("username").value = this.value;
         });
 
@@ -397,7 +406,7 @@
         });
 
         // Close modal when clicking outside
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             let modal = document.getElementById('registerModal');
             if (event.target == modal) {
                 modal.style.display = "none";
@@ -405,4 +414,5 @@
         }
     </script>
 </body>
+
 </html>

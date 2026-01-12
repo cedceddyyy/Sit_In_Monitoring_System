@@ -2,73 +2,79 @@
 
 {% block content %}
 <div class="w3-container w3-animate-bottom" style="padding-bottom: 32px;">
-    <div class="w3-card w3-round w3-white">
+    <div class="modern-card">
         <!-- Header Section -->
-        <div class="w3-container w3-padding" style="border-bottom: 4px solid lightgrey;">
-            <p class="w3-text-grey">Review and manage pending laboratory reservations</p>
+        <div class="modern-card-header">
+            <h3>Pending Reservations</h3>
+            <p class="w3-text-grey w3-small">Review and manage pending laboratory reservations</p>
         </div>
 
-        <!-- Rows per page selector -->
-        <div class="w3-bar w3-padding">
-            <label for="rowsPerPage" class="w3-text-grey">Rows per page: </label>
-            <select id="rowsPerPage" class="w3-select w3-border w3-round" style="max-width: 70px; display: inline-block;">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-            </select>
-        </div>
+        <div class="modern-card-body">
+            <!-- Rows per page selector -->
+            <div class="w3-bar w3-padding-bottom">
+                <label for="rowsPerPage" class="w3-text-grey">Rows per page: </label>
+                <select id="rowsPerPage" class="w3-select w3-border w3-round"
+                    style="max-width: 70px; display: inline-block;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
 
-        {% if notifications %}
-        <div class="w3-responsive w3-padding">
-            <table class="w3-table-all w3-hoverable">
-                <thead>
-                    <tr class="w3-light-grey">
-                        <th>Student Name</th>
-                        <th>Lab Number</th>
-                        <th>PC Number</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Purpose</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="notificationsTableBody">
-                    {% for notification in notifications %}
-                    <tr>
-                        <td>{{ notification.full_name }}</td>
-                        <td>Room {{ notification.lab_number }}</td>
-                        <td>PC {{ notification.pc_number }}</td>
-                        <td>{{ notification.date }}</td>
-                        <td>{{ notification.time_in }}</td>
-                        <td>{{ notification.purpose }}</td>
-                        <td>
-                            <a href="{{ url_for('laboratory', reservation_id=notification.id) }}" 
-                               class="w3-button w3-round" 
-                               style="background-color: #6A0DAD; color: white; padding: 4px 8px;">
-                                <i class="material-icons" style="vertical-align: middle; font-size: 14px;">visibility</i>
-                                View
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            {% if notifications %}
+            <div class="w3-responsive">
+                <table class="w3-table w3-bordered w3-hoverable">
+                    <thead class="w3-light-grey">
+                        <tr style="color: var(--primary-color);">
+                            <th>Student Name</th>
+                            <th>Lab Number</th>
+                            <th>PC Number</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Purpose</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notificationsTableBody">
+                        {% for notification in notifications %}
+                        <tr>
+                            <td>{{ notification.full_name }}</td>
+                            <td>Room {{ notification.lab_number }}</td>
+                            <td>PC {{ notification.pc_number }}</td>
+                            <td>{{ notification.date }}</td>
+                            <td>{{ notification.time_in }}</td>
+                            <td>{{ notification.purpose }}</td>
+                            <td>
+                                <a href="{{ url_for('laboratory', reservation_id=notification.id) }}"
+                                    class="w3-button w3-round w3-small"
+                                    style="background-color: var(--primary-color); color: white;">
+                                    <i class="material-icons"
+                                        style="vertical-align: middle; font-size: 14px;">visibility</i>
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Pagination -->
-        <div class="w3-bar w3-center w3-padding">
-            <a href="#" class="w3-button" id="prevPage">«</a>
-            <span id="paginationNumbers"></span>
-            <a href="#" class="w3-button" id="nextPage">»</a>
+            <!-- Pagination -->
+            <div class="w3-bar w3-center w3-padding w3-margin-top">
+                <a href="#" class="w3-button w3-round" id="prevPage">&laquo;</a>
+                <span id="paginationNumbers"></span>
+                <a href="#" class="w3-button w3-round" id="nextPage">&raquo;</a>
+            </div>
+            {% else %}
+            <div class="w3-center w3-padding-32">
+                <i class="material-icons w3-text-grey" style="font-size: 48px;">notifications_off</i>
+                <p class="w3-text-grey">No pending reservations at the moment</p>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="w3-center w3-padding-32">
-            <i class="material-icons w3-text-grey" style="font-size: 48px;">notifications_off</i>
-            <p class="w3-text-grey">No pending reservations at the moment</p>
-        </div>
-        {% endif %}
     </div>
+
 </div>
 
 <script>
@@ -80,7 +86,7 @@
     const paginationNumbers = document.getElementById('paginationNumbers');
 
     // Function to handle rows per page change
-    document.getElementById('rowsPerPage').addEventListener('change', function() {
+    document.getElementById('rowsPerPage').addEventListener('change', function () {
         rowsPerPage = parseInt(this.value);
         currentPage = 1;
         totalPages = Math.ceil(rows.length / rowsPerPage);
@@ -112,7 +118,7 @@
                 pageButton.classList.add("paging-backcolor", "paging-color");
             }
             pageButton.textContent = i;
-            pageButton.addEventListener('click', function(e) {
+            pageButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 currentPage = i;
                 updateTable();
@@ -126,7 +132,7 @@
     }
 
     // Event listeners for pagination buttons
-    document.getElementById('prevPage').addEventListener('click', function(e) {
+    document.getElementById('prevPage').addEventListener('click', function (e) {
         e.preventDefault();
         if (currentPage > 1) {
             currentPage--;
@@ -134,7 +140,7 @@
         }
     });
 
-    document.getElementById('nextPage').addEventListener('click', function(e) {
+    document.getElementById('nextPage').addEventListener('click', function (e) {
         e.preventDefault();
         if (currentPage < totalPages) {
             currentPage++;
@@ -145,4 +151,4 @@
     // Initial update on page load
     updateTable();
 </script>
-{% endblock %} 
+{% endblock %}

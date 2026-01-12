@@ -10,12 +10,16 @@
             <option value="10" selected>10</option>
             <option value="20">20</option>
         </select>
-        <button id="resetSessions" class="w3-button w3-round w3-right" style="background-color: #FFDE91; color: var(--primary-color);">Reset All Sessions</button>
+        <button id="resetSessions" class="w3-button w3-round w3-right"
+            style="background-color: #FFDE91; color: var(--primary-color);">Reset All Sessions</button>
     </div>
 
-    <form method="POST" action="{{ url_for('view_students') }}" class="w3-row" style="max-width: 600px; margin: auto; display: flex; margin-bottom: 20px;">
-        <input class="w3-input w3-border w3-round" type="text" name="idno" placeholder="Enter Student ID" required style="flex: 1;">
-        <button class="w3-button w3-round" type="submit" style="background-color: var(--primary-color); color: white; margin-left: 10px;">
+    <form method="POST" action="{{ url_for('view_students') }}" class="w3-row"
+        style="max-width: 600px; margin: auto; display: flex; margin-bottom: 20px;">
+        <input class="w3-input w3-border w3-round" type="text" name="idno" placeholder="Enter Student ID" required
+            style="flex: 1;">
+        <button class="w3-button w3-round" type="submit"
+            style="background-color: var(--primary-color); color: white; margin-left: 10px;">
             <i class="material-icons">search</i>
         </button>
     </form>
@@ -23,8 +27,10 @@
     {% if student %}
     <div id="sitInModal" class="w3-modal w3-round" style="display: block;">
         <div class="w3-modal-content w3-card-4 w3-animate-top w3-round" style="max-width: 600px; margin: auto;">
-            <header class="w3-container w3-round" style="background-color: var(--primary-color); color: white; border-radius: 5px 5px 0 0;">
-                <span onclick="document.getElementById('sitInModal').style.display='none'" class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
+            <header class="w3-container w3-round"
+                style="background-color: var(--primary-color); color: white; border-radius: 5px 5px 0 0;">
+                <span onclick="document.getElementById('sitInModal').style.display='none'"
+                    class="w3-button w3-display-topright w3-round" style="padding: 16px;">&times;</span>
                 <h3>Sit-In Form</h3>
             </header>
             <form class="w3-container w3-margin-top" method="POST" action="{{ url_for('submit_sit_in') }}">
@@ -66,59 +72,66 @@
                     </select>
                 </div>
                 <div class="w3-center">
-                    <button type="submit" class="w3-button w3-margin w3-round" style="background-color: var(--secondary-color); color: var(--primary-color);">Sit-In</button>
-                    <button type="button" class="w3-button w3-margin w3-round w3-light-grey" onclick="document.getElementById('sitInModal').style.display='none'">Cancel</button>
+                    <button type="submit" class="w3-button w3-margin w3-round"
+                        style="background-color: var(--secondary-color); color: var(--primary-color);">Sit-In</button>
+                    <button type="button" class="w3-button w3-margin w3-round w3-light-grey"
+                        onclick="document.getElementById('sitInModal').style.display='none'">Cancel</button>
                 </div>
-            </form>        
+            </form>
         </div>
     </div>
     {% endif %}
 
     <!-- Table -->
-    <div class="w3-card w3-round">
-        <table class="w3-table w3-bordered">
-            <thead>
-                <tr class="w3-light-grey">
-                    <th>Profile</th>
-                    <th>ID Number</th>
-                    <th>Last Name</th>
-                    <th>First Name</th>
-                    <th>Middle Name</th>
-                    <th>Course</th>
-                    <th>Year Level</th>
-                    <th>Email</th>
-                    <th>Session</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                {% for student in students %}
-                <tr>
-                    <td>
-                        <img src="{{ url_for('static', filename='uploads/' + student.profile_image) }}" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%;">
-                    </td>
-                    <td>{{ student.idno }}</td>
-                    <td>{{ student.lastname }}</td>
-                    <td>{{ student.firstname }}</td>
-                    <td>{{ student.middlename }}</td>
-                    <td>{{ student.course }}</td>
-                    <td>{{ student.year_level }}</td>
-                    <td>{{ student.email }}</td>
-                    <td>{{ student.session }}</td>
-                    <td>
-                        <button class="w3-button w3-round" style="background-color: var(--primary-color); color: white;" onclick="resetSession('{{ student.idno }}')">Reset</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="modern-card w3-round">
+        <div class="modern-card-body">
+            <table class="w3-table w3-bordered w3-hoverable">
+                <thead class="w3-light-grey">
+                    <tr style="color: var(--primary-color);">
+                        <th>Profile</th>
+                        <th>ID Number</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>Middle Name</th>
+                        <th>Course</th>
+                        <th>Year Level</th>
+                        <th>Email</th>
+                        <th>Session</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for student in students %}
+                    <tr>
+                        <td>
+                            <img src="{{ url_for('static', filename='uploads/' + student.profile_image) }}"
+                                alt="Profile" style="width: 50px; height: 50px; border-radius: 50%;">
+                        </td>
+                        <td>{{ student.idno }}</td>
+                        <td>{{ student.lastname }}</td>
+                        <td>{{ student.firstname }}</td>
+                        <td>{{ student.middlename }}</td>
+                        <td>{{ student.course }}</td>
+                        <td>{{ student.year_level }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.session }}</td>
+                        <td>
+                            <button class="w3-button w3-round w3-small"
+                                style="background-color: var(--primary-color); color: white;"
+                                onclick="resetSession('{{ student.idno }}')">Reset</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Pagination -->
     <div class="w3-bar w3-center w3-padding w3-margin">
-        <a href="#" class="w3-button" id="prevPage">«</a>
+        <a href="#" class="w3-button w3-round" id="prevPage">&laquo;</a>
         <span id="paginationNumbers"></span>
-        <a href="#" class="w3-button" id="nextPage">»</a>
+        <a href="#" class="w3-button w3-round" id="nextPage">&raquo;</a>
     </div>
 </div>
 
@@ -132,7 +145,7 @@
     const paginationNumbers = document.getElementById('paginationNumbers');
 
     // Function to handle rows per page change
-    document.getElementById('rowsPerPage').addEventListener('change', function() {
+    document.getElementById('rowsPerPage').addEventListener('change', function () {
         rowsPerPage = parseInt(this.value); // Get the selected value
         currentPage = 1; // Reset to the first page
         updateTable(); // Update table display
@@ -159,7 +172,7 @@
             pageButton.classList.add("w3-button");
             if (i === currentPage) pageButton.classList.add("paging-backcolor", "paging-color");
             pageButton.textContent = i;
-            pageButton.addEventListener('click', function(e) {
+            pageButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 currentPage = i;
                 updateTable();
@@ -181,7 +194,7 @@
     }
 
     // Event listeners for pagination buttons
-    document.getElementById('prevPage').addEventListener('click', function(e) {
+    document.getElementById('prevPage').addEventListener('click', function (e) {
         e.preventDefault();
         if (currentPage > 1) {
             currentPage--;
@@ -189,7 +202,7 @@
         }
     });
 
-    document.getElementById('nextPage').addEventListener('click', function(e) {
+    document.getElementById('nextPage').addEventListener('click', function (e) {
         e.preventDefault();
         if (currentPage < totalPages) {
             currentPage++;
@@ -198,7 +211,7 @@
     });
 
     // Event listener for reset sessions button
-    document.getElementById('resetSessions').addEventListener('click', function() {
+    document.getElementById('resetSessions').addEventListener('click', function () {
         if (confirm("Are you sure you want to reset all sessions?")) {
             fetch('/reset_sessions', { method: 'POST' })
                 .then(response => response.json())

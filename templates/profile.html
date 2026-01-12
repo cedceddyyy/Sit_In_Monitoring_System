@@ -4,23 +4,21 @@
 <div class="w3-container w3-animate-bottom" style="max-width: 600px; margin: 0 auto;">
     {% if user %}
     <!-- Profile Card -->
-    <div class="w3-card w3-round-large w3-white w3-padding-large" style="position: relative;">
+    <div class="modern-card w3-padding-large" style="position: relative;">
         <!-- Edit Button -->
-        <a href="{{ url_for('edit') }}" class="w3-button w3-circle w3-white w3-hover-light-grey" 
-           style="position: absolute; top: 15px; right: 15px;">
+        <a href="{{ url_for('edit') }}" class="w3-button w3-circle w3-hover-light-grey"
+            style="position: absolute; top: 15px; right: 15px; color: var(--primary-color);">
             <span class="material-icons">edit</span>
         </a>
-        
+
         <!-- Profile Header -->
         <div class="w3-center w3-padding-16">
-            <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}" 
-                 class="w3-circle w3-border" 
-                 alt="Profile Image" 
-                 style="width: 150px; height: 150px; object-fit: cover;">
+            <img src="{{ url_for('static', filename='uploads/' + (user.profile_image if user.profile_image else 'default.png')) }}"
+                class="w3-circle w3-border" alt="Profile Image" style="width: 150px; height: 150px; object-fit: cover;">
             <h3 class="w3-margin-top">{{ user.firstname }} {{ user.lastname }}</h3>
             <p class="w3-text-grey">{{ user.idno }}</p>
         </div>
-        
+
         <!-- User Information -->
         <div class="w3-padding-horizontal">
             <div class="w3-row w3-section">
